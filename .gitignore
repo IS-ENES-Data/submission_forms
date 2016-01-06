@@ -43,6 +43,12 @@ nosetests.xml
 coverage.xml
 *,cover
 
+# Notebook things
+CORDEX/.ipynb_checkpoints/
+Template/.ipynb_checkpoints/
+Start/.ipynb_checkpoints
+CORDEX/
+
 # Translations
 *.mo
 *.pot
