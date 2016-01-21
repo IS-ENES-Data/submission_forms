@@ -10,8 +10,9 @@ setup(
    author="Stephan Kindermann",
    author_email="kindermann@dkrz.de",
 
-   packages=find_packages(exclude=['test']),
+   packages=find_packages(exclude=['ez_setup','test']),
    include_package_data=True,
+   zip_safe=False,
 
    url="http://pypi.python.org/pypi/form_handler_v010/",
 

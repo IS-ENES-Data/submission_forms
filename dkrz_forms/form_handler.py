@@ -6,13 +6,14 @@
 # from which specific form handlers inherit
 
 import os,sys,shutil,uuid
+import pkg_resources
 from datetime import datetime
 from git import Repo
 join = os.path.join
 import smtplib
 from email.mime.text import MIMEText
 import shelve
-from config import cordex_directory, template_directory
+from config import cordex_directory
 
 class cordex_submission_form(object):
         """
@@ -100,47 +101,61 @@ def form_save(sf,repo):
     print "submission form stored in local repository "
 
 
+def is_hosted_service():
+    hostname = socket.gethostname()
+    if hostname == "qc.dkrz.de":
+      return True
+    else:
+      return False
+
 def email_form_info(sf):
-    m_part1 = "You edited and saved a CORDEX submission form\n"
-    m_part2 = "This form is accessible at: \n"
-    m_part3 = "https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.form_name+".ipynb \n"
-    m_part4 = "to officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n"
-    m_part5 = "in case of problems please contact data@dkrz.de"
-    my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
-    msg = MIMEText(my_message)
-    msg['Subject'] = 'Your CORDEX data submission form'
-    msg['From'] = "data_submission@dkrz.de"
-    msg['To'] = sf.email
-    # Send the message via the qc VM SMTP server, but don't include the\n"
-    # envelope header.\n",
-    s = smtplib.SMTP('localhost')
-    s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
-    s.quit()
+  if is_hosted_service():
+     m_part1 = "You edited and saved a CORDEX submission form\n"
+     m_part2 = "This form is accessible at: \n"
+     m_part3 = "https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.form_name+".ipynb \n"
+     m_part4 = "to officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n"
+     m_part5 = "in case of problems please contact data@dkrz.de"
+     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
+     msg = MIMEText(my_message)
+     msg['Subject'] = 'Your CORDEX data submission form'
+     msg['From'] = "data_submission@dkrz.de"
+     msg['To'] = sf.email
+     # Send the message via the qc VM SMTP server, but don't include the\n"
+     # envelope header.\n",
+     s = smtplib.SMTP('localhost')
+     s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
+     s.quit()
+   else:
+     print "This form is not hosted at DKRZ! form email service is not available ! \n"
+
 
 def form_submission(sf):
-    m_part1 = "A CORDEX data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n" 
-    m_part2 = "Corresponding email: "+ sf.email +"\n"
-    m_part3 = "Submission form url: https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.form_name+".ipynb \n"
-    m_part4 = "The submission is commited to the CORDEX submission form git repository with the name "+sf.form_name +"\n"
-    m_part5 = "Time of submission:"+ str(datetime.now())
+   if is_hosted_service():
+      m_part1 = "A CORDEX data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n" 
+      m_part2 = "Corresponding email: "+ sf.email +"\n"
+      m_part3 = "Submission form url: https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.form_name+".ipynb \n"
+      m_part4 = "The submission is commited to the CORDEX submission form git repository with the name "+sf.form_name +"\n"
+      m_part5 = "Time of submission:"+ str(datetime.now())
 
-    my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
-    msg = MIMEText(my_message)
-    msg['Subject'] = 'Test email from DKRZ data submission form management software - please ignore'
-    msg['From'] = "data_submission@dkrz.de"
-    msg['To'] = sf.email
-    msg['CC'] = "kindermann@dkrz.de"
-    # Send the message via the qc VM SMTP server, but don't include the\n"
-    # envelope header.\n",
-    s = smtplib.SMTP('localhost')
-    s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
-    s.quit()
+      my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
+      msg = MIMEText(my_message)
+      msg['Subject'] = 'Test email from DKRZ data submission form management software - please ignore'
+      msg['From'] = "data_submission@dkrz.de"
+      msg['To'] = sf.email
+      msg['CC'] = "kindermann@dkrz.de"
+      # Send the message via the qc VM SMTP server, but don't include the\n"
+      # envelope header.\n",
+      s = smtplib.SMTP('localhost')
+      s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
+      s.quit()
 
-  #  origin = repo.remotes.origin
-  #  origin.push()
-  #  print "Data submission form sent"
-  #  print "A confirmation message will be sent to you"
-
+    #  origin = repo.remotes.origin
+    #  origin.push()
+    #  print "Data submission form sent"
+    #  print "A confirmation message will be sent to you"
+   else:
+      "Automatic mail based form submission not available"
+      "Please send stored submission form and data basket to "data@dkrz.de"
 
 def persist_form(form_object,location):
     p_shelve = shelve.open(location)
@@ -179,11 +194,11 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project):
 	   target_file_name=my_project+"__"+my_name+"__submission"+"__"+my_id+".ipynb"
  	   target = cordex_directory+"/"+target_file_name
 	   #print target
-
-	   source_file_name = my_project+"_submission_form.ipynb"
-	   source = template_directory+"/"+source_file_name
 	   #print source
-    
+           new_form_file = open(target,"w")
+           source = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
+
+           
 	   shutil.copyfile(source,target)
            print "--------------------------------------------------"
            print "submission form created, please visit the following link:"

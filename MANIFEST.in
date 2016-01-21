@@ -1,2 +1,2 @@
 
-# recursive-include  a/b *
+recursive-include  dkrz_forms/Templates *.*
