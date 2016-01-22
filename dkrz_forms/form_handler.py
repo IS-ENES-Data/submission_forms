@@ -7,12 +7,14 @@
 
 import os,sys,shutil,uuid
 import pkg_resources
+import socket
 from datetime import datetime
-from git import Repo
+from git import Repo,GitCommandError
 join = os.path.join
 import smtplib
 from email.mime.text import MIMEText
 import shelve
+import json
 from config import cordex_directory
 
 class cordex_submission_form(object):
@@ -48,6 +50,8 @@ class cordex_submission_form(object):
             self.variable_list_fx = ""
             self.uniqueness_of_tracking_id = ""
             self.check_status="not checked"
+            self.package_path=""
+            self.package_name=""
 
 
 def form_to_json(sf):
@@ -86,19 +90,26 @@ def check_submission(sf):
     else:
        print "please correct errors before proceeding"
 
-def check_form_name(sf,form_name):
-    if form_name != "...":
-        print "form name looks ok"
+def check_form_name(sf):
+    if sf.form_name == "...":
+        return False
     else:
-        print "Please fill in the form name for this document"
+        return True
 
 def form_save(sf,repo):
     """
-     ToDo: commit exactly this form ..
+     Commit form and associated json data package to git repo 
     """
-    repo.git.add(all=True)
-    repo.git.commit(message='Submission form for user '+sf.first_name+"_"+sf.last_name+' saved in git repository')
-    print "submission form stored in local repository "
+    sf = package_submission(sf)
+    if check_form_name(sf):
+       try: 
+           repo.git.add(sf.package_name)
+           repo.git.add(sf.form_name)
+           repo.git.commit(message='Submission form for user '+sf.first_name+"_"+sf.last_name+' saved in git repository:'+sf.form_name)
+           print "submission form "+sf.form_name+"\n stored in local git repository "
+           print "submission data "+sf.package_name+"\n stored in local git repository "
+       except GitCommandError:
+           print "Error ! Please correct the form name (best copy and paste name from top of this page and add .ipynb extension)"
 
 
 def is_hosted_service():
@@ -125,7 +136,8 @@ def email_form_info(sf):
      s = smtplib.SMTP('localhost')
      s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
      s.quit()
-   else:
+     print "Form submitted to your email address "+sf.email
+  else:
      print "This form is not hosted at DKRZ! form email service is not available ! \n"
 
 
@@ -148,14 +160,28 @@ def form_submission(sf):
       s = smtplib.SMTP('localhost')
       s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
       s.quit()
-
-    #  origin = repo.remotes.origin
-    #  origin.push()
-    #  print "Data submission form sent"
-    #  print "A confirmation message will be sent to you"
+  
+      #  origin = repo.remotes.origin
+      #  origin.push()
+      #  print "Data submission form sent"
+      #  print "A confirmation message will be sent to you"
    else:
-      "Automatic mail based form submission not available"
-      "Please send stored submission form and data basket to "data@dkrz.de"
+      print "Please send form: "+cordex_directory+"/"+sf.form_name +"\n"
+      print "as well as data package: "+sf.package_path+"\n"
+      print "to data@dkrz.de with subject \"Cordex data submission form \"" 
+
+def package_submission(sf):
+    form_json = form_to_json(sf)
+    parts=sf.form_name.split(".")
+    my_form_name = parts[0]
+    file_name = cordex_directory+"/"+my_form_name+".json"
+    form_file = open(file_name,"w+")
+    form_file.write(form_json)
+    form_file.close()
+    sf.package_path=file_name
+    sf.package_name=my_form_name+".json"
+    # print "form stored in transfer format in: "+file_name
+    return sf
 
 def persist_form(form_object,location):
     p_shelve = shelve.open(location)
@@ -168,8 +194,6 @@ def get_form(location):
     p_shelve.close()
     return form_object
 
-
-
 def init_form():
     sf = cordex_submission_form()
     # initialize form object with location of git repo where submission forms are stored (locally)
@@ -178,10 +202,6 @@ def init_form():
     print "Cordex submission form intitialized"
     print "(technically a submission form (sf) object as well as a repository (repo object) are created to store the submission form)"
     return sf,repo
-
-
-
-
 
 def generate_submission_form(my_first_name,my_last_name,my_email,my_project):
     ''' take project notebook template, rename it and copy the result to the 
@@ -202,7 +222,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project):
 	   shutil.copyfile(source,target)
            print "--------------------------------------------------"
            print "submission form created, please visit the following link:"
-           print "https://qc.dkrz.de:8080/tree/"+my_project+"/"+target_file_name
+           print "https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+target_file_name
     else:
            print "--------------------------------------------------"
            print "currently only submission forms for the project \"CORDEX\" are supported"
