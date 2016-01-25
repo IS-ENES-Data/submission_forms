@@ -49,6 +49,14 @@ class cordex_submission_form(object):
             self.uniqueness_of_tracking_id = ""
             self.check_status="not checked"
 
+def json_to_form(json_dict):
+  """
+  to be completed: use json.loads function, example:
+
+  user = json.loads('{"__type__": "User", "name": "John Smith", "username": "jsmith"}')
+  print user['name']
+  print user['username']
+  """
 
 def form_to_json(sf):
     """ 
