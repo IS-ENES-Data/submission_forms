@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 import shelve
 import json
 from config import cordex_directory
+from tests import *
 
 class cordex_submission_form(object):
         """
@@ -82,21 +83,6 @@ def cordex_file_info(sf,file_name):
 	    for i,part in enumerate(cordex_example_parts):
              print cordex_template[i],":",part
 
-
-def check_submission(sf):
-    ## to_do: add consistency checks 
-    if not sf.first_name:
-       print "Please provide your first name"
-       sf.check_status="uncomplete"
-    if not sf.last_name:
-       print "Please provide your last name"
-       sf.check_status="uncomplete" 
-
-    if not sf.check_status=="uncomplete":
-       print "submission form for user "+sf.first_name+" "+sf.last_name+": check ok"
-       sf.check_status="complete_1"
-    else:
-       print "please correct errors before proceeding"
 
 def check_form_name(sf):
     if sf.form_name == "...":
@@ -191,6 +177,23 @@ def package_submission(sf):
     # print "form stored in transfer format in: "+file_name
     return sf
 
+
+def unpackage_submission(sf):
+    """ 
+     untested
+    """ 
+    parts=sf.form_name.split(".")
+    my_form_name = parts[0]
+    file_name = cordex_directory+"/"+my_form_name+".json"
+    form_file = open(file_name,"r")
+    json_info = form_file.read(form_json)
+    json_info["__type__"] = "sf",
+    form_file.close()
+    sf = json.loads(json_info)
+   
+    return sf
+
+
 def persist_form(form_object,location):
     p_shelve = shelve.open(location)
     p_shelve['form_object'] = form_object
@@ -207,7 +210,7 @@ def init_form():
     # initialize form object with location of git repo where submission forms are stored (locally)
     repo = Repo(cordex_directory)           
 
-    print "Cordex submission form intitialized"
+    print "Cordex submission form intitialized ......"
     print "(technically a submission form (sf) object as well as a repository (repo object) are created to store the submission form)"
     return sf,repo
 
