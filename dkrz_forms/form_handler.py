@@ -18,6 +18,13 @@ import json
 from config import cordex_directory
 from tests import *
 
+rt_module_present = False
+try:
+   import rt
+   rt_module_present = True
+except ImportError, e:
+   pass
+
 class cordex_submission_form(object):
         """
           simple class object storing submission form values
@@ -53,6 +60,8 @@ class cordex_submission_form(object):
             self.check_status="not checked"
             self.package_path=""
             self.package_name=""
+            self.ticket_id=""
+            self.status="initial"
 
 def json_to_form(json_dict):
   """
@@ -136,7 +145,30 @@ def email_form_info(sf):
 
 
 def form_submission(sf):
-   if is_hosted_service():
+   """
+     - submit to rt system in case RT module is present (True for DKRZ hosted service, probably false for home installations)
+     - submit to "data_submission@dkrz" in case RT is not present but email is configured on installation
+     - print instructions for manual submission in case all above is not working
+   """
+   
+   
+   if rt_module_present:
+      tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
+      ticket_id = tracker.create_ticket(Queue="CORDEX", Subject="CORDEX data submission: "+sf.institution+"--"+sf.lastname, 
+                  Priority= 10,Owner="kindermann@dkrz.de")
+      sf.ticket_id = ticket_id
+      sf.status = "submitted"
+      sf = packet_submission(sf)
+      
+      comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.lastname,files=[(json_file_name,open(sf.package_path,'rb'))])
+      
+      if not comment_submitted: 
+         sf.status = "rt-submission error"
+ 
+
+   # generate updated json file and store in repo
+ 
+   if not(rt_module_present) and is_hosted_service():
       m_part1 = "A CORDEX data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n" 
       m_part2 = "Corresponding email: "+ sf.email +"\n"
       m_part3 = "Submission form url: https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.form_name+".ipynb \n"
