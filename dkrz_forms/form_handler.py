@@ -5,6 +5,19 @@
 # separate out generic form code (e.g. git repo handling) as a super class
 # from which specific form handlers inherit
 
+"""
+=============================================
+Data submission information management tools
+=============================================
+
+Provided functionality:
+
+* Information collection 
+* Information storage in git repo
+* Jupyter notebook interface
+* email / rt request tracker and git integration
+"""
+
 import os,sys,shutil,uuid
 import pkg_resources
 import socket
