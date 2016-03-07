@@ -16,6 +16,26 @@ Provided functionality:
 * Information storage in git repo
 * Jupyter notebook interface
 * email / rt request tracker and git integration
+
+Configuration:
+
+* global variable setting in .dkrz_forms in home directoy
+   * e.g. cordex_directoy = "path" specifies to git reop for project *cordex*
+
+* use as library::
+
+     from dkrz_forms import form_handler
+
+* use in jupyter notebooks::
+
+     from dkrz_forms import form_handler
+     
+     my_project = "CORDEX"
+     form_handler.generate_submission_form(my_first_name,my_last_name,my_email,my_project)
+  
+  copies a jupyter notebook template for project "CORDEX" into your project repository 
+     
+     
 """
 
 import os,sys,shutil,uuid
@@ -28,7 +48,22 @@ import smtplib
 from email.mime.text import MIMEText
 import shelve
 import json
-from config import cordex_directory
+
+# import non standard settings from home folder 
+# e.g. setting for project repositories like cordex_directory
+
+from os.path import expanduser
+home = expanduser("~")
+sys.path.append(home + "/.dkrz_forms")
+
+try: 
+  from myconfig import cordex_directory
+except ImportError:
+  print "Info: myconfig not found"
+  from config import cordex_directory
+
+print "Project directories:", cordex_directory
+# load form checks
 from tests import *
 
 rt_module_present = False
@@ -38,10 +73,69 @@ try:
 except ImportError, e:
    pass
 
+#------------------------------------------------------------------------------------------
+# to be completed .. generalized submission form class based on project dictionary defining to be defined variables
+
+class submission_form(object):
+    """
+    generate a class based on dictionary, defining the project specific variables as well as their default values
+    (motivation: syntactically more easy to set variables in notebook interface)
+    
+    example usage: cordex_submission_form = submission_form(cordex)
+    
+    to do: separate module for project dictionaries and their corresponding tests
+    """
+    
+    def __init__(self, proj_dict):
+        for key,val in proj_dict.iteritems():
+            self.__dict__[key]=val
+
+def init_form(my_project):
+    if my_project == "CORDEX":
+         from project_cordex import cordex_dict
+        
+         #sf = cordex_submission_form()
+         sf = submission_form(cordex_dict)
+         # initialize form object with location of git repo where submission forms are stored (locally)
+         repo = Repo(cordex_directory)           
+
+         print "Cordex submission form intitialized ......"
+         print "(technically a submission form (sf) object as well as a repository (repo object) are created to store the submission form)"
+         return sf,repo        
+
+def generate_submission_form(my_first_name,my_last_name,my_email,my_project):
+    ''' take project notebook template, rename it and copy the result to the 
+        projects submission form directory as a personal copy for the end user
+    '''
+        #working_dir = os.getcwd()
+    if my_project == "CORDEX":
+        my_id = str(uuid.uuid1())
+        my_name = my_first_name+"_"+my_last_name
+        target_file_name=my_project+"__"+my_name+"__submission"+"__"+my_id+".ipynb"
+        target = cordex_directory+"/"+target_file_name
+	   #print target
+	   #print source
+       # new_form_file = open(target,"w")
+        try:
+            source = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
+        except:
+            print " Attention: non standard source form submission forms"
+            source = ("/home/stephan/Repos/ENES-EUDAT/submission_forms/dkrz_forms/Templates/CORDEX_submission_form.ipynb")
+        shutil.copyfile(source,target)
+        print "--------------------------------------------------"
+        print "submission form created, please visit the following link:"
+        print "https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+target_file_name
+    else:
+           print "--------------------------------------------------"
+           print "currently only submission forms for the project \"CORDEX\" are supported"
+           print "no submission form created"
+           print "please re-evaluate cell with proper project information"
+           
+           
 class cordex_submission_form(object):
         """
           simple class object storing submission form values
-          just for simple input of values in notebook interface
+          used to syntactically simplify the input of values via notebook interface
           downstream tools will use the json serialization of the values of this class
         """
 	def __init__(self):
@@ -93,17 +187,37 @@ def form_to_json(sf):
     return s
 
 def json_to_dict(mystring):
+    """
+    :param arg1: json string
+    :type arg1: string     
+    :return: dictionary
+    :rtype: dict
+    
+    """
     mydict = json.loads(mystring)
     return mydict
 
 def cordex_file_info(sf,file_name):
-  # cordex file structure:
-  # VariableName_Domain_GCMModelName_CMIP5ExperimentName_CMIP5EnsembleMember_RCMModelName_RCMVersionID_Frequency[_StartTime - EndTime].nc
-	    cordex_template=["VariableName","Domain","GCMModelName","CMIP5ExperimentName","CMIP5EnsembleMember","RCMModelName","RCMVersionID","Frequency","TimeRange"] 
-	    cordex_example = "tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19710101-19751231.nc"
-	    cordex_example_parts = cordex_example.split("_") 
-	    for i,part in enumerate(cordex_example_parts):
-             print cordex_template[i],":",part
+  """ 
+  :param arg1: file_name
+  :return: status code
+  
+  Print CORDEX file pattern based on agreed CORDEX DRS structure::
+         
+      VariableName_Domain_GCMModelName_CMIP5ExperimentName_CMIP5EnsembleMember_RCMModelName
+      _RCMVersionID_Frequency[_StartTime - EndTime].nc
+
+  ToDo: replace with generic checking function based on e.g. QA code etc. 
+  """
+  cordex_template=["VariableName","Domain","GCMModelName","CMIP5ExperimentName","CMIP5EnsembleMember","RCMModelName","RCMVersionID","Frequency","TimeRange"]
+  cordex_example = "tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19710101-19751231.nc"
+  try:
+     file_parts = file_name.split("_") 
+     for i,part in enumerate(file_parts):
+         print cordex_template[i],":",part
+     status = True
+  except:
+     status = False
 
 
 def check_form_name(sf):
@@ -250,37 +364,5 @@ def get_form(location):
     p_shelve.close()
     return form_object
 
-def init_form():
-    sf = cordex_submission_form()
-    # initialize form object with location of git repo where submission forms are stored (locally)
-    repo = Repo(cordex_directory)           
 
-    print "Cordex submission form intitialized ......"
-    print "(technically a submission form (sf) object as well as a repository (repo object) are created to store the submission form)"
-    return sf,repo
 
-def generate_submission_form(my_first_name,my_last_name,my_email,my_project):
-    ''' take project notebook template, rename it and copy the result to the 
-        projects submission form directory as a personal copy for the end user
-    '''
-        #working_dir = os.getcwd()
-    if my_project == "CORDEX":
-           my_id = str(uuid.uuid1())
-	   my_name = my_first_name+"_"+my_last_name
-	   target_file_name=my_project+"__"+my_name+"__submission"+"__"+my_id+".ipynb"
- 	   target = cordex_directory+"/"+target_file_name
-	   #print target
-	   #print source
-           new_form_file = open(target,"w")
-           source = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
-
-           
-	   shutil.copyfile(source,target)
-           print "--------------------------------------------------"
-           print "submission form created, please visit the following link:"
-           print "https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+target_file_name
-    else:
-           print "--------------------------------------------------"
-           print "currently only submission forms for the project \"CORDEX\" are supported"
-           print "no submission form created"
-           print "please re-evaluate cell with proper project information"

@@ -45,6 +45,7 @@ coverage.xml
 
 # Notebook things
 dkrz_forms/Templates/.ipynb_checkpoints/
+test/.ipynb_checkpoints/
 dkrz_forms.egginfo/
 dist/
 
