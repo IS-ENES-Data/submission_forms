@@ -7,6 +7,8 @@ Created on Sun Mar  6 23:11:02 2016
 ToDo: Merge with variable tests ...
 """
 
+name_space={'sub_cordex':'http://enes.org/entities/cordex/'}
+
 cordex_dict  = {"first_name": "",
               "last_name" : "",
               "email" : "",

@@ -48,6 +48,8 @@ import smtplib
 from email.mime.text import MIMEText
 import shelve
 import json
+import copy
+import base64
 
 # import non standard settings from home folder 
 # e.g. setting for project repositories like cordex_directory
@@ -58,6 +60,8 @@ sys.path.append(home + "/.dkrz_forms")
 
 try: 
   from myconfig import cordex_directory
+  from myconfig import rt_pwd
+  print "Settings from ~/.dkrz_forms imported"
 except ImportError:
   print "Info: myconfig not found"
   from config import cordex_directory
@@ -85,12 +89,29 @@ class submission_form(object):
     
     to do: separate module for project dictionaries and their corresponding tests
     """
-    
+
     def __init__(self, proj_dict):
         for key,val in proj_dict.iteritems():
             self.__dict__[key]=val
+    
+
+def prefix(sf,prefix,keys):
+    ''' Return a copy of a submission object with specified keys prefixed by a namespace 
+    '''
+    pr_sf = copy.deepcopy(sf)
+    for key in keys:
+        pr_sf.__dict__[prefix + ':' + key] = pr_sf.__dict__[key]
+        del(pr_sf.__dict__[key])
+    return pr_sf
+
+
 
 def init_form(my_project):
+    ''' initialize a submission form object based on a project dictionary 
+        and associate it with a git repo, where it is stored and maintained
+
+        to do: move it to a class function !?
+    '''
     if my_project == "CORDEX":
          from project_cordex import cordex_dict
         
@@ -101,7 +122,17 @@ def init_form(my_project):
 
          print "Cordex submission form intitialized ......"
          print "(technically a submission form (sf) object as well as a repository (repo object) are created to store the submission form)"
-         return sf,repo        
+         return sf,repo 
+
+    if my_project =="test":
+         from myconfig import test_dict
+         sf = submission_form(test_dict)
+         repo = Repo(cordex_directory)
+
+         print "Cordex submission form intitialized ......"
+         print "(technically a submission form (sf) object as well as a repository (repo object) are created to store the submission form)"
+         return sf,repo 
+                
 
 def generate_submission_form(my_first_name,my_last_name,my_email,my_project):
     ''' take project notebook template, rename it and copy the result to the 
@@ -132,44 +163,18 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project):
            print "please re-evaluate cell with proper project information"
            
            
-class cordex_submission_form(object):
-        """
-          simple class object storing submission form values
-          used to syntactically simplify the input of values via notebook interface
-          downstream tools will use the json serialization of the values of this class
-        """
-	def __init__(self):
+#class cordex_submission_form(object):
+#        """
+#          simple class object storing submission form values
+#          used to syntactically simplify the input of values via notebook interface
+#          downstream tools will use the json serialization of the values of this class
+#        """
+#	def __init__(self):
             
-            self.first_name = ""
-            self.last_name = ""
-            self.email = ""
-            self.submission_type = ""
-            self.institution = ""
-            self.institute_id = ""
-            self.model_id = ""
-            self.experiment_id = ""
-            self.time_period = ""
-            self.example_file_name = ""
-            self.grid_mapping_name = ""
-            self.grid_as_specified_if_rotated_pole = ""
-            self.data_qc_status = ""
-            self.data_qc_comment = ""
-            self.terms_of_use = ""
-            self.directory_structure = ""
-            self.data_path = ""
-            self.data_information = ""
-            self.exclude_variables_list = ""
-            self.variable_list_day = ""
-            self.variable_list_mon = ""
-            self.variable_list_sem = ""
-            self.variable_list_fx = ""
-            self.uniqueness_of_tracking_id = ""
-            self.check_status="not checked"
-            self.package_path=""
-            self.package_name=""
-            self.ticket_id=""
-            self.status="initial"
-
+#            self.first_name = ""
+#            self.last_name = ""
+#   .... 
+           
 def json_to_form(json_dict):
   """
   to be completed: use json.loads function, example:
@@ -183,7 +188,7 @@ def form_to_json(sf):
     """ 
     serialize form value object to json string
     """
-    s = json.dumps(sf.__dict__)
+    s = json.dumps(sf.__dict__,sort_keys=True, indent=4, separators=(',', ': '))
     return s
 
 def json_to_dict(mystring):
@@ -325,9 +330,9 @@ def form_submission(sf):
 
 def package_submission(sf):
     form_json = form_to_json(sf)
-    parts=sf.form_name.split(".")
-    my_form_name = parts[0]
-    file_name = cordex_directory+"/"+my_form_name+".json"
+    #parts=sf.form_name.split(".")
+    my_form_name = sf.form_name+".json"
+    file_name = cordex_directory+"/"+my_form_name
     form_file = open(file_name,"w+")
     form_file.write(form_json)
     form_file.close()
