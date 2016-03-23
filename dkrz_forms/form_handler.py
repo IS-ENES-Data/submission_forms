@@ -1,6 +1,6 @@
 # submission form jupyter notebook supporting code
 # Author: S. Kindermann
-# Version: 0.1 (Dezember 2015) 
+# Version: 0.2 (March 2015)
 # to do:
 # separate out generic form code (e.g. git repo handling) as a super class
 # from which specific form handlers inherit
@@ -12,7 +12,7 @@ Data submission information management tools
 
 Provided functionality:
 
-* Information collection 
+* Information collection
 * Information storage in git repo
 * Jupyter notebook interface
 * email / rt request tracker and git integration
@@ -29,20 +29,27 @@ Configuration:
 * use in jupyter notebooks::
 
      from dkrz_forms import form_handler
-     
+
      my_project = "CORDEX"
      form_handler.generate_submission_form(my_first_name,my_last_name,my_email,my_project)
-  
-  copies a jupyter notebook template for project "CORDEX" into your project repository 
-     
-     
-"""
 
+  copies a jupyter notebook template for project "CORDEX" into your project repository
+
+
+"""
+# import all necessary libraries
+# * most are in standard python library
+# * others are imported conditionally
+#
 import os,sys,shutil,uuid
 import pkg_resources
 import socket
 from datetime import datetime
-from git import Repo,GitCommandError
+try:
+    from git import Repo,GitCommandError
+except ImportError:
+    print "Warning: please install git module with 'pip install gitpython'"
+    print "otherwise all helper functions for interacting with git will not work"
 join = os.path.join
 import smtplib
 from email.mime.text import MIMEText
@@ -51,24 +58,29 @@ import json
 import copy
 import base64
 
-# import non standard settings from home folder 
+# import non standard settings from home folder
 # e.g. setting for project repositories like cordex_directory
 
 from os.path import expanduser
 home = expanduser("~")
 sys.path.append(home + "/.dkrz_forms")
 
-try: 
+try:
   from myconfig import cordex_directory
   from myconfig import rt_pwd
   print "Settings from ~/.dkrz_forms imported"
+  
 except ImportError:
   print "Info: myconfig not found"
   from config import cordex_directory
 
-print "Project directories:", cordex_directory
+print "Your submission form repository:", cordex_directory
+
+
 # load form checks
 from tests import *
+
+from dkrz_forms import tests
 
 rt_module_present = False
 try:
@@ -78,25 +90,122 @@ except ImportError, e:
    pass
 
 #------------------------------------------------------------------------------------------
-# to be completed .. generalized submission form class based on project dictionary defining to be defined variables
+
+# global variables defined and imported here, which are used in helper functions:
+# cordex_directory, in general: "<project>_directory
+# to be completed .. 
+# generalized submission form class based on project dictionary defining to be defined variables
 
 class submission_form(object):
     """
     generate a class based on dictionary, defining the project specific variables as well as their default values
     (motivation: syntactically more easy to set variables in notebook interface)
-    
-    example usage: cordex_submission_form = submission_form(cordex)
-    
+
+    example usage: cordex_submission_form = submission_form(cordex_dict)
+
     to do: separate module for project dictionaries and their corresponding tests
     """
 
     def __init__(self, proj_dict):
         for key,val in proj_dict.iteritems():
             self.__dict__[key]=val
-    
 
-def prefix(sf,prefix,keys):
-    ''' Return a copy of a submission object with specified keys prefixed by a namespace 
+
+
+def init_form(my_project):
+    ''' initialize a submission form object based on a project dictionary
+        and associate it with a git repo, where it is stored and maintained
+
+        to do: move it to a class function !?
+    '''
+    if my_project == "CORDEX":
+         from project_cordex import cordex_dict
+
+         #sf = cordex_submission_form()
+         sf = submission_form(cordex_dict)
+         # initialize form object with location of git repo where submission forms are stored (locally)
+         sf.sub['repo'] = cordex_directory
+         # empty dictionary containing future submission specific information
+         # like status, repo, etc. 
+        
+         "to do: check availability of cordex_directoy and whether it is git versioned"
+
+         print "Cordex submission form intitialized: sf"
+         print "(For the curious: sf is used to store and manage all your information)"
+        
+         return sf
+
+    if my_project =="test":
+         from myconfig import test_dict
+         sf = submission_form(test_dict)
+        
+         sf.sub['repo'] = cordex_directory
+
+         print "Cordex submission form intitialized: sf"
+         print "(For the curious: sf is used to store and manage all your information)"
+          
+         return sf
+
+
+def generate_submission_form(my_last_name,my_email,my_keyword,my_project):
+    ''' take project notebook template, rename it and copy the result to the
+        projects submission form directory as a personal copy for the end user
+    '''
+        #working_dir = os.getcwd()
+      # global variable cordex_directoy used here .. to be improved ..
+    
+   # from dkrz_forms import form_handler
+    if my_project == "CORDEX":
+        sf = {}
+        sf['project']='CORDEX'
+        sf['last_name']=my_last_name
+        sf['email']=my_email
+        sf['keyword']=my_keyword
+        sf['project']=my_project
+        sf['form_name']=my_last_name+'_'+my_keyword
+        sf['target_file_name']=sf['form_name']+'.ipynb'
+        sf['target_path']=cordex_directory+"/"+sf['target_file_name']
+        sf['id'] = str(uuid.uuid1())
+        # print sf
+
+        try:
+            sf['source_path'] = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
+        except:
+            print " Attention: non standard source form submission forms"
+            sf['source_path'] = "/home/stephan/Repos/ENES-EUDAT/submission_forms/dkrz_forms/Templates/CORDEX_submission_form.ipynb"
+        shutil.copyfile(sf['source_path'],sf['target_path'])
+        print "--------------------------------------------------"
+        print "submission form created, please visit the following link:"
+        # print sf
+        print "https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+sf['target_file_name']
+        ## to do email link to user ....
+        repo = Repo(cordex_directory)
+        sform = dict_to_form(sf)
+        form_save(sform,repo)
+        
+         # get commit hash and add to json package
+        master = repo.head.reference
+        commit_hash = master.commit.hexsha
+        sf['commit_hash'] = commit_hash
+        sform = dict_to_form(sf)
+        form_save(sform,repo)
+           
+       
+        if is_hosted_service():
+           email_form_info(sf)
+           
+    else:
+        print "--------------------------------------------------"
+        print "currently only submission forms for the project \"CORDEX\" are supported"
+        print "no submission form created"
+        print "please re-evaluate cell with proper project information"
+
+
+
+
+
+def prefix_form(sf,prefix,keys):
+    ''' Return a copy of a submission object with specified keys prefixed by a namespace
     '''
     pr_sf = copy.deepcopy(sf)
     for key in keys:
@@ -104,88 +213,27 @@ def prefix(sf,prefix,keys):
         del(pr_sf.__dict__[key])
     return pr_sf
 
+# Functions to convert form objects into dictionaries into json files and back
 
+class Struct(object):
+    def __init__(self, adict):
+        """Convert a dictionary to a class
 
-def init_form(my_project):
-    ''' initialize a submission form object based on a project dictionary 
-        and associate it with a git repo, where it is stored and maintained
+        @param :adict Dictionary
+        """
+        self.__dict__.update(adict)
+        for k, v in adict.items():
+           if isinstance(v, dict):
+              self.__dict__[k] = Struct(v)
 
-        to do: move it to a class function !?
-    '''
-    if my_project == "CORDEX":
-         from project_cordex import cordex_dict
-        
-         #sf = cordex_submission_form()
-         sf = submission_form(cordex_dict)
-         # initialize form object with location of git repo where submission forms are stored (locally)
-         repo = Repo(cordex_directory)           
-
-         print "Cordex submission form intitialized ......"
-         print "(technically a submission form (sf) object as well as a repository (repo object) are created to store the submission form)"
-         return sf,repo 
-
-    if my_project =="test":
-         from myconfig import test_dict
-         sf = submission_form(test_dict)
-         repo = Repo(cordex_directory)
-
-         print "Cordex submission form intitialized ......"
-         print "(technically a submission form (sf) object as well as a repository (repo object) are created to store the submission form)"
-         return sf,repo 
-                
-
-def generate_submission_form(my_first_name,my_last_name,my_email,my_project):
-    ''' take project notebook template, rename it and copy the result to the 
-        projects submission form directory as a personal copy for the end user
-    '''
-        #working_dir = os.getcwd()
-    if my_project == "CORDEX":
-        my_id = str(uuid.uuid1())
-        my_name = my_first_name+"_"+my_last_name
-        target_file_name=my_project+"__"+my_name+"__submission"+"__"+my_id+".ipynb"
-        target = cordex_directory+"/"+target_file_name
-	   #print target
-	   #print source
-       # new_form_file = open(target,"w")
-        try:
-            source = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
-        except:
-            print " Attention: non standard source form submission forms"
-            source = ("/home/stephan/Repos/ENES-EUDAT/submission_forms/dkrz_forms/Templates/CORDEX_submission_form.ipynb")
-        shutil.copyfile(source,target)
-        print "--------------------------------------------------"
-        print "submission form created, please visit the following link:"
-        print "https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+target_file_name
-    else:
-           print "--------------------------------------------------"
-           print "currently only submission forms for the project \"CORDEX\" are supported"
-           print "no submission form created"
-           print "please re-evaluate cell with proper project information"
-           
-           
-#class cordex_submission_form(object):
-#        """
-#          simple class object storing submission form values
-#          used to syntactically simplify the input of values via notebook interface
-#          downstream tools will use the json serialization of the values of this class
-#        """
-#	def __init__(self):
-            
-#            self.first_name = ""
-#            self.last_name = ""
-#   .... 
-           
-def json_to_form(json_dict):
+def dict_to_form(mydict):
   """
-  to be completed: use json.loads function, example:
-
-  user = json.loads('{"__type__": "User", "name": "John Smith", "username": "jsmith"}')
-  print user['name']
-  print user['username']
+   converts a recursive dictionary to a python object
   """
+  return Struct(mydict)
 
 def form_to_json(sf):
-    """ 
+    """
     serialize form value object to json string
     """
     s = json.dumps(sf.__dict__,sort_keys=True, indent=4, separators=(',', ': '))
@@ -194,55 +242,49 @@ def form_to_json(sf):
 def json_to_dict(mystring):
     """
     :param arg1: json string
-    :type arg1: string     
+    :type arg1: string
     :return: dictionary
     :rtype: dict
-    
+
     """
     mydict = json.loads(mystring)
     return mydict
 
-def cordex_file_info(sf,file_name):
-  """ 
-  :param arg1: file_name
-  :return: status code
-  
-  Print CORDEX file pattern based on agreed CORDEX DRS structure::
-         
-      VariableName_Domain_GCMModelName_CMIP5ExperimentName_CMIP5EnsembleMember_RCMModelName
-      _RCMVersionID_Frequency[_StartTime - EndTime].nc
+def json_to_form(mystring):
+    return dict_to_form(json_to_dict(mystring))
 
-  ToDo: replace with generic checking function based on e.g. QA code etc. 
-  """
-  cordex_template=["VariableName","Domain","GCMModelName","CMIP5ExperimentName","CMIP5EnsembleMember","RCMModelName","RCMVersionID","Frequency","TimeRange"]
-  cordex_example = "tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19710101-19751231.nc"
-  try:
-     file_parts = file_name.split("_") 
-     for i,part in enumerate(file_parts):
-         print cordex_template[i],":",part
-     status = True
-  except:
-     status = False
+#----------------------------------------------------------------------------   
 
+# functions to store form objects in git repo
 
-def check_form_name(sf):
-    if sf.form_name == "...":
-        return False
-    else:
-        return True
-
-def form_save(sf,repo):
+def form_save(sf):
     """
-     Commit form and associated json data package to git repo 
+     Commit form and associated json data package to git repo
     """
+    #print "input for formsave", sf.__dict__
+    repo = Repo(sf.sub['repo'])
+    sf.sub['status']='stored',
+    sf.sub['timestamp']=str(datetime.now())
     sf = package_submission(sf)
-    if check_form_name(sf):
-       try: 
-           repo.git.add(sf.package_name)
-           repo.git.add(sf.form_name)
-           repo.git.commit(message='Submission form for user '+sf.first_name+"_"+sf.last_name+' saved in git repository:'+sf.form_name)
-           print "submission form "+sf.form_name+"\n stored in local git repository "
-           print "submission data "+sf.package_name+"\n stored in local git repository "
+    #if check_form_name(sf):
+    if True:
+       try:
+           ## to do: change this to: git add last_name__pre_name* 
+           ## ..... - reuse form for mulltiple transmissions ?
+           ## to do: first commit notebook - remember commit sha1 - add sha1 to json
+           ## and commit json ... 
+           ## sha = repo.head.object.hexsha
+           ## later: may be helper function to retrieve notebook according to sha1 value of
+           ## corresponding submitted json ...
+           result = repo.git.add(sf.form_name+'*')
+           #print result 
+          
+           commit = repo.git.commit(message='Submission form for user '+sf.last_name+' saved in repository:'+sf.form_name)
+           #print commit         
+        
+           print "your submission form "+sf.form_name+"\n was stored in repository "
+           print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
+          
        except GitCommandError:
            print "Error ! Please correct the form name (best copy and paste name from top of this page and add .ipynb extension)"
 
@@ -282,26 +324,27 @@ def form_submission(sf):
      - submit to "data_submission@dkrz" in case RT is not present but email is configured on installation
      - print instructions for manual submission in case all above is not working
    """
-   
-   
+
+
    if rt_module_present:
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
-      ticket_id = tracker.create_ticket(Queue="CORDEX", Subject="CORDEX data submission: "+sf.institution+"--"+sf.lastname, 
+      ticket_id = tracker.create_ticket(Queue="CORDEX", Subject="CORDEX data submission: "+sf.institution+"--"+sf.lastname,
                   Priority= 10,Owner="kindermann@dkrz.de")
-      sf.ticket_id = ticket_id
-      sf.status = "submitted"
+      sf.sub['ticket_id'] = ticket_id
+      sf.sub['ticket_url'] = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
+      sf.sub['status']= "submitted"
       sf = packet_submission(sf)
-      
-      comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.lastname,files=[(json_file_name,open(sf.package_path,'rb'))])
-      
-      if not comment_submitted: 
-         sf.status = "rt-submission error"
- 
+
+      comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.lastname,files=[(json_file_name,open(sf.sub['package_path'],'rb'))])
+
+      if not comment_submitted:
+         sf.sub['status']= "rt-submission error"
+
 
    # generate updated json file and store in repo
- 
+
    if not(rt_module_present) and is_hosted_service():
-      m_part1 = "A CORDEX data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n" 
+      m_part1 = "A CORDEX data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n"
       m_part2 = "Corresponding email: "+ sf.email +"\n"
       m_part3 = "Submission form url: https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.form_name+".ipynb \n"
       m_part4 = "The submission is commited to the CORDEX submission form git repository with the name "+sf.form_name +"\n"
@@ -318,15 +361,15 @@ def form_submission(sf):
       s = smtplib.SMTP('localhost')
       s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
       s.quit()
-  
+
       #  origin = repo.remotes.origin
       #  origin.push()
       #  print "Data submission form sent"
       #  print "A confirmation message will be sent to you"
    else:
       print "Please send form: "+cordex_directory+"/"+sf.form_name +"\n"
-      print "as well as data package: "+sf.package_path+"\n"
-      print "to data@dkrz.de with subject \"Cordex data submission form \"" 
+      print "as well as data package: "+sf.sub['package_path']+"\n"
+      print "to data@dkrz.de with subject \"Cordex data submission form \""
 
 def package_submission(sf):
     form_json = form_to_json(sf)
@@ -336,16 +379,16 @@ def package_submission(sf):
     form_file = open(file_name,"w+")
     form_file.write(form_json)
     form_file.close()
-    sf.package_path=file_name
-    sf.package_name=my_form_name+".json"
+    sf.sub['package_path']=file_name
+    sf.sub['package_name']=my_form_name
     # print "form stored in transfer format in: "+file_name
     return sf
 
 
 def unpackage_submission(sf):
-    """ 
+    """
      untested
-    """ 
+    """
     parts=sf.form_name.split(".")
     my_form_name = parts[0]
     file_name = cordex_directory+"/"+my_form_name+".json"
@@ -354,7 +397,7 @@ def unpackage_submission(sf):
     json_info["__type__"] = "sf",
     form_file.close()
     sf = json.loads(json_info)
-   
+
     return sf
 
 

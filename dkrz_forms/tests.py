@@ -88,11 +88,19 @@ class DictTable(dict):
     # Overridden dict class which takes a dict in the form {'a': 2, 'b': 3},
     # and renders an HTML Table in IPython Notebook.
     def _repr_html_(self):
-        html = ["<table width=100%>"]
+        html = []
+        if not self['valid_submission']:
+            html.append("<p style=color:red;> Attention: your submission is incomplete and not yet ready for submission </p>")
+            html.append("<p> Please see the following test summary: </p>")
+        else:
+            html.append("<p> Your submission is ready for submission </p>")
+            
+        html.append('<table width=100%>')
         html.append("<tr>")
         html.append("<td><b>Value<b></td>")
         html.append("<td><b>Check<b>Result</td>")
         html.append("</tr>")
+        
         for key, value in sorted(self.items()):
             html.append("<tr>")
             html.append("<td>{0}</td>".format(key))
@@ -128,15 +136,40 @@ def check_submission(sf):
     checks["variable_list_day"] = test_subset(variable_list_day,sf.variable_list_day)
     checks["variable_list_mon"] = test_subset(variable_list_mon, sf.variable_list_mon)
     checks["variable_list_sem"] = test_subset(variable_list_sem, sf.variable_list_sem)
-    checks["variable_list_fx"] = test_subset(variable_list_fx, sf.variable_list_fx)   
+    checks["variable_list_fx"] = test_subset(variable_list_fx, sf.variable_list_fx)
+    checks["valid_submission"] = valid_submission(checks) 
     return checks
 
 def valid_submission(checks):
-    for key, val in checks:
+    for key, val in checks.iteritems():
        if not val: 
           return 0
        return 1
 
 
+#---------------------------------
+# Project specific tests .. to be generalized ..
+def test_file_structure(sf,file_name):
+  """ 
+  :param arg1: file_name
+  :return: status code
+  
+  Print CORDEX file pattern based on agreed CORDEX DRS structure::
+         
+      VariableName_Domain_GCMModelName_CMIP5ExperimentName_CMIP5EnsembleMember_RCMModelName
+      _RCMVersionID_Frequency[_StartTime - EndTime].nc
 
-
+  ToDo: replace with generic checking function based on e.g. QA code etc. 
+  """
+  cordex_template=["VariableName","Domain","GCMModelName","CMIP5ExperimentName","CMIP5EnsembleMember","RCMModelName","RCMVersionID","Frequency","TimeRange"]
+  cordex_example = "tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19710101-19751231.nc"
+  print "Structure: -------"  
+  print "DRS key: DRS value"
+  print "------------------"  
+  try:
+     file_parts = file_name.split("_") 
+     for i,part in enumerate(file_parts):
+         print cordex_template[i],":",part
+     status = True
+  except:
+     status = False
