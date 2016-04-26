@@ -83,6 +83,11 @@ def list_intersection(list_a,list_b):
 def test_subset(list_a,list_b):
     return set(list_a) <= set(list_b)
 
+def check_message(value):
+    if value == 0 or value == False:
+        return "<td style=color:red;>{0}</td>".format("ERROR")
+    else:
+        return "<td style=color:green;>{0}</td>".format("OK")
 
 class DictTable(dict):
     # Overridden dict class which takes a dict in the form {'a': 2, 'b': 3},
@@ -104,7 +109,7 @@ class DictTable(dict):
         for key, value in sorted(self.items()):
             html.append("<tr>")
             html.append("<td>{0}</td>".format(key))
-            html.append("<td>{0}</td>".format(value))
+            html.append(check_message(value))
             html.append("</tr>")
         html.append("</table>")
         return ''.join(html)
@@ -141,10 +146,11 @@ def check_submission(sf):
     return checks
 
 def valid_submission(checks):
+    summary = True
     for key, val in checks.iteritems():
-       if not val: 
-          return 0
-       return 1
+       summary = (summary and val)
+       
+    return summary
 
 
 #---------------------------------

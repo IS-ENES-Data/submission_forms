@@ -28,7 +28,8 @@ submission = {
              "package_path" :"",
              "package_name" :"",
              "ticket_id" :"",
-             "status" :"initial" 
+             "status" :"initial",
+             "form_name":""
              }
 
 # 2. step: information related to data ingest phase             
