@@ -71,7 +71,7 @@ try:
   print "Settings from ~/.dkrz_forms imported"
   
 except ImportError:
-  print "Info: myconfig not found"
+  print "Info: myconfig not found - taking default config "
   from config import cordex_directory
 
 print "Your submission form repository:", cordex_directory
@@ -437,7 +437,6 @@ def unpackage_submission(sf):
     sf = json.loads(json_info)
 
     return sf
-:
 
 def persist_form(form_object,location):
     p_shelve = shelve.open(location)
