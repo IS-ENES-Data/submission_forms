@@ -437,7 +437,7 @@ def unpackage_submission(sf):
     sf = json.loads(json_info)
 
     return sf
-
+:
 
 def persist_form(form_object,location):
     p_shelve = shelve.open(location)

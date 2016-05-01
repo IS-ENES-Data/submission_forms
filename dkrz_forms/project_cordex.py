@@ -21,16 +21,27 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
 
         
 submission = {
-             "timestamp": "",
-             'responsible_person' : "pl",
-             "repo": "",
-             "check_status" :"not checked",
-             "package_path" :"",
-             "package_name" :"",
-             "ticket_id" :"",
-             "status" :"initial",
-             "form_name":""
-             }
+            'status': 'filling', #  filling -> stored -> ready -> submitted / submission_error 
+            'last_name' : '',
+            'first_name' : '',
+            'key_word': '',
+            'email': '',
+            'form_name': '',
+            'form_path: '',
+            'package_name':'', # json package
+            'package_path': '', 
+            'repo': '',
+            'ticket_id' : 0,
+            'checks_done' : "none",
+            'timestamp' : "",
+            'id': '',
+            'source_path' : '', # filled with path of original template form
+            'responsible_person': "",
+            'form_version': '' # version of form template / form tool
+            'ticket_id':'',
+            'ticket_url':'',
+            'comment': '', 
+            }
 
 # 2. step: information related to data ingest phase             
 #          - associated rt ticket(s) or ticket comments
@@ -39,29 +50,45 @@ submission = {
 # 
 
 ingest = {
-             'responsible_person' : "pl",
+             "status": "", 
+             "timestamp_started":"",
+             "timestamp_finished":"",
+             "comment":"", 
              "target_directory": "",
              "ticket_id": ""
+             "responsible_person",
+             "dir_file_pattern": "", #glob file pattern for ingested data
              }   
              
 # 3. step: information related to data quality assurance phase:
 #             - ----            
              
 quality_assurance = {
-             'responsible_person' : "hdh",
              "status": "",
+             "timestamp_started":"",
+             "timestamp_finished":"",
+             "comment":"", 
+             "target_directory": "", # qa reports
              "ticket_id": "",
-             "report_dir": ""
+             "responsible_person": '',
+             "qa_tool_version": '',
+             "follow_up_ticket": '', # qa feedback to users, follow up actions
              }
+
+
 # 4. step: information related to ESGF publication phase  
 #           -              
              
 publication = {
-             'responsible_person' : "kb",
              "status": "",
+             "comment": "",
+             "timestamp": "",
+             "search_string" : "", # cog url including facet search string
              "ticket_id": "", 
-             "facet_search_string": ""
+             "facet_string": "", # e.g. project=A&model=B& ....
+             "pid_collections" = ""
 }             
+
 
          
 
