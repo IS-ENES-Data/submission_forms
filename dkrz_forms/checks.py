@@ -1,20 +1,20 @@
 import re
 # from collections import OrderedDict
 
-def test_email(email):
+def check_email(email):
     if re.match(""r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",email) != None:
        return 1
     else: 
        return 0
 
-def test_valid_string(my_string):
+def check_valid_string(my_string):
     if not my_string:
        return 0 
     if my_string == "...":
        return 0
     return 1
 
-def test_in_list(my_string,list):
+def check_in_list(my_string,list):
     if my_string in submission_types: 
        return 1
     else:
@@ -80,7 +80,7 @@ variable_list_fx = [
 def list_intersection(list_a,list_b):
     return list(set(list_a) - set(list_b))
     
-def test_subset(list_a,list_b):
+def check_subset(list_a,list_b):
     return set(list_a) <= set(list_b)
 
 def check_message(value):
@@ -96,7 +96,7 @@ class DictTable(dict):
         html = []
         if not self['valid_submission']:
             html.append("<p style=color:red;> Attention: your submission is incomplete and not yet ready for submission </p>")
-            html.append("<p> Please see the following test summary: </p>")
+            html.append("<p> Please see the following check summary: </p>")
         else:
             html.append("<p> Your submission is ready for submission </p>")
             
@@ -122,26 +122,26 @@ def check_result(val):
 
 def check_submission(sf):
     checks = {} 
-    checks["first name"] = test_valid_string(sf.first_name)
-    checks["last name"] = test_valid_string(sf.last_name)
-    checks["email"] = test_email(sf.email) 
-    checks["submission_type"] = test_in_list(sf.submission_type,submission_types)
-    checks["institution"] = test_valid_string(sf.institution)
-    checks["institute_id"] = test_valid_string(sf.institute_id)
-    checks["model_id"] = test_valid_string(sf.model_id)
-    checks["experiment_id"] = test_valid_string(sf.experiment_id)
-    checks["time_period"] = test_valid_string(sf.time_period)
-    checks["grid_mapping_name"] = test_valid_string(sf.grid_mapping_name)
-    checks["grid_as_specified_if_rotated_pole"] = test_in_list(sf.grid_as_specified_if_rotated_pole,yes_or_no)
-    checks["data_qc_status"] = test_in_list(sf.data_qc_status,quality_labels)
-    checks["terms_of_use"] = test_in_list(sf.terms_of_use,terms_of_use)
-    checks["directory_structure"] = test_in_list(sf.directory_structure,["compliant","non-compliant"])
-    checks["exclude_variables_list"] = test_valid_string(sf.exclude_variables_list)
-    checks["uniqueness_of_tracking_id"] = test_in_list(sf.uniqueness_of_tracking_id,yes_or_no)
-    checks["variable_list_day"] = test_subset(variable_list_day,sf.variable_list_day)
-    checks["variable_list_mon"] = test_subset(variable_list_mon, sf.variable_list_mon)
-    checks["variable_list_sem"] = test_subset(variable_list_sem, sf.variable_list_sem)
-    checks["variable_list_fx"] = test_subset(variable_list_fx, sf.variable_list_fx)
+    checks["first name"] = check_valid_string(sf.first_name)
+    checks["last name"] = check_valid_string(sf.last_name)
+    checks["email"] = check_email(sf.email) 
+    checks["submission_type"] = check_in_list(sf.submission_type,submission_types)
+    checks["institution"] = check_valid_string(sf.institution)
+    checks["institute_id"] = check_valid_string(sf.institute_id)
+    checks["model_id"] = check_valid_string(sf.model_id)
+    checks["experiment_id"] = check_valid_string(sf.experiment_id)
+    checks["time_period"] = check_valid_string(sf.time_period)
+    checks["grid_mapping_name"] = check_valid_string(sf.grid_mapping_name)
+    checks["grid_as_specified_if_rotated_pole"] = check_in_list(sf.grid_as_specified_if_rotated_pole,yes_or_no)
+    checks["data_qc_status"] = check_in_list(sf.data_qc_status,quality_labels)
+    checks["terms_of_use"] = check_in_list(sf.terms_of_use,terms_of_use)
+    checks["directory_structure"] = check_in_list(sf.directory_structure,["compliant","non-compliant"])
+    checks["exclude_variables_list"] = check_valid_string(sf.exclude_variables_list)
+    checks["uniqueness_of_tracking_id"] = check_in_list(sf.uniqueness_of_tracking_id,yes_or_no)
+    checks["variable_list_day"] = check_subset(variable_list_day,sf.variable_list_day)
+    checks["variable_list_mon"] = check_subset(variable_list_mon, sf.variable_list_mon)
+    checks["variable_list_sem"] = check_subset(variable_list_sem, sf.variable_list_sem)
+    checks["variable_list_fx"] = check_subset(variable_list_fx, sf.variable_list_fx)
     checks["valid_submission"] = valid_submission(checks) 
     return checks
 
@@ -154,8 +154,8 @@ def valid_submission(checks):
 
 
 #---------------------------------
-# Project specific tests .. to be generalized ..
-def test_file_structure(sf,file_name):
+# Project specific checks .. to be generalized ..
+def check_file_structure(sf,file_name):
   """ 
   :param arg1: file_name
   :return: status code

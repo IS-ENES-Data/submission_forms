@@ -78,9 +78,9 @@ print "Your submission form repository:", cordex_directory
 
 
 # load form checks
-from tests import *
+from checks import *
 
-from dkrz_forms import tests
+from dkrz_forms import checks
 
 rt_module_present = False
 try:
@@ -89,6 +89,7 @@ try:
 except ImportError, e:
    pass
 
+from config import workflow_steps
 #------------------------------------------------------------------------------------------
 
 # global variables defined and imported here, which are used in helper functions:
@@ -103,7 +104,7 @@ class submission_form(object):
 
     example usage: cordex_submission_form = submission_form(cordex_dict)
 
-    to do: separate module for project dictionaries and their corresponding tests
+    to do: separate module for project dictionaries and their coresponding checks
     """
 
     def __init__(self, proj_dict):
@@ -151,7 +152,7 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
         
          sf.sub['repo'] = cordex_directory
 
-         print "Cordex submission form intitialized: sf"
+         print "Cordex test submission form intitialized: sf"
          print "(For the curious: sf is used to store and manage all your information)"
           
          return sf
@@ -168,7 +169,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
     if my_project == "CORDEX":
         
           from project_cordex import cordex_dict
-        
+          
           sf = submission_form(cordex_dict)
           # initialize form object with location of git repo where submission forms are stored (locally)
           sf.sub['repo'] = cordex_directory
@@ -285,6 +286,15 @@ def json_to_dict(mystring):
     """
     mydict = json.loads(mystring)
     return mydict
+    
+def jsonfile_to_dict(jsonfilename):
+    jsonfile = open(jsonfilename,"r")
+    json_info = jsonfile.read()
+    jsonfile.close()
+    json_dict = json.loads(json_info)
+    return json_dict
+    
+
 
 def json_to_form(mystring):
     return dict_to_form(json_to_dict(mystring))
@@ -297,9 +307,9 @@ def form_save(sf):
     """
      Commit form and associated json data package to git repo
     """
-    #print "input for formsave", sf.__dict__
+   #print "input for formsave", sf.__dict__
     repo = Repo(sf.sub['repo'])
-    sf.sub['status'] = "stored"
+   #sf.sub['status'] = "stored"
     sf.sub['timestamp']=str(datetime.now())
    # .. should be defined prior to "save"
    # sf.sub['form_name']=sf.last_name+"_"+sf.sub['keyword']
@@ -430,7 +440,6 @@ def unpackage_submission(sf):
     parts=sf.form_name.split(".")
     my_form_name = parts[0]
     file_name = cordex_directory+"/"+my_form_name+".json"
-    form_file = open(file_name,"r")
     json_info = form_file.read(form_json)
     json_info["__type__"] = "sf",
     form_file.close()
@@ -449,5 +458,12 @@ def get_form(location):
     p_shelve.close()
     return form_object
 
-
+# load workflow steps 
+def get_workflow_steps(): 
+    submission = dict_to_form(workflow_steps.submission) 
+    ingest = dict_to_form(workflow_steps.ingest)  
+    checking = dict_to_form(workflow_steps.quality_assurance) 
+    publish = dict_to_form(workflow_steps.publication) 
+    
+    return (submission,ingest,checking,publish)
 
