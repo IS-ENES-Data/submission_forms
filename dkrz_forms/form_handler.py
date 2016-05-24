@@ -67,7 +67,7 @@ sys.path.append(home + "/.dkrz_forms")
 
 try:
   from myconfig import cordex_directory
-  from myconfig import rt_pwd
+#  from myconfig import rt_pwd
   print "Settings from ~/.dkrz_forms imported"
   
 except ImportError:
@@ -89,7 +89,7 @@ try:
 except ImportError, e:
    pass
 
-from config import workflow_steps
+# from config import workflow_steps
 #------------------------------------------------------------------------------------------
 
 # global variables defined and imported here, which are used in helper functions:
@@ -121,7 +121,7 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
          sf.sub.form_name=my_last_name+'_'+my_keyword
          sf.subform_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
          
-         sf.sub.'id' = str(uuid.uuid1())
+         sf.sub.id = str(uuid.uuid1())
             # print sf
         
          "to do: check availability of cordex_directoy and whether it is git versioned"
@@ -133,7 +133,7 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
 
     if my_project =="test":
          from myconfig import test_dict
-         sf = submission_form(test_dict)
+         sf = Form(test_dict)
         
          sf.sub.repo = cordex_directory
 
@@ -156,8 +156,8 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           from project_cordex import cordex_dict
           
           sf = Form(cordex_dict)
-          print "Initialized Cordex form object"
-          print sf.__dict__
+          print "Form Handler: Initialized Cordex form object"
+          # print sf.__dict__
           # initialize form object with location of git repo where submission forms are stored (locally)
           sf.sub.repo = cordex_directory
           sf.project='CORDEX'
@@ -175,21 +175,22 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
               sf.subsource_path = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
           except:
               sf.sub.source_path = "/home/stephan/Repos/ENES-EUDAT/submission_forms/dkrz_forms/Templates/CORDEX_submission_form.ipynb"
-              print "Attention: non standard source for submission forms, taking:", sf.sub.source_path
+              print "Form Handler: Attention !  non standard source for submission forms"
+              print "---taking:", sf.sub.source_path
               
           
           #print sf.__dict__
          
-          print "copy from:", sf.sub.source_path
-          print "to: ", sf.sub.form_path
+          print "--- copy from:", sf.sub.source_path
+          print "--- to: ", sf.sub.form_path
           shutil.copyfile(sf.sub.source_path,sf.sub.form_path)
-          print "--------------------------------------------------"
-          print "submission form created, please visit the following link:"
+          print "--------------------------------------------------------------------"
+          print "    submission form created, please visit the following link:"
           # print sf
-          print "https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+sf.sub.form_name
+          print "    https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+sf.sub.form_name
           ## to do email link to user ....
-          print "--------------------------------------------------"
-          save_form(sf)
+          print "--------------------------------------------------------------------"
+          save_form(sf, "Form Handler: Cordex form - initial generation - quiet" )
         
           repo = Repo(sf.sub.repo)
           # get commit hash and add to json package
@@ -197,7 +198,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           commit_hash = master.commit.hexsha
           sf.sub.commit_hash = commit_hash
            
-          save_form(sf)
+          save_form(sf, "Form Handler: Cordex form - initial generation - commit hash added - quiet")
                
            
           if is_hosted_service():
@@ -299,18 +300,24 @@ def json_to_form(mystring):
 
 # functions to store form objects in git repo
 
-def save_form(sf):
+def save_form(sf,comment):
     """
      Commit form and associated json data package to git repo
     """
-   #print "input for formsave", sf.__dict__
+    comment_on = True
+    if comment.endswith("quiet"):
+      comment_on = False
+   
+   
+    #print "input for formsave", sf.__dict__
     repo = Repo(sf.sub.repo)
-   #sf.sub['status'] = "stored"
+    #sf.sub['status'] = "stored"
     sf.sub.timestamp = str(datetime.now())
-   # .. should be defined prior to "save"
-   # sf.sub['form_name']=sf.last_name+"_"+sf.sub['keyword']
-    
-    sf = package_submission(sf)
+    # .. should be defined prior to "save"
+    # sf.sub['form_name']=sf.last_name+"_"+sf.sub['keyword']
+    if comment_on: 
+       print "\n\nForm Handler - save form status message:"
+    sf = package_submission(sf,comment_on)
    
     #if check_form_name(sf):
     if True:
@@ -324,11 +331,13 @@ def save_form(sf):
            ## corresponding submitted json ...
            result = repo.git.add(sf.sub.form_name+'*')
            #print result 
-          
-           commit = repo.git.commit(message='Submission form for user '+sf.last_name+' saved in repository:'+sf.sub.form_name)
-           #print commit         
-           print "\n\n Status message:"
-           print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
+           
+           commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " + comment
+           commit = repo.git.commit(message=commit_message)
+           if comment_on:
+               print " --- commit message:"+ commit         
+           
+           #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
            #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
           
        except GitCommandError:
@@ -376,15 +385,15 @@ def form_submission(sf):
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
       ticket_id = tracker.create_ticket(Queue="CORDEX", Subject="CORDEX data submission: "+sf.institution+"--"+sf.lastname,
                   Priority= 10,Owner="kindermann@dkrz.de")
-      sf.sub['ticket_id'] = ticket_id
-      sf.sub['ticket_url'] = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
-      sf.sub['status']= "submitted"
-      sf = packet_submission(sf)
-
+      sf.sub.ticket_id = ticket_id
+      sf.sub.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
+      sf.substatus = "submitted"
+      sf = package_submission(sf)
+      json_file_name = sf.sub.form_name+".json"
       comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.lastname,files=[(json_file_name,open(sf.sub['package_path'],'rb'))])
 
       if not comment_submitted:
-         sf.sub['status']= "rt-submission error"
+         sf.sub.status = "rt-submission error"
 
 
    # generate updated json file and store in repo
@@ -414,10 +423,10 @@ def form_submission(sf):
       #  print "A confirmation message will be sent to you"
    else:
       print "Please send form: "+cordex_directory+"/"+sf.form_name +"\n"
-      print "as well as data package: "+sf.sub['package_path']+"\n"
+      print "as well as data package: "+sf.sub.package_path+"\n"
       print "to data@dkrz.de with subject \"Cordex data submission form \""
 
-def package_submission(sf):
+def package_submission(sf,comment_on):
     
     form_json = form_to_json(sf)
     #parts=sf.form_name.split(".")
@@ -428,23 +437,10 @@ def package_submission(sf):
     form_file.close()
     sf.sub.package_path = file_name
     sf.sub.package_name = my_form_name
-    print "form stored in transfer format in: "+file_name
+    if comment_on:
+       print " --- form stored in transfer format in: "+file_name
     return sf
 
-
-def unpackage_submission(sf):
-    """
-     untested
-    """
-    parts=sf.form_name.split(".")
-    my_form_name = parts[0]
-    file_name = cordex_directory+"/"+my_form_name+".json"
-    json_info = form_file.read(form_json)
-    json_info["__type__"] = "sf",
-    form_file.close()
-    sf = json.loads(json_info)
-
-    return sf
 
 def persist_form(form_object,location):
     p_shelve = shelve.open(location)
@@ -466,15 +462,6 @@ def load_workflow_form(workflow_json_file):
     
     return workflow
 
-# 
-def save_workflow_form(workflow_form):
-    new_workflow_form = copy.deepcopy(workflow_form)
-    new_workflow_form.sub = workflow_form.sub.__dict__
-    new_workflow_form.ing = workflow_form.ing.__dict__
-    new_workflow_form.qua = workflow_form.qua.__dict__
-    new_workflow_form.pub = workflow_form.pub.__dict__
-    print "------------------------------------------save workflow"
-    #print workflow_form.__dict__
-    save_form(new_workflow_form) 
-    return workflow_form
+# to do: functions to display status info of submission objects (and next steps in workflow)
+
 

@@ -7,6 +7,9 @@ Created on Sun Mar  6 23:11:02 2016
 ToDo: Merge with variable tests ...
 """
 # name spaces for w3c prov transformation of submission provenance information
+
+workflow_steps_version = "1.0"
+
 name_space={'sub':'http://enes.org/entities/ingest-workflow#',
             'ing':'http://enes.org/entities/ingest-workflow#',
             'che':'http://enes.org/entities/ingest-workflow#',
@@ -40,6 +43,7 @@ submission = {
             'form_version': '', # version of form template / form tool
             'ticket_url':'',
             'comment': '', 
+            'review_comment':''
             }
 
 # 2. step: information related to data ingest phase             

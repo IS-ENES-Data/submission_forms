@@ -69,7 +69,7 @@ def test_formcompletion():
     submission.status = "checked"
     submission.check_status = "consistency_checked"
    
-    form_handler.save_form(workflow_form) 
+    form_handler.save_form(workflow_form, "test: formcompletion()") 
     #test_dict['sub']['status'] = "checked"
     #test_dict['sub']['check_status'] = "consistency_checked"
     #test_form = form_handler.dict_to_form(test_dict)
@@ -93,7 +93,7 @@ def test_formsubmission():
     submission.ticket_id = 22949
     submission.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form, "test: formsubmission()")
     
     assert workflow_form.sub.ticket_id == 22949
     
@@ -106,7 +106,7 @@ def test_formcheck_start():
     submission.status = "form_checking"
     submission.responsible_person = "lenzen"
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form, "test: formcheck_start()")
     
     assert submission.status == "form_checking"
     
@@ -118,7 +118,7 @@ def test_formcheck_end():
     submission.status = "finalised"
     submission.comment = "terms of use clarified"
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form, "test: formcheck_end()")
     
     assert submission.status == "finalised"   
     
@@ -130,7 +130,7 @@ def test_dataingest_start():
     ingest.comment = " copying data from ... to ... using ... "
     ingest.target_directory = "/work/kd0956/cmip5/ingest/cmip5/mpi-m/test"
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form,"test: dataingest_start()")
     
     assert ingest.status == "ingesting"
     
@@ -143,7 +143,7 @@ def test_dataingest_end():
     ingest.comment = ingest.comment + " time: about 2 hours, volume: about .. GB "
     ingest.drs_file_pattern = "project:cmip5 | experiment:test| variables: tua,uav"
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form,"test:dataingest_end()")
     
     assert ingest.status == "ingested"  
     
@@ -157,7 +157,7 @@ def test_datacheck_start():
     qua.comment =  "on lizzard "
     qua.qa_tool_version = "dkrz_qa_v09"
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form, "test: datacheck_start()")
    
     assert qua.status == "checking" 
     
@@ -167,7 +167,7 @@ def test_datacheck_end():
     qua.status = "checked"
     qua.target_directory = "/work/KD0956/qa_results/cmip5/mpi-m/test"
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form, "test: datacheck_end()")
     
     assert qua.status == "checked" 
     
@@ -179,7 +179,7 @@ def test_publish_start():
     publication.responsible_person = "berger"
     publication.timestamp = "2016-05-20 18:34:28.934536"
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form, "test: publish_start()")
     
     assert publication.status == "publishing" 
 
@@ -192,7 +192,7 @@ def test_publish_end():
     publication.search_string = "&model=cmip5&experiment=test"
     publication.map_file = "host://path_to_mapfile" 
     
-    form_handler.save_form(workflow_form)
+    form_handler.save_form(workflow_form, "test: publish_end()")
     
     assert publication.status == "published"       
     
