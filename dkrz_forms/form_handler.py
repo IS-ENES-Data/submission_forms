@@ -97,21 +97,6 @@ from config import workflow_steps
 # to be completed .. 
 # generalized submission form class based on project dictionary defining to be defined variables
 
-class submission_form(object):
-    """
-    generate a class based on dictionary, defining the project specific variables as well as their default values
-    (motivation: syntactically more easy to set variables in notebook interface)
-
-    example usage: cordex_submission_form = submission_form(cordex_dict)
-
-    to do: separate module for project dictionaries and their coresponding checks
-    """
-
-    def __init__(self, proj_dict):
-        for key,val in proj_dict.iteritems():
-            self.__dict__[key]=val
-
-
 
 def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
     ''' initialize a submission form object based on a project dictionary
@@ -123,20 +108,20 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
          from project_cordex import cordex_dict
 
          #sf = cordex_submission_form()
-         sf = submission_form(cordex_dict)
+         sf = Form(cordex_dict)
          # initialize form object with location of git repo where submission forms are stored (locally)
-         sf.sub['repo'] = cordex_directory
+         sf.sub.repo = cordex_directory
          # empty dictionary containing future submission specific information
          # like status, repo, etc. 
          sf.project='CORDEX'
-         sf.sub['last_name']=my_last_name
-         sf.sub['email']=my_email
-         sf.sub['keyword']=my_keyword
+         sf.sub.last_name=my_last_name
+         sf.sub.email=my_email
+         sf.sub.keyword=my_keyword
            
-         sf.sub['form_name']=my_last_name+'_'+my_keyword
-         sf.sub['form_path']=sf.sub['repo']+'/'+sf.sub['form_name']+'.ipynb'
+         sf.sub.form_name=my_last_name+'_'+my_keyword
+         sf.subform_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
          
-         sf.sub['id'] = str(uuid.uuid1())
+         sf.sub.'id' = str(uuid.uuid1())
             # print sf
         
          "to do: check availability of cordex_directoy and whether it is git versioned"
@@ -150,7 +135,7 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
          from myconfig import test_dict
          sf = submission_form(test_dict)
         
-         sf.sub['repo'] = cordex_directory
+         sf.sub.repo = cordex_directory
 
          print "Cordex test submission form intitialized: sf"
          print "(For the curious: sf is used to store and manage all your information)"
@@ -170,47 +155,49 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
         
           from project_cordex import cordex_dict
           
-          sf = submission_form(cordex_dict)
+          sf = Form(cordex_dict)
+          print "Initialized Cordex form object"
+          print sf.__dict__
           # initialize form object with location of git repo where submission forms are stored (locally)
-          sf.sub['repo'] = cordex_directory
+          sf.sub.repo = cordex_directory
           sf.project='CORDEX'
-          sf.sub['last_name']=my_last_name
-          sf.sub['email']=my_email
-          sf.sub['keyword']=my_keyword
+          sf.sub.last_name=my_last_name
+          sf.sub.email=my_email
+          sf.sub.keyword=my_keyword
            
-          sf.sub['form_name']=my_last_name+'_'+my_keyword
-          sf.sub['form_path']=sf.sub['repo']+'/'+sf.sub['form_name']+'.ipynb'
+          sf.sub.form_name=my_last_name+'_'+my_keyword
+          sf.sub.form_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
          
-          sf.sub['id'] = str(uuid.uuid1())
+          sf.sub.id = str(uuid.uuid1())
             # print sf
         
           try:
-              sf.sub['source_path'] = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
+              sf.subsource_path = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
           except:
-              sf.sub['source_path'] = "/home/stephan/Repos/ENES-EUDAT/submission_forms/dkrz_forms/Templates/CORDEX_submission_form.ipynb"
-              print "Attention: non standard source for submission forms, taking:", sf.sub['source_path']
+              sf.sub.source_path = "/home/stephan/Repos/ENES-EUDAT/submission_forms/dkrz_forms/Templates/CORDEX_submission_form.ipynb"
+              print "Attention: non standard source for submission forms, taking:", sf.sub.source_path
               
           
           #print sf.__dict__
          
-          print "copy from:", sf.sub['source_path']
-          print "to: ", sf.sub['form_path']
-          shutil.copyfile(sf.sub['source_path'],sf.sub['form_path'])
+          print "copy from:", sf.sub.source_path
+          print "to: ", sf.sub.form_path
+          shutil.copyfile(sf.sub.source_path,sf.sub.form_path)
           print "--------------------------------------------------"
           print "submission form created, please visit the following link:"
           # print sf
-          print "https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+sf.sub['form_name']
+          print "https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+sf.sub.form_name
           ## to do email link to user ....
           print "--------------------------------------------------"
-          form_save(sf)
+          save_form(sf)
         
-          repo = Repo(sf.sub['repo'])
+          repo = Repo(sf.sub.repo)
           # get commit hash and add to json package
           master = repo.head.reference
           commit_hash = master.commit.hexsha
-          sf.sub['commit_hash'] = commit_hash
+          sf.sub.commit_hash = commit_hash
            
-          form_save(sf)
+          save_form(sf)
                
            
           if is_hosted_service():
@@ -237,7 +224,7 @@ def prefix_dict(mydict,prefix,keys):
 
 # Functions to convert form objects into dictionaries into json files and back
 
-class Struct(object):
+class Form(object):
     def __init__(self, adict):
         """Convert a dictionary to a class
 
@@ -246,9 +233,9 @@ class Struct(object):
         self.__dict__.update(adict)
         for k, v in adict.items():
            if isinstance(v, dict):
-              self.__dict__[k] = Struct(v)
+              self.__dict__[k] = Form(v)
               
-class FStruct(object):
+class FForm(object):
   def __init__(self, adict):
         """Convert a dictionary to a class
 
@@ -256,24 +243,33 @@ class FStruct(object):
         """
         self.__dict__.update(adict)
     
-def dict_to_form(mydict):
-  """
-   converts a recursive dictionary to a (flat) python object, with dictionary properties
-  """
-  return FStruct(mydict)
+#def dict_to_form(mydict):
+#  """
+#   converts a recursive dictionary to a (flat) python object, with dictionary properties
+#  """
+#  return FForm(mydict)
   
-def dict_to_hform(mydict):
-    """
-    converts a recursive dictionary to a recursive python object, with object properties
-    """
-    return Struct(mydict)
+#def dict_to_hform(mydict):
+#    """
+#    converts a recursive dictionary to a recursive python object, with object properties
+#    """
+#    return Form(mydict)
+ 
+## todo: generalize in a recursive function definition ....   
+def form_to_dict(sf):
+    new_sf = copy.deepcopy(sf)
+    new_sf.sub = new_sf.sub.__dict__
+    new_sf.ing = new_sf.ing.__dict__
+    new_sf.qua = new_sf.qua.__dict__
+    new_sf.pub = new_sf.pub.__dict__
+    return new_sf.__dict__
     
-
 def form_to_json(sf):
     """
     serialize form value object to json string
     """
-    s = json.dumps(sf.__dict__,sort_keys=True, indent=4, separators=(',', ': '))
+    sf_dict = form_to_dict(sf)
+    s = json.dumps(sf_dict,sort_keys=True, indent=4, separators=(',', ': '))
     return s
 
 def json_to_dict(mystring):
@@ -297,23 +293,25 @@ def jsonfile_to_dict(jsonfilename):
 
 
 def json_to_form(mystring):
-    return dict_to_form(json_to_dict(mystring))
+    return FForm(json_to_dict(mystring))
 
 #----------------------------------------------------------------------------   
 
 # functions to store form objects in git repo
 
-def form_save(sf):
+def save_form(sf):
     """
      Commit form and associated json data package to git repo
     """
    #print "input for formsave", sf.__dict__
-    repo = Repo(sf.sub['repo'])
+    repo = Repo(sf.sub.repo)
    #sf.sub['status'] = "stored"
-    sf.sub['timestamp']=str(datetime.now())
+    sf.sub.timestamp = str(datetime.now())
    # .. should be defined prior to "save"
    # sf.sub['form_name']=sf.last_name+"_"+sf.sub['keyword']
+    
     sf = package_submission(sf)
+   
     #if check_form_name(sf):
     if True:
        try:
@@ -324,13 +322,13 @@ def form_save(sf):
            ## sha = repo.head.object.hexsha
            ## later: may be helper function to retrieve notebook according to sha1 value of
            ## corresponding submitted json ...
-           result = repo.git.add(sf.sub['form_name']+'*')
+           result = repo.git.add(sf.sub.form_name+'*')
            #print result 
           
-           commit = repo.git.commit(message='Submission form for user '+sf.last_name+' saved in repository:'+sf.sub['form_name'])
+           commit = repo.git.commit(message='Submission form for user '+sf.last_name+' saved in repository:'+sf.sub.form_name)
            #print commit         
            print "\n\n Status message:"
-           print "-- your submission form "+sf.sub['form_name']+ " was stored in repository "
+           print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
            #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
           
        except GitCommandError:
@@ -420,15 +418,16 @@ def form_submission(sf):
       print "to data@dkrz.de with subject \"Cordex data submission form \""
 
 def package_submission(sf):
+    
     form_json = form_to_json(sf)
     #parts=sf.form_name.split(".")
-    my_form_name = sf.sub['form_name']+".json"
-    file_name = sf.sub['repo']+"/"+my_form_name
+    my_form_name = sf.sub.form_name+".json"
+    file_name = sf.sub.repo+"/"+my_form_name
     form_file = open(file_name,"w+")
     form_file.write(form_json)
     form_file.close()
-    sf.sub['package_path']=file_name
-    sf.sub['package_name']=my_form_name
+    sf.sub.package_path = file_name
+    sf.sub.package_name = my_form_name
     print "form stored in transfer format in: "+file_name
     return sf
 
@@ -459,11 +458,23 @@ def get_form(location):
     return form_object
 
 # load workflow steps 
-def get_workflow_steps(): 
-    submission = dict_to_form(workflow_steps.submission) 
-    ingest = dict_to_form(workflow_steps.ingest)  
-    checking = dict_to_form(workflow_steps.quality_assurance) 
-    publish = dict_to_form(workflow_steps.publication) 
+def load_workflow_form(workflow_json_file): 
+
+    workflow_dict = jsonfile_to_dict(workflow_json_file)
     
-    return (submission,ingest,checking,publish)
+    workflow = Form(workflow_dict) 
+    
+    return workflow
+
+# 
+def save_workflow_form(workflow_form):
+    new_workflow_form = copy.deepcopy(workflow_form)
+    new_workflow_form.sub = workflow_form.sub.__dict__
+    new_workflow_form.ing = workflow_form.ing.__dict__
+    new_workflow_form.qua = workflow_form.qua.__dict__
+    new_workflow_form.pub = workflow_form.pub.__dict__
+    print "------------------------------------------save workflow"
+    #print workflow_form.__dict__
+    save_form(new_workflow_form) 
+    return workflow_form
 
