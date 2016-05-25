@@ -22,29 +22,63 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
 #         - associated check status 
 #         - ....    
 
-        
-submission = {
-            'status': 'filling', #  filling -> stored -> ready -> submitted / submission_error 
-            'last_name' : '',
-            'first_name' : '',
-            'key_word': '',
-            'email': '',
+
+#### submission + review CV  --- separated into sections appropriate for PROV representation 
+submission_agent = { 
+              'last_name' : '',
+              'first_name' : '',
+              'key_word': '',
+              'email': ''}
+
+submission_activity = {
+           'submission_comment':'',
+           'submission_method':''           
+            } 
+            
+submission_form_template = {
+             'source_path' : '', # filled with path of original template form      
+             'form_version': '', # version of form template / form tool 
+            }
+             
+submission_form_filled = {
             'form_name': '',
             'form_path': '',
             'package_name':'', # json package
             'package_path': '', 
             'repo': '',
-            'ticket_id' : 0,
-            'checks_done' : "none",
-            'timestamp' : "",
-            'id': '',
-            'source_path' : '', # filled with path of original template form
-            'responsible_person': "",
-            'form_version': '', # version of form template / form tool
-            'ticket_url':'',
-            'comment': '', 
-            'review_comment':''
+            'checks_done' : "none"} 
+
+ 
+review_agent =  {        
+            'responsible_person': ""
             }
+            
+review_activity =  {
+            'review_comment': '',
+            'ticket_url':'',
+            'ticket_id' : 0,
+           }
+
+review_report = {
+          'report_ticket_subject':'', # subject of ticket describing review 
+                                     # --> to do: ticket subject conventions for data managers
+          'review_summary': ''
+              }          
+
+submit_part = {}
+submit_part.update(submission_agent)
+submit_part.update(submission_activity)
+submit_part.update(submission_form_template)
+submit_part.update(submission_form_filled)
+
+review_part = {}
+review_part.update(review_activity)
+review_part.update(review_report)
+     
+submission = {}
+submission.update(submit_part)
+submission.update(review_part)
+             
 
 # 2. step: information related to data ingest phase             
 #          - associated rt ticket(s) or ticket comments
@@ -52,82 +86,116 @@ submission = {
 #          - ..
 # 
 
-ingest = {
+
+ingest_agent = {
+                "responsible_person": "",
+                }
+
+ingest_activity = {
              "status": "", 
              "timestamp_started":"",
              "timestamp_finished":"",
              "comment":"", 
-             "target_directory": "",
              "ticket_id": "",
-             "responsible_person": "",
-             "drsdir_file_pattern": "", #glob file pattern for ingested data
+         
              }   
-             
+ 
+ingest_report =     {
+             "drsdir_file_pattern": "", #glob file pattern for ingested data
+             "target_directory": "",
+               }  
+               
+               
+data_ingest = {}
+data_ingest.update(ingest_agent)  
+data_ingest.update(ingest_activity)  
+data_ingest.update(ingest_report)           
 # 3. step: information related to data quality assurance phase:
 #             - ----            
              
-quality_assurance = {
+qua_agent = {
+             "responsible_person": "",
+
+             }
+
+qua_activity = {
              "status": "",
              "timestamp_started":"",
              "timestamp_finished":"",
-             "comment":"", 
-             "target_directory": "", # qa reports
+             "comment":"",      
              "ticket_id": "",
-             "responsible_person": "",
-             "qa_tool_version": '',
              "follow_up_ticket": '', # qa feedback to users, follow up actions
              }
 
+qua_report = {
+             "target_directory": "", # qa reports
+             "qua_status":"",
+             "qua_comment":"",
+             "qa_tool_version": '',
+            }
 
+qua = {}
+qua.update(qua_agent)
+qua.update(qua_activity)
+qua.update(qua_report)
 # 4. step: information related to ESGF publication phase  
 #           -              
              
-publication = {
-             "status": "",
-             "comment": "",
-             "timestamp": "",
-             "search_string" : "", # cog url including facet search string
-             "ticket_id": "", 
-             "facet_string": "", # e.g. project=A&model=B& ....
+pub_agent = {
+            "responsible_person": "",
+           }
+
+pub_activity =  {
+           "status": "",
+           "comment": "",
+           "timestamp": "",
+           "ticket_id": "", 
+           }
+
+pub_report = {
              "pid_collections" : "",
-             "publish_date": ""
-}             
-
-
-         
-
-# submitted information
-cordex_dict  = {
-             "first_name": "",
-             "last_name" : "",
-             "email" : "",
-             "submission_type" : "",
-             "institution" : "",
-             "institute_id" : "",
-             "model_id" : "",
-             "experiment_id" : "",
-             "time_period" : "",
-             "example_file_name" : "",
-             "grid_mapping_name" : "",
-             "grid_as_specified_if_rotated_pole" : "",
-             "data_qc_status" : "",
-             "data_qc_comment" : "",
-             "terms_of_use" : "",
-             "directory_structure" : "",
-             "data_path" : "",
-             "data_information" : "",
-             "exclude_variables_list" : "",
-             "variable_list_day" : "",
-             "variable_list_mon" : "",
-             "variable_list_sem" : "",
-             "variable_list_fx" : "",
-             "uniqueness_of_tracking_id" : "",
-             'sub': submission,
-             'ing': ingest,
-             'che':quality_assurance,
-             'pub':publication
-             
+             "publish_date": "",
+             "search_string" : "", # cog url including facet search string
+             "facet_string": "", # e.g. project=A&model=B& ....
              }
+
+
+publication = {}
+publication.update(pub_agent)
+publication.update(pub_activity) 
+publication.update(pub_report)       
+# submitted information
+#cordex_dict  = {
+#             "first_name": "",
+#             "last_name" : "",
+#             "email" : "",
+#             "submission_type" : "",
+#             "institution" : "",
+#             "institute_id" : "",
+#             "model_id" : "",
+#             "experiment_id" : "",
+#             "time_period" : "",
+#             "example_file_name" : "",
+#             "grid_mapping_name" : "",
+#             "grid_as_specified_if_rotated_pole" : "",
+#             "data_qc_status" : "",
+#             "data_qc_comment" : "",
+#             "terms_of_use" : "",
+#             "directory_structure" : "",
+#             "data_path" : "",
+#             "data_information" : "",
+#             "exclude_variables_list" : "",
+#             "variable_list_day" : "",
+#             "variable_list_mon" : "",
+#             "variable_list_sem" : "",
+#             "variable_list_fx" : "",
+#             "uniqueness_of_tracking_id" : "",
+#             'sub': submission,
+#             'ing': data_ingest,
+#             'che':qua,
+#             'pub':publication
+#             
+#             }
  
 
 #============= Definition of CORDEX specific test functions ===================================

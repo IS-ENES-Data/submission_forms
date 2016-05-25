@@ -17,7 +17,7 @@ from dkrz_forms import form_handler
 from dkrz_forms.config import test_config
 from dkrz_forms.config import workflow_steps
 
-print test_config.cordex_directory
+#print test_config.cordex_directory
 project_dir = test_config.cordex_directory
 
 # get workflow steps
