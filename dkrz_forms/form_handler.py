@@ -62,8 +62,9 @@ import base64
 # e.g. setting for project repositories like cordex_directory
 
 from os.path import expanduser
-home = expanduser("~")
-sys.path.append(home + "/.dkrz_forms")
+config_dir = os.path.join(expanduser("~"),".dkrz_forms")
+print config_dir
+sys.path.append(config_dir)
 
 try:
   from myconfig import cordex_directory
