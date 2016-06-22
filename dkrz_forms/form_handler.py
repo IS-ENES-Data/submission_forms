@@ -177,7 +177,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           print "--------------------------------------------------------------------"
           print "   A submission form was created for you, please visit the following link:"
           # print sf
-          print "    https://qc.dkrz.de:8080/notebooks/forms/"+my_project+"/"+sf.sub.form_name
+          print "    https://qc.dkrz.de:8080/notebooks/forms/"+sf.sub.form_name
           ## to do email link to user ....
           print "--------------------------------------------------------------------"
           save_form(sf, "Form Handler: form - initial generation - quiet" )
