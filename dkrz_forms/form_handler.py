@@ -63,20 +63,19 @@ import base64
 
 from os.path import expanduser
 config_dir = os.path.join(expanduser("~"),".dkrz_forms")
-print config_dir
 sys.path.append(config_dir)
 
 try:
   from project_config import project_directory, install_directory, project_dicts
   
 #  from myconfig import rt_pwd
-  print "project config imported"
+# print "project config imported"
   
 except ImportError:
-  print "Info: myconfig not found - taking default config "
+#  print "Info: myconfig not found - taking default config "
   from dkrz_forms.config.project_config import project_directory, install_directory, project_dicts
   
-print "Your submission form repository:", project_directory
+# print "Your submission form repository:", project_directory
 
 
 # load form checks
@@ -178,10 +177,10 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           print "--------------------------------------------------------------------"
           print "    submission form created, please visit the following link:"
           # print sf
-          print "    https://qc.dkrz.de:8080/notebooks/"+my_project+"/"+sf.sub.form_name
+          print "    https://qc.dkrz.de:8080/notebooks/forms/"+my_project+"/"+sf.sub.form_name
           ## to do email link to user ....
           print "--------------------------------------------------------------------"
-          save_form(sf, "Form Handler: Cordex form - initial generation - quiet" )
+          save_form(sf, "Form Handler: form - initial generation - quiet" )
         
           repo = Repo(sf.sub.repo)
           # get commit hash and add to json package
