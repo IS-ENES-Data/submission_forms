@@ -169,13 +169,13 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
               sf.subsource_path = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
           except:
               sf.sub.source_path = os.path.join(install_directory,"submission_forms/dkrz_forms/Templates",template_name)
-              print "Form Handler: Attention !  non standard source for submission form"
+              #print "Form Handler: Attention !  non standard source for submission form"
          
-          print "--- copy from:", sf.sub.source_path
-          print "--- to: ", sf.sub.form_path
+          #print "--- copy from:", sf.sub.source_path
+          #print "--- to: ", sf.sub.form_path
           shutil.copyfile(sf.sub.source_path,sf.sub.form_path)
           print "--------------------------------------------------------------------"
-          print "    submission form created, please visit the following link:"
+          print "   A submission form was created for you, please visit the following link:"
           # print sf
           print "    https://qc.dkrz.de:8080/notebooks/forms/"+my_project+"/"+sf.sub.form_name
           ## to do email link to user ....
@@ -195,7 +195,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
            
     else:
         print "--------------xxx------------------------------------"
-        print "currently only submission forms for the project \"CORDEX\" are supported"
+        print "currently only submission forms for the following projects are supported: CORDEX,CMIP6,DKRZ_CDP,test,CMIP6_replication"
         print "no submission form created"
         print "please re-evaluate cell with proper project information"
 
