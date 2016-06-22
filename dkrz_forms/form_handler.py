@@ -343,14 +343,14 @@ def is_hosted_service():
 
 def email_form_info(sf):
   if is_hosted_service():
-     m_part1 = "You edited and saved a CORDEX submission form\n"
+     m_part1 = "You edited and saved a form for project: "+sf.project+"\n"
      m_part2 = "This form is accessible at: \n"
-     m_part3 = "https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.sub.form_name+".ipynb \n"
+     m_part3 = "https://qc.dkrz.de:8080/notebooks/forms/"+sf.sub.form_name+".ipynb \n"
      m_part4 = "to officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n"
      m_part5 = "in case of problems please contact data@dkrz.de"
      my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
      msg = MIMEText(my_message)
-     msg['Subject'] = 'Your CORDEX data submission form'
+     msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
      msg['From'] = "data_submission@dkrz.de"
      msg['To'] = sf.sub.email
      # Send the message via the qc VM SMTP server, but don't include the\n"
