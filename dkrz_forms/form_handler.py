@@ -20,7 +20,7 @@ Provided functionality:
 Configuration:
 
 * global variable setting in .dkrz_forms in home directoy
-   * e.g. cordex_directoy = "path" specifies to git reop for project *cordex*
+   * e.g. project_directoy = "path" specifies to git reop for project *cordex*
 
 * use as library::
 
@@ -67,21 +67,22 @@ print config_dir
 sys.path.append(config_dir)
 
 try:
-  from myconfig import cordex_directory
+  from project_config import project_directory, install_directory, project_dicts
+  
 #  from myconfig import rt_pwd
-  print "Settings from ~/.dkrz_forms imported"
+  print "project config imported"
   
 except ImportError:
   print "Info: myconfig not found - taking default config "
-  from config import cordex_directory
-
-print "Your submission form repository:", cordex_directory
+  
+print "Your submission form repository:", project_directory
 
 
 # load form checks
 from checks import *
 
-from dkrz_forms import checks
+#from dkrz_forms import checks
+#from dkrz_forms.config import workflow_steps
 
 rt_module_present = False
 try:
@@ -90,7 +91,6 @@ try:
 except ImportError, e:
    pass
 
-# from config import workflow_steps
 #------------------------------------------------------------------------------------------
 
 # global variables defined and imported here, which are used in helper functions:
@@ -105,21 +105,22 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
 
         to do: move it to a class function !?
     '''
-    if my_project == "CORDEX":
-         from project_cordex import cordex_dict
+    
+    if my_project in ["CORDEX","CMIP6","DKRZ_CDP","test"]:
+         
 
          #sf = cordex_submission_form()
-         sf = Form(cordex_dict)
+         sf = Form(project_dicts[my_project])
          # initialize form object with location of git repo where submission forms are stored (locally)
-         sf.sub.repo = cordex_directory
+         sf.sub.repo = project_directory
          # empty dictionary containing future submission specific information
          # like status, repo, etc. 
-         sf.project='CORDEX'
+         sf.project=my_project
          sf.sub.last_name=my_last_name
          sf.sub.email=my_email
          sf.sub.keyword=my_keyword
            
-         sf.sub.form_name=my_last_name+'_'+my_keyword
+         sf.sub.form_name=my_project+'-'+my_last_name+'_'+my_keyword
          sf.subform_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
          
          sf.sub.id = str(uuid.uuid1())
@@ -127,20 +128,9 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
         
          "to do: check availability of cordex_directoy and whether it is git versioned"
 
-         print "Cordex submission form intitialized: sf"
+         print "submission form intitialized: sf"
          print "(For the curious: sf is used to store and manage all your information)"
         
-         return sf
-
-    if my_project =="test":
-         from myconfig import test_dict
-         sf = Form(test_dict)
-        
-         sf.sub.repo = cordex_directory
-
-         print "Cordex test submission form intitialized: sf"
-         print "(For the curious: sf is used to store and manage all your information)"
-          
          return sf
 
 
@@ -152,35 +142,34 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
       # global variable cordex_directoy used here .. to be improved ..
     
    # from dkrz_forms import form_handler
-    if my_project == "CORDEX":
+    
+
+    
+    if my_project in ["CORDEX","CMIP6","DKRZ_CDP","test"]:
         
-          from project_cordex import cordex_dict
           
-          sf = Form(cordex_dict)
-          print "Form Handler: Initialized Cordex form object"
+          
+          sf = Form(project_dicts[my_project])
+          sf.project=my_project
+          
+          print "Form Handler: Initialized form for project:", my_project
           # print sf.__dict__
           # initialize form object with location of git repo where submission forms are stored (locally)
-          sf.sub.repo = cordex_directory
-          sf.project='CORDEX'
+          sf.sub.repo = project_directory       
           sf.sub.last_name=my_last_name
           sf.sub.email=my_email
           sf.sub.keyword=my_keyword
-           
-          sf.sub.form_name=my_last_name+'_'+my_keyword
-          sf.sub.form_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
-         
+          sf.sub.form_name=my_project+'_'+my_last_name+'_'+my_keyword
+          #sf.sub.form_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
+          sf.sub.form_path=os.path.join(sf.sub.repo,sf.sub.form_name+'.ipynb')
           sf.sub.id = str(uuid.uuid1())
-            # print sf
-        
+           
+          template_name = my_project+"_submission_form.ipynb"
           try:
-              sf.subsource_path = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates/CORDEX_submission_form.ipynb")
+              sf.subsource_path = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
           except:
-              sf.sub.source_path = "/home/stephan/Repos/ENES-EUDAT/submission_forms/dkrz_forms/Templates/CORDEX_submission_form.ipynb"
-              print "Form Handler: Attention !  non standard source for submission forms"
-              print "---taking:", sf.sub.source_path
-              
-          
-          #print sf.__dict__
+              sf.sub.source_path = os.path.join(install_directory,"submission_forms/dkrz_forms/Templates",template_name)
+              print "Form Handler: Attention !  non standard source for submission form"
          
           print "--- copy from:", sf.sub.source_path
           print "--- to: ", sf.sub.form_path
@@ -199,8 +188,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           commit_hash = master.commit.hexsha
           sf.sub.commit_hash = commit_hash
            
-          save_form(sf, "Form Handler: Cordex form - initial generation - commit hash added - quiet")
-               
+          save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
            
           if is_hosted_service():
                email_form_info(sf)
