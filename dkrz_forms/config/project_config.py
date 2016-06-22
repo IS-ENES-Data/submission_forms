@@ -18,20 +18,20 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
             }
             
 
-project_directory = "/home/stephan/tmp/CORDEX"
-install_directory = "/home/stephan/Repos/ENES-EUDAT"
-info_db_path = "/home/stephan/tmp/db.json"
+project_directory = "/home/dkrz/k202015/Repos/forms"
+install_directory = "/home/dkrz/k202015"
+info_db_path = "/home/dkrz/k202015/db.json"
 
 import base64
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
-print project_directory
-print "general project config imported"
+#print project_directory
+#print "general project config imported"
 
 from dkrz_forms.config import workflow_steps 
 
 # (submission,ingest,checking,publish) = form_handler.get_workflow_steps()
 
-print "./dkrz_forms:  workflow steps config imported"
+#print "./dkrz_forms:  workflow steps config imported"
 
 project_dicts = {}
 # submitted information
