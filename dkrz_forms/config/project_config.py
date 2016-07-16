@@ -91,6 +91,14 @@ project_dicts['CMIP6']= {
 
  }            
  
+project_dicts['CMIP6_replication']= {
+             'project' : 'CMIP6_replication',
+             'sub':workflow_steps.submission,
+             'ing':workflow_steps.data_ingest,
+             'qua':workflow_steps.qua,
+             'pub':workflow_steps.publication
+
+ }            
 
 #============= Definition of CORDEX specific test functions ===================================
 
