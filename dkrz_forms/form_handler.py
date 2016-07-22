@@ -42,6 +42,7 @@ Configuration:
 # * others are imported conditionally
 #
 import os,sys,shutil,uuid
+import glob
 import pkg_resources
 import socket
 from datetime import datetime
@@ -66,14 +67,14 @@ config_dir = os.path.join(expanduser("~"),".dkrz_forms")
 sys.path.append(config_dir)
 
 try:
-  from project_config import project_directory, install_directory, project_dicts
+  from project_config import project_directory, install_directory, project_dicts, submission_directory
   
 #  from myconfig import rt_pwd
 # print "project config imported"
   
 except ImportError:
 #  print "Info: myconfig not found - taking default config "
-  from dkrz_forms.config.project_config import project_directory, install_directory, project_dicts
+  from dkrz_forms.config.project_config import project_directory, install_directory, project_dicts, submission_directory
   
 # print "Your submission form repository:", project_directory
 
@@ -120,19 +121,19 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
          sf.sub.email=my_email
          sf.sub.keyword=my_keyword
            
-         sf.sub.form_name=my_project+'-'+my_last_name+'_'+my_keyword
-         sf.subform_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
+         sf.sub.form_name=my_project+'_'+my_last_name+'_'+my_keyword
+                 
+         is_packaged = package_submission(sf,comment_on=False)
          
-         sf.sub.id = str(uuid.uuid1())
-            # print sf
-        
          "to do: check availability of cordex_directoy and whether it is git versioned"
-
-         print "submission form intitialized: sf"
-         print "(For the curious: sf is used to store and manage all your information)"
+         if is_packaged: 
+             print "submission form intitialized: sf"
+             print "(For the curious: the sf object is used in the following to store and manage all your information)"
         
-         return sf
-
+         else:
+             print "Please correct above errors, before proceeding"
+             
+         return sf     
 
 def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_keyword):
     ''' take project notebook template, rename it and copy the result to the
@@ -147,8 +148,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
     
     if my_project in ["CORDEX","CMIP6","CMIP6_replication","DKRZ_CDP","test"]:
         
-          
-          
+                    
           sf = Form(project_dicts[my_project])
           sf.project=my_project
           
@@ -306,10 +306,10 @@ def save_form(sf,comment):
     # sf.sub['form_name']=sf.last_name+"_"+sf.sub['keyword']
     if comment_on: 
        print "\n\nForm Handler - save form status message:"
-    sf = package_submission(sf,comment_on)
+    is_packaged = package_submission(sf,comment_on)
    
     #if check_form_name(sf):
-    if True:
+    if is_packaged:
        try:
            ## to do: change this to: git add last_name__pre_name* 
            ## ..... - reuse form for mulltiple transmissions ?
@@ -318,7 +318,9 @@ def save_form(sf,comment):
            ## sha = repo.head.object.hexsha
            ## later: may be helper function to retrieve notebook according to sha1 value of
            ## corresponding submitted json ...
-           result = repo.git.add(sf.sub.form_name+'*')
+       
+           result = repo.git.add(sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+"*")
+           #result = repo.git.add(sf.sub.form_name+'*')
            #print result 
            
            commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " + comment
@@ -359,7 +361,13 @@ def email_form_info(sf):
      s.quit()
      print "Form submitted to your email address "+sf.sub.email
   else:
-     print "This form is not hosted at DKRZ! form email service is not available ! \n"
+     print "This form is not hosted at DKRZ! Thus form information is stored locally on your computer \n"
+     print "Here is a summary of the generated and stored information:"
+     print "-- form for project: ",sf.project
+     print "-- form name: ",sf.sub.form_name
+     print "-- submission form path: ", sf.sub.subform_path 
+     print "-- package path: ", sf.sub.package_path
+     print "-- package name: ", sf.sub.package_name
 
 
 def form_submission(sf):
@@ -368,18 +376,28 @@ def form_submission(sf):
      - submit to "data_submission@dkrz" in case RT is not present but email is configured on installation
      - print instructions for manual submission in case all above is not working
    """
-
-
+   ## to do: validity check first
+   shutil.copy(sf.sub.subform_path,submission_directory)
+   shutil.copy(sf.sub.package_path,submission_directory)
+   repo = Repo(submission_directory)
+   repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
+   commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
+   commit = repo.git.commit(message=commit_message)
+   print commit
+   result = repo.git.push()
+   print result
+   
    if rt_module_present:
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
-      ticket_id = tracker.create_ticket(Queue="CORDEX", Subject="CORDEX data submission: "+sf.institution+"--"+sf.lastname,
+      tracker.login()
+      ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="CORDEX data submission: "+sf.institution+"--"+sf.sub.last_name,
                   Priority= 10,Owner="kindermann@dkrz.de")
       sf.sub.ticket_id = ticket_id
       sf.sub.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
       sf.substatus = "submitted"
-      sf = package_submission(sf)
+      is_packaged = package_submission(sf,comment_on=False)
       json_file_name = sf.sub.form_name+".json"
-      comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.lastname,files=[(json_file_name,open(sf.sub['package_path'],'rb'))])
+      comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.sub.last_name,files=[(json_file_name,open(sf.sub.package_path,'rb'))])
 
       if not comment_submitted:
          sf.sub.status = "rt-submission error"
@@ -411,24 +429,47 @@ def form_submission(sf):
       #  print "Data submission form sent"
       #  print "A confirmation message will be sent to you"
    else:
-      print "Please send form: "+cordex_directory+"/"+sf.form_name +"\n"
+      print "Please send form: "+sf.sub.subform_path +"\n"
       print "as well as data package: "+sf.sub.package_path+"\n"
       print "to data@dkrz.de with subject \"Cordex data submission form \""
 
 def package_submission(sf,comment_on):
+       
     
-    form_json = form_to_json(sf)
-    #parts=sf.form_name.split(".")
-    my_form_name = sf.sub.form_name+".json"
-    file_name = sf.sub.repo+"/"+my_form_name
-    form_file = open(file_name,"w+")
-    form_file.write(form_json)
-    form_file.close()
-    sf.sub.package_path = file_name
-    sf.sub.package_name = my_form_name
-    if comment_on:
-       print " --- form stored in transfer format in: "+file_name
-    return sf
+    pattern = sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+"*"+".ipynb"
+    
+    paths = [n for n in glob.glob(pattern) if os.path.isfile(n)]
+    
+    ## check if multiple possible master files exist ????
+    
+    if len(paths) > 0:
+             sf.sub.id = str(uuid.uuid1())
+             form_json = form_to_json(sf)
+             #parts=sf.form_name.split(".")
+             my_jsonform_name = sf.sub.form_name+".json"
+             sf.sub.subform_path=paths[0]
+             file_path = sf.sub.repo+"/"+my_jsonform_name
+             sf.sub.package_path = file_path
+             sf.sub.package_name = my_jsonform_name
+             
+            
+             form_file = open(file_path,"w+")
+             form_file.write(form_json+"\r\n")
+             form_file.close()
+             if comment_on:
+                   print " --- form stored in transfer format in: "+file_path
+             return True
+    else:
+       print "Error: "
+       print "your contact details are inconsistent with the form template you are using !"
+       print "Either change your contact details, or the form template name" 
+       print "(klick on name at the top of the page besides the jupyter logo)"
+       print ""
+       print "The template naming should be: "+sf.project+"_\"my_last_name\""+"_keyword"
+       print "The _keyword part of the template name can differ form \"my_keyword\" you provided above" 
+       return False
+       
+    
 
 
 def persist_form(form_object,location):
