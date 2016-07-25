@@ -359,7 +359,7 @@ def email_form_info(sf,comment):
      m_part3 = "https://qc.dkrz.de:8080/notebooks/forms/"+sf.sub.form_name+".ipynb \n"
      m_part4 = "to officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n"
      m_part5 = "in case of problems please contact data@dkrz.de \n"
-     m_part6 = "Additional inforrmation:", comment
+     m_part6 = "Additional inforrmation:"+ comment
      my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 + m_part6
      msg = MIMEText(my_message)
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
