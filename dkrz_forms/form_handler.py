@@ -393,17 +393,6 @@ def form_submission(sf):
    
    if is_hosted_service():
    
-   
-       shutil.copy(sf.sub.subform_path,submission_directory)
-       shutil.copy(sf.sub.package_path,submission_directory)
-       repo = Repo(submission_directory)
-       repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
-       commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
-       commit = repo.git.commit(message=commit_message)
-       print commit
-       result = repo.git.push()
-       print result
-       
        if rt_module_present:
           tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
           tracker.login()
@@ -415,11 +404,22 @@ def form_submission(sf):
           
           comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.sub.last_name,files=[(sf.sub.package_name,open(sf.sub.package_path,'rb'))])
           if not comment_submitted:
-             sf.sub.status = "rt-submission error"
+             sf.sub.status = "rt-submission error"   
+   
+       shutil.copy(sf.sub.subform_path,submission_directory)
+       shutil.copy(sf.sub.package_path,submission_directory)
+       repo = Repo(submission_directory)
+       repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
+       commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
+       commit = repo.git.commit(message=commit_message)
+       print commit
+       result = repo.git.push()
+       print result
+            
           
-          save_form(sf, comment="submittted version")
-          
-    
+       if rt_module_present:  
+          commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## update with ticket info " 
+          commit = repo.git.commit(message=commit_message)
     
           print "Form was submitted to the DKRZ request tracker with the ticket id:", ticket_id
           print "The DKRZ data managers will get in contact with you."
