@@ -6,48 +6,59 @@ Created on Sun Mar  6 23:11:02 2016
 
 ToDo: Merge with variable tests ...
 """
+
+# the following workflow steps are defined based on CVs:
+# - submission and review
+# - ingest 
+# - quality assurance
+# - publication
+# - archival 
+# all workflow steps are structured according to the W3C Prov model
+# thus they define an agent, activity and input/output artefacts 
+
+
+
 # name spaces for w3c prov transformation of submission provenance information
-
-workflow_steps_version = "1.0"
-
 name_space={'sub':'http://enes.org/entities/ingest-workflow#',
             'ing':'http://enes.org/entities/ingest-workflow#',
             'che':'http://enes.org/entities/ingest-workflow#',
             'pub':'http://enes.org/entities/ingest-workflow# '        
             }
             
-            # 1.step: information related to submission management phase
-#         - associated rt tickets
-#         - associated git commit(s)
-#         - associated check status 
-#         - ....    
 
 
 #### submission + review CV  --- separated into sections appropriate for PROV representation 
 submission_agent = { 
               'last_name' : '',
               'first_name' : '',
-              'key_word': '',
+              'keyword': '',
               'email': ''}
 
 submission_activity = {
-           'submission_comment':'',
-           'submission_method':''           
+           'submission_comment':'',    # addition info given by the submission_agent (e.g.received by separate email etc.)
+           'submission_method':'',     # CV: tbd, e.g. DKRZ_online_form, email, ..
+           'id': '',                   # automatically generated identifier as part of form creation
+           'commit_hash': '',          # automatically generated git hash of storing submission form locally 
+           'substatus': ''
             } 
             
 submission_form_template = {
+             'workflow_steps_version' : "1.0",
              'source_path' : '', # filled with path of original template form      
              'form_version': '', # version of form template / form tool 
             }
              
 submission_form_filled = {
-            'form_name': '',
-            'form_path': '',
-            'package_name':'', # json package
-            'package_path': '', 
-            'repo': '',
-            'checks_done' : "none"} 
+            'form_name': '',       # project_lastname_keyword
+            'subform_path' :'',    # full path to ipython notebook form
+            'form_path': '',       # full directory path to ipython notebook
+            'package_name':'',     # json package name 
+            'package_path': '',    # json package full path
+            'repo': '',            # proect directory (part of config)
+            'checks_done' : "none" # status of form checks
+            }
 
+# ---------------------------------------------------------------------------------------------------
  
 review_agent =  {        
             'responsible_person': ""
@@ -57,6 +68,7 @@ review_activity =  {
             'review_comment': '',
             'ticket_url':'',
             'ticket_id' : 0,
+            'timestamp' : ""
            }
 
 review_report = {
@@ -64,7 +76,7 @@ review_report = {
                                      # --> to do: ticket subject conventions for data managers
           'review_summary': ''
               }          
-
+# ------------------------------------------------------------------------------------------------------
 submit_part = {}
 submit_part.update(submission_agent)
 submit_part.update(submission_activity)

@@ -123,7 +123,7 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
            
          sf.sub.form_name=my_project+'_'+my_last_name+'_'+my_keyword
                  
-         is_packaged = package_submission(sf,comment_on=False)
+         is_packaged = package_submission(sf,comment_on_flag=False)
          
          "to do: check availability of cordex_directoy and whether it is git versioned"
          if is_packaged: 
@@ -152,7 +152,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           sf = Form(project_dicts[my_project])
           sf.project=my_project
           
-          print "Form Handler: Initialized form for project:", my_project
+          print "Form Handler: Initialized form for project", my_project
           # print sf.__dict__
           # initialize form object with location of git repo where submission forms are stored (locally)
           sf.sub.repo = project_directory       
@@ -174,24 +174,34 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           #print "--- copy from:", sf.sub.source_path
           #print "--- to: ", sf.sub.form_path
           shutil.copyfile(sf.sub.source_path,sf.sub.form_path)
-          print "--------------------------------------------------------------------"
-          print "   A submission form was created for you, please visit the following link:"
-          # print sf
-          print "    https://qc.dkrz.de:8080/notebooks/forms/"+sf.sub.form_name+".ipynb"
-          ## to do email link to user ....
-          print "--------------------------------------------------------------------"
-          save_form(sf, "Form Handler: form - initial generation - quiet" )
-        
-          repo = Repo(sf.sub.repo)
-          # get commit hash and add to json package
-          master = repo.head.reference
-          commit_hash = master.commit.hexsha
-          sf.sub.commit_hash = commit_hash
-           
-          save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
-           
+          
+          
           if is_hosted_service():
-               email_form_info(sf)
+              
+              print "--------------------------------------------------------------------"
+              print "Please visit the following link:"
+              # print sf
+              print "    https://qc.dkrz.de:8080/notebooks/forms/"+sf.sub.form_name+".ipynb"
+              ## to do email link to user ....
+              print "--------------------------------------------------------------------"
+              save_form(sf, "Form Handler: form - initial generation - quiet" )
+            
+              repo = Repo(sf.sub.repo)
+              # get commit hash and add to json package
+              master = repo.head.reference
+              commit_hash = master.commit.hexsha
+              sf.sub.commit_hash = commit_hash
+               
+              save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
+              email_form_info(sf,comment="form generation")
+          else: 
+              print "--------------------------------------------------------------------"
+              
+              print "Please open the following file as an ipython notebook:"
+              print sf.sub.form_path
+              
+              save_form(sf, "Form Handler: form - initial generation - quiet" )
+          
            
     else:
         print "--------------xxx------------------------------------"
@@ -293,9 +303,9 @@ def save_form(sf,comment):
     """
      Commit form and associated json data package to git repo
     """
-    comment_on = True
+    comment_on_flag = True
     if comment.endswith("quiet"):
-      comment_on = False
+      comment_on_flag = False
    
    
     #print "input for formsave", sf.__dict__
@@ -304,9 +314,9 @@ def save_form(sf,comment):
     sf.sub.timestamp = str(datetime.now())
     # .. should be defined prior to "save"
     # sf.sub['form_name']=sf.last_name+"_"+sf.sub['keyword']
-    if comment_on: 
+    if comment_on_flag: 
        print "\n\nForm Handler - save form status message:"
-    is_packaged = package_submission(sf,comment_on)
+    is_packaged = package_submission(sf,comment_on_flag)
    
     #if check_form_name(sf):
     if is_packaged:
@@ -325,7 +335,7 @@ def save_form(sf,comment):
            
            commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " + comment
            commit = repo.git.commit(message=commit_message)
-           if comment_on:
+           if comment_on_flag:
                print " --- commit message:"+ commit         
            
            #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
@@ -342,18 +352,20 @@ def is_hosted_service():
     else:
       return False
 
-def email_form_info(sf):
+def email_form_info(sf,comment):
   if is_hosted_service():
      m_part1 = "You edited and saved a form for project: "+sf.project+"\n"
      m_part2 = "This form is accessible at: \n"
      m_part3 = "https://qc.dkrz.de:8080/notebooks/forms/"+sf.sub.form_name+".ipynb \n"
      m_part4 = "to officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n"
-     m_part5 = "in case of problems please contact data@dkrz.de"
-     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
+     m_part5 = "in case of problems please contact data@dkrz.de \n"
+     m_part6 = "Additional inforrmation:", comment
+     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 + m_part6
      msg = MIMEText(my_message)
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
      msg['From'] = "data_submission@dkrz.de"
      msg['To'] = sf.sub.email
+     msg['CC'] = "kindermann@dkrz.de"
      # Send the message via the qc VM SMTP server, but don't include the\n"
      # envelope header.\n",
      s = smtplib.SMTP('localhost')
@@ -377,52 +389,45 @@ def form_submission(sf):
      - print instructions for manual submission in case all above is not working
    """
    ## to do: validity check first
-   shutil.copy(sf.sub.subform_path,submission_directory)
-   shutil.copy(sf.sub.package_path,submission_directory)
-   repo = Repo(submission_directory)
-   repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
-   commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
-   commit = repo.git.commit(message=commit_message)
-   print commit
-   result = repo.git.push()
-   print result
    
-   if rt_module_present:
-      tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
-      tracker.login()
-      ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="CORDEX data submission: "+sf.institution+"--"+sf.sub.last_name,
-                  Priority= 10,Owner="kindermann@dkrz.de")
-      sf.sub.ticket_id = ticket_id
-      sf.sub.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
-      sf.substatus = "submitted"
-      is_packaged = package_submission(sf,comment_on=False)
-      json_file_name = sf.sub.form_name+".json"
-      comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.sub.last_name,files=[(json_file_name,open(sf.sub.package_path,'rb'))])
-
-      if not comment_submitted:
-         sf.sub.status = "rt-submission error"
-
-
-   # generate updated json file and store in repo
-
-   if not(rt_module_present) and is_hosted_service():
-      m_part1 = "A CORDEX data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n"
-      m_part2 = "Corresponding email: "+ sf.email +"\n"
-      m_part3 = "Submission form url: https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.form_name+".ipynb \n"
-      m_part4 = "The submission is commited to the CORDEX submission form git repository with the name "+sf.form_name +"\n"
-      m_part5 = "Time of submission:"+ str(datetime.now())
-
-      my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
-      msg = MIMEText(my_message)
-      msg['Subject'] = 'Test email from DKRZ data submission form management software - please ignore'
-      msg['From'] = "data_submission@dkrz.de"
-      msg['To'] = sf.email
-      msg['CC'] = "kindermann@dkrz.de"
-      # Send the message via the qc VM SMTP server, but don't include the\n"
-      # envelope header.\n",
-      s = smtplib.SMTP('localhost')
-      s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
-      s.quit()
+   
+   if is_hosted_service():
+   
+   
+       shutil.copy(sf.sub.subform_path,submission_directory)
+       shutil.copy(sf.sub.package_path,submission_directory)
+       repo = Repo(submission_directory)
+       repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
+       commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
+       commit = repo.git.commit(message=commit_message)
+       print commit
+       result = repo.git.push()
+       print result
+       
+       if rt_module_present:
+          tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
+          tracker.login()
+          ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="CORDEX data submission: "+sf.institution+"--"+sf.sub.last_name,
+                      Priority= 10,Owner="kindermann@dkrz.de")
+          sf.sub.ticket_id = ticket_id
+          sf.sub.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
+          sf.sub.substatus = "submitted"
+          
+          comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.sub.last_name,files=[(sf.sub.package_name,open(sf.sub.package_path,'rb'))])
+          if not comment_submitted:
+             sf.sub.status = "rt-submission error"
+          
+          save_form(sf, comment="submittted version")
+          
+    
+    
+          print "Form was submitted to the DKRZ request tracker with the ticket id:", ticket_id
+          print "The DKRZ data managers will get in contact with you."
+          print "(in case of further questions please contact data@dkrz.de including the ticket_id in your mail )"
+    
+          
+       email_form_info(sf,comment="final submission")
+       
 
       #  origin = repo.remotes.origin
       #  origin.push()
@@ -431,9 +436,9 @@ def form_submission(sf):
    else:
       print "Please send form: "+sf.sub.subform_path +"\n"
       print "as well as data package: "+sf.sub.package_path+"\n"
-      print "to data@dkrz.de with subject \"Cordex data submission form \""
+      print "to data@dkrz.de with subject \"data submission form \""
 
-def package_submission(sf,comment_on):
+def package_submission(sf,comment_on_flag):
        
     
     pattern = sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+"*"+".ipynb"
@@ -456,7 +461,7 @@ def package_submission(sf,comment_on):
              form_file = open(file_path,"w+")
              form_file.write(form_json+"\r\n")
              form_file.close()
-             if comment_on:
+             if comment_on_flag:
                    print " --- form stored in transfer format in: "+file_path
              return True
     else:
