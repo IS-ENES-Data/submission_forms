@@ -37,6 +37,7 @@ submission_agent = {
 submission_activity = {
            'submission_comment':'',    # addition info given by the submission_agent (e.g.received by separate email etc.)
            'submission_method':'',     # CV: tbd, e.g. DKRZ_online_form, email, ..
+           'submission_directory':'',   # directory for final submission storage
            'id': '',                   # automatically generated identifier as part of form creation
            'commit_hash': '',          # automatically generated git hash of storing submission form locally 
            'substatus': ''
