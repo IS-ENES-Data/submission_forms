@@ -166,14 +166,14 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           sf.sub.keyword=my_keyword
           sf.sub.form_name=my_project+'_'+my_last_name+'_'+my_keyword
           #sf.sub.form_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
-          sf.sub.form_path=os.path.join(sf.sub.repo,sf.sub.form_name+'.ipynb')
+          sf.sub.form_path=join(sf.sub.repo,sf.sub.form_name+'.ipynb')
           sf.sub.id = str(uuid.uuid1())
            
           template_name = my_project+"_submission_form.ipynb"
           try:
-              sf.subsource_path = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
+              sf.subsource_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
           except:
-              sf.sub.source_path = os.path.join(install_directory,"submission_forms/dkrz_forms/Templates",template_name)
+              sf.sub.source_path = join(install_directory,"submission_forms","dkrz_forms","Templates",template_name)
               #print "Form Handler: Attention !  non standard source for submission form"
          
           #print "--- copy from:", sf.sub.source_path
