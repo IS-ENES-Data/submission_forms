@@ -51,6 +51,7 @@ submission_form_template = {
 submission_form_filled = {
             'form_name': '',       # project_lastname_keyword
             'subform_path' :'',    # full path to ipython notebook form
+            'subform_name' : '',   # ipynb form name
             'form_path': '',       # full directory path to ipython notebook
             'package_name':'',     # json package name 
             'package_path': '',    # json package full path

@@ -46,11 +46,21 @@ import glob
 import pkg_resources
 import socket
 from datetime import datetime
+
+try:
+   import rt
+   rt_module_present = True
+except ImportError, e:
+   rt_module_present = False   
+
 try:
     from git import Repo,GitCommandError
-except ImportError:
-    print "Warning: please install git module with 'pip install gitpython'"
-    print "otherwise all helper functions for interacting with git will not work"
+    git_module_present = True
+except ImportError, e:
+    git_module_present = False
+    print "Warning: you are using this submission form without git support"
+    print "   it is recommended to have the git-python module installed on your system"
+    
 join = os.path.join
 import smtplib
 from email.mime.text import MIMEText
@@ -85,12 +95,7 @@ from checks import *
 #from dkrz_forms import checks
 #from dkrz_forms.config import workflow_steps
 
-rt_module_present = False
-try:
-   import rt
-   rt_module_present = True
-except ImportError, e:
-   pass
+
 
 #------------------------------------------------------------------------------------------
 
@@ -388,71 +393,88 @@ def form_submission(sf):
      - submit to "data_submission@dkrz" in case RT is not present but email is configured on installation
      - print instructions for manual submission in case all above is not working
    """
-   ## to do: validity check first
+  
    
-   
-   if is_hosted_service():
-   
-       if rt_module_present:
+   sf.sub.substatus = "stored"
+   TICKET_SENT = False
+   PERSISTED = False
+   if rt_module_present:
+      try: 
           tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
           tracker.login()
           ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="CORDEX data submission: "+sf.institution+"--"+sf.sub.last_name,
                       Priority= 10,Owner="kindermann@dkrz.de")
           sf.sub.ticket_id = ticket_id
           sf.sub.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
-          sf.sub.substatus = "submitted"
-          
+          sf.sub.substatus = sf.sub.substatus+"===ticket generated"
+          save_form(sf,"ticket creation action --quiet")
           comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.sub.last_name,files=[(sf.sub.package_name,open(sf.sub.package_path,'rb'))])
-          if not comment_submitted:
-             sf.sub.status = "rt-submission error"   
+          #sf.sub.ticket_comment_message = comment_submitted
+         
+          TICKET_SENT = True
+      except Exception as ex: 
+          sf.sub.substatus = sf.sub.substatus+"===rt-submission error:"+type(ex).__name__
+          save_form(sf,"ticket create action, error --quiet")
+          TICKET_SENT = False
+  
+  
+    # copy form to the (completed) submission directory
    
-       shutil.copy(sf.sub.subform_path,submission_directory)
-       shutil.copy(sf.sub.package_path,submission_directory)
-       repo = Repo(submission_directory)
-       repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
-       commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
-       commit = repo.git.commit(message=commit_message)
-       print commit
-       result = repo.git.push()
-       print result
-            
-          
-       if rt_module_present:  
-          commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## update with ticket info " 
-          commit = repo.git.commit(message=commit_message)
+   shutil.copy(sf.sub.subform_path,submission_directory)
+   shutil.copy(sf.sub.package_path,submission_directory)
+   if is_hosted_service(): 
+      # only in case of the hosted service the submission directory has a remote origint to push to 
+      try:        
+         repo = Repo(submission_directory)
+         repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
+         commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
+         commit = repo.git.commit(message=commit_message)
+         #print commit
+         result = repo.git.push()
+         #print result
+         commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## update with ticket info " 
+         commit = repo.git.commit(message=commit_message)
+         sf.sub.substatus = sf.sub.substatus+"===persisted"
+         PERSISTED = True
+      except Excetion as ex:
+         sf.sub.substatus = sf.sub.substatus+"===rt-submission error:"+type(ex).__name__
+         PERSISTED = False  
+         
+      email_form_info(sf,comment="final submission")
+      sf.sub.substatus = sf.sub.substatus+"===email sent"     
     
-          print "Form was submitted to the DKRZ request tracker with the ticket id:", ticket_id
-          print "The DKRZ data managers will get in contact with you."
-          print "(in case of further questions please contact data@dkrz.de including the ticket_id in your mail )"
-    
-          
-       email_form_info(sf,comment="final submission")
+   save_form(sf,"optional: ticket peristed and emailed --quiet")   
+   print "Form submission information:" 
+   if TICKET_SENT:         
+       print "--- Ticket submitted to DKRZ request tracker with id: ", ticket_id 
+       print "--- Thanks for your submission - DKRZ will review your submission and will get in contact with you"
+       print "--- your contact email was provided as: ",sf.sub.email
+   if not(is_hosted_service()):    
+       print "--- The submitted information is stored in directory: ", os.path.dirname(sf.sub.package_path)
+       print "--- information file: ", sf.sub.package_path
+       print "--- notebook used to generate the information file: ", sf.sub.subform_path     
+   if not(TICKET_SENT): 
+       print "Please send the above files (or only the information file) to \"data-submission@dkrz.de\" "  
        
+   if not(TICKET_SENT) and is_hosted_service():    
+       print "sorry, something went wrong, please send an email to \"data-submission@dkrz.de\" conatining the follwing information: "
+       print "---   information file: ", sf.sub.package_path
+        
 
-      #  origin = repo.remotes.origin
-      #  origin.push()
-      #  print "Data submission form sent"
-      #  print "A confirmation message will be sent to you"
-   else:
-      print "Please send form: "+sf.sub.subform_path +"\n"
-      print "as well as data package: "+sf.sub.package_path+"\n"
-      print "to data@dkrz.de with subject \"data submission form \""
 
 def package_submission(sf,comment_on_flag):
-       
-    
-    pattern = sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+"*"+".ipynb"
-    
+           
+    pattern = sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+"*"+".ipynb"    
     paths = [n for n in glob.glob(pattern) if os.path.isfile(n)]
     
-    ## check if multiple possible master files exist ????
-    
+    ## check if multiple possible master files exist ????  
     if len(paths) > 0:
              sf.sub.id = str(uuid.uuid1())
              form_json = form_to_json(sf)
              #parts=sf.form_name.split(".")
              my_jsonform_name = sf.sub.form_name+".json"
              sf.sub.subform_path=paths[0]
+             sf.sub.subform_name=os.path.basename(sf.sub.subform_path)
              file_path = sf.sub.repo+"/"+my_jsonform_name
              sf.sub.package_path = file_path
              sf.sub.package_name = my_jsonform_name
