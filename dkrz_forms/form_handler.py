@@ -113,7 +113,7 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
          #sf = cordex_submission_form()
          sf = Form(project_dicts[my_project])
          # initialize form object with location of git repo where submission forms are stored (locally)
-         sf.sub.repo = project_directory
+         sf.sub.repo = project_directory[my_project]
          # empty dictionary containing future submission specific information
          # like status, repo, etc. 
          sf.project=my_project
@@ -155,7 +155,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           print "Form Handler: Initialized form for project:", my_project
           # print sf.__dict__
           # initialize form object with location of git repo where submission forms are stored (locally)
-          sf.sub.repo = project_directory       
+          sf.sub.repo = project_directory[my_project]       
           sf.sub.last_name=my_last_name
           sf.sub.email=my_email
           sf.sub.keyword=my_keyword
@@ -177,7 +177,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           print "--------------------------------------------------------------------"
           print "   A submission form was created for you, please visit the following link:"
           # print sf
-          print "    https://qc.dkrz.de:8080/notebooks/forms/"+sf.sub.form_name+".ipynb"
+          print "    https://data-forms.dkrz.de:8080/notebooks/"+my_project+"/"+sf.sub.form_name+".ipynb"
           ## to do email link to user ....
           print "--------------------------------------------------------------------"
           save_form(sf, "Form Handler: form - initial generation - quiet" )
@@ -337,7 +337,7 @@ def save_form(sf,comment):
 
 def is_hosted_service():
     hostname = socket.gethostname()
-    if hostname == "qc.dkrz.de":
+    if hostname == "data-forms.dkrz.de":
       return True
     else:
       return False
@@ -346,7 +346,7 @@ def email_form_info(sf):
   if is_hosted_service():
      m_part1 = "You edited and saved a form for project: "+sf.project+"\n"
      m_part2 = "This form is accessible at: \n"
-     m_part3 = "https://qc.dkrz.de:8080/notebooks/forms/"+sf.sub.form_name+".ipynb \n"
+     m_part3 = "https://data-forms.dkrz.de:8080/notebooks/"+sf.project+"/"+sf.sub.form_name+".ipynb \n"
      m_part4 = "to officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n"
      m_part5 = "in case of problems please contact data@dkrz.de"
      my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
@@ -354,7 +354,7 @@ def email_form_info(sf):
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
      msg['From'] = "data_submission@dkrz.de"
      msg['To'] = sf.sub.email
-     # Send the message via the qc VM SMTP server, but don't include the\n"
+     # Send the message via the data-forms VM SMTP server, but don't include the\n"
      # envelope header.\n",
      s = smtplib.SMTP('localhost')
      s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
@@ -406,10 +406,10 @@ def form_submission(sf):
    # generate updated json file and store in repo
 
    if not(rt_module_present) and is_hosted_service():
-      m_part1 = "A CORDEX data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n"
+      m_part1 = "A "+sf.myproject+"data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n"
       m_part2 = "Corresponding email: "+ sf.email +"\n"
-      m_part3 = "Submission form url: https://qc.dkrz.de:8080/notebooks/CORDEX/"+sf.form_name+".ipynb \n"
-      m_part4 = "The submission is commited to the CORDEX submission form git repository with the name "+sf.form_name +"\n"
+      m_part3 = "Submission form url: https://data-forms.dkrz.de:8080/notebooks/"+sf.projectCORDEX+"/"+sf.form_name+".ipynb \n"
+      m_part4 = "The submission is commited to the following git repository: "+sf.form_name +"\n"
       m_part5 = "Time of submission:"+ str(datetime.now())
 
       my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
@@ -418,7 +418,7 @@ def form_submission(sf):
       msg['From'] = "data_submission@dkrz.de"
       msg['To'] = sf.email
       msg['CC'] = "kindermann@dkrz.de"
-      # Send the message via the qc VM SMTP server, but don't include the\n"
+      # Send the message via the data-forms VM SMTP server, but don't include the\n"
       # envelope header.\n",
       s = smtplib.SMTP('localhost')
       s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
