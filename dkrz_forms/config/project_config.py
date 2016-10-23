@@ -7,6 +7,9 @@ Created on Sun Mar  6 23:11:02 2016
 ToDo: Merge with variable tests ...
 """
 # name spaces for w3c prov transformation of submission provenance information
+from os.path import join as join
+import base64
+
 name_space={'sub':'http://enes.org/entities/ingest-workflow#',
             'ing':'http://enes.org/entities/ingest-workflow#',
             'qua':'http://enes.org/entities/ingest-workflow#',
@@ -16,23 +19,23 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
             'dp':'http://enes.org/entities/ingest-workflow#',        
             'node':'http://enes.org/entities/ingest-workflow#',        
             }
-            
+ 
+           
+install_directory = "/home/stephan/Repos/ENES-EUDAT/"
+dir_prefix = "/home/stephan/tmp/Repos/"
+#dir_prefix = "/opt/formhandler/Repos/"
+info_db_path = join(dir_prefix,"db/db.json")
 
-#project_directory = "/home/dkrz/k202015/Repos/forms"
-#install_directory = "/home/dkrz/k202015"
-#info_db_path = "/home/dkrz/k202015/db.json"
 
-submission_directory = "/opt/formhandler/Repos/submission"
+submission_directory = join(dir_prefix,"submission")
 project_directory = {}
-project_directory["CORDEX"] = "/opt/formhandler/Repos/CORDEX"
-project_directory["CMIP6"] = "/opt/formhandler/Repos/CMIP6"
-project_directory["CMIP6_replication"] = "/opt/formhandler/Repos/CMIP6_replication"
-project_directory["DKRZ_CDP"] = "/opt/formhandler/Repos/DKRZ_CDP"
-project_directory["test"] = "/opt/formhandler/Repos/test"
-install_directory = "/opt/formhandler"
-info_db_path = "/opt/formhandler/tmp/db.json"
+project_directory["CORDEX"] = join(dir_prefix,"CORDEX")
+project_directory["CMIP6"] = join(dir_prefix,"CMIP6")
+project_directory["CMIP6_replication"] = join(dir_prefix,"CMIP6_replication")
+project_directory["DKRZ_CDP"] = join(dir_prefix,"DKRZ_CDP")
+project_directory["test"] = join(dir_prefix,"test")
 
-import base64
+
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
 #print project_directory
 #print "general project config imported"
@@ -76,7 +79,14 @@ project_dicts['CORDEX']  = {
              'pub':workflow_steps.publication            
              }
 
-project_dicts['CMIP6_CDP'] = {
+
+generic_dict = {
+             "first_name":""
+             }
+             
+# to do: put generic info in generic_dict and merge this with 
+#        the project_dicts below
+project_dicts['DKRZ_CDP'] = {
              'project': 'CMIP6_CDP',
              'sub':workflow_steps.submission,
              'ing':workflow_steps.data_ingest,
@@ -84,7 +94,7 @@ project_dicts['CMIP6_CDP'] = {
              'pub':workflow_steps.publication
  
  }
-project_dicts['test_dict'] = {
+project_dicts['test'] = {
              'project' : "test",
              'sub':workflow_steps.submission,
              'ing':workflow_steps.data_ingest,
