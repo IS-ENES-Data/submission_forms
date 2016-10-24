@@ -11,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: form_handler
+.. automodule:: dkrz_forms.form_handler
    :members:
 
 Indices and tables

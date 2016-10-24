@@ -14,15 +14,18 @@ import_path = os.path.abspath('..')
 sys.path.append(import_path)
 
 from dkrz_forms import form_handler
-from dkrz_forms.config import test_config
-from dkrz_forms.config import workflow_steps
+
+try:
+  from project_config import project_directory, install_directory, project_dicts, submission_directory
+except ImportError:
+  #  print "Info: myconfig not found - taking default config "
+  from dkrz_forms.config.project_config import project_directory, install_directory, project_dicts, submission_directory
+
 
 #print test_config.cordex_directory
-project_dir = test_config.cordex_directory
-
+project_dir = join(project_directory["test"])
 # get workflow steps
 #(submission,ingest,checking,publish) = form_handler.get_workflow_steps() 
-
 #print submission.__dict__
 
 
@@ -39,15 +42,15 @@ def init_git_repo(target_dir):
 my_first_name = "stasi"  # example: my_first_name = "Alf"
 my_last_name = "ki"   # example: my_last_name = "Mitty"
 my_email = "snkinder@freenet.de"       # example: email = "alf.mitty@gmail.com"
-my_project = "CORDEX"  # available alternatives: "Test", "CORDEX","CMIP6","Other"
+my_project = "test"  # available alternatives: "Test", "CORDEX","CMIP6","Other"
 my_keyword = "sk1"     # please remember your personal keyword to identify your submission
 
-form_info_json_file = project_dir + "/" + my_last_name+"_"+my_keyword+".json"
+form_info_json_file = project_dir + "/" + my_project+"_"+my_last_name+"_"+my_keyword+".json"
 
 
 
 def test_me():
-    assert project_dir == '/home/stephan/tmp/CORDEX'
+    assert project_dir == '/home/stephan/tmp/Repos/test'
 
 
 def test_formgeneration():
@@ -58,8 +61,8 @@ def test_formgeneration():
     assert os.path.exists(project_dir) == 1
     files = os.listdir(project_dir)
     print files
-    assert my_last_name+"_"+my_keyword+".ipynb" in files 
-    assert my_last_name+"_"+my_keyword+".json" in files
+    assert my_project+"_"+my_last_name+"_"+my_keyword+".ipynb" in files 
+    assert my_project+"_"+my_last_name+"_"+my_keyword+".json" in files
 
 
 def test_formcompletion():
