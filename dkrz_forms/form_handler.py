@@ -107,7 +107,7 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
         to do: move it to a class function !?
     '''
     
-    if my_project in ["CORDEX","CMIP6","CMIP6_replication","DKRZ_CDP","test"]:
+    if my_project in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
          
 
          #sf = cordex_submission_form()
@@ -146,7 +146,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
     
 
     
-    if my_project in ["CORDEX","CMIP6","CMIP6_replication","DKRZ_CDP","test"]:
+    if my_project in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
         
                     
           sf = Form(project_dicts[my_project])
@@ -195,7 +195,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
            
     else:
         print "--------------xxx------------------------------------"
-        print "currently only submission forms for the following projects are supported: CORDEX,CMIP6,DKRZ_CDP,test,CMIP6_replication"
+        print "currently only submission forms for the following projects are supported: CORDEX,CMIP6,DKRZ_CDP,test,ESGF_replication"
         print "no submission form created"
         print "please re-evaluate cell with proper project information"
 
