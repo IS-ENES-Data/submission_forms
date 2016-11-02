@@ -20,20 +20,21 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
             'node':'http://enes.org/entities/ingest-workflow#',        
             }
  
-           
-install_directory = "/home/stephan/Repos/ENES-EUDAT/"
-dir_prefix = "/home/stephan/tmp/Repos/"
-#dir_prefix = "/opt/formhandler/Repos/"
+# adapt to your deployment           
+install_directory = "/opt/formhandler/"
+dir_prefix = "/opt/formhandler/Repos/"
 info_db_path = join(dir_prefix,"db/db.json")
 
+submission_directory = join(dir_prefix,"data_forms_repo")
+user_submission_directory = join(dir_prefix,"submission_forms_repo")
 
-submission_directory = join(dir_prefix,"submission")
+# rest is deployment independent
 project_directory = {}
-project_directory["CORDEX"] = join(dir_prefix,"CORDEX")
-project_directory["CMIP6"] = join(dir_prefix,"CMIP6")
-project_directory["CMIP6_replication"] = join(dir_prefix,"CMIP6_replication")
-project_directory["DKRZ_CDP"] = join(dir_prefix,"DKRZ_CDP")
-project_directory["test"] = join(dir_prefix,"test")
+project_directory["CORDEX"] = join(user_submission_directory,"CORDEX")
+project_directory["CMIP6"] = join(user_submission_directory,"CMIP6")
+project_directory["ESGF_replication"] = join(user_submission_directory,"ESGF_replication")
+project_directory["DKRZ_CDP"] = join(user_submission_directory,"DKRZ_CDP")
+project_directory["test"] = join(user_submission_directory,"test")
 
 
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
@@ -111,7 +112,7 @@ project_dicts['CMIP6']= {
 
  }            
  
-project_dicts['CMIP6_replication']= {
+project_dicts['ESGF_replication']= {
              'project' : 'CMIP6_replication',
              'sub':workflow_steps.submission,
              'ing':workflow_steps.data_ingest,

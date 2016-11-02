@@ -177,7 +177,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           print "--------------------------------------------------------------------"
           print "   A submission form was created for you, please visit the following link:"
           # print sf
-          print "    https://data-forms.dkrz.de:8080/notebooks/"+my_project+"/"+sf.sub.form_name+".ipynb"
+          print "    https://data-forms.dkrz.de:8080/notebooks/submission_forms_repo/"+my_project+"/"+sf.sub.form_name+".ipynb"
           ## to do email link to user ....
           print "--------------------------------------------------------------------"
           save_form(sf, "Form Handler: form - initial generation - quiet" )
@@ -192,14 +192,13 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
            
           if is_hosted_service():
                email_form_info(sf)
-           
+          return sf          
     else:
         print "--------------xxx------------------------------------"
         print "currently only submission forms for the following projects are supported: CORDEX,CMIP6,DKRZ_CDP,test,ESGF_replication"
         print "no submission form created"
         print "please re-evaluate cell with proper project information"
-
-
+        return "Error"
 
 
 
