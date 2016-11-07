@@ -134,6 +134,10 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
              print "Please correct above errors, before proceeding"
              
          return sf     
+    else:
+         print "please correct project specification, should be one of CORDEX,CMIP6,ESGF_replication,DKRZ_CP or test"
+         sf = {}
+         return sf
 
 def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_keyword):
     ''' take project notebook template, rename it and copy the result to the
@@ -379,7 +383,8 @@ def form_submission(sf):
    shutil.copy(sf.sub.subform_path,submission_directory)
    shutil.copy(sf.sub.package_path,submission_directory)
    repo = Repo(submission_directory)
-   repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
+   #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
+   repo.git.add(".")
    commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
    commit = repo.git.commit(message=commit_message)
    print commit
@@ -389,16 +394,19 @@ def form_submission(sf):
    if rt_module_present:
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
       tracker.login()
-      ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="CORDEX data submission: "+sf.institution+"--"+sf.sub.last_name,
+      ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="DKRZ data form submission: "+sf.project+"--"+sf.sub.last_name,
                   Priority= 10,Owner="kindermann@dkrz.de")
       sf.sub.ticket_id = ticket_id
       sf.sub.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
       sf.substatus = "submitted"
       is_packaged = package_submission(sf,comment_on=False)
       json_file_name = sf.sub.form_name+".json"
-      comment_submitted = tracker.comment(ticket_id, text=sf.institution+"--"+sf.sub.last_name,files=[(json_file_name,open(sf.sub.package_path,'rb'))])
+      comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.last_name,files=[(json_file_name,open(sf.sub.package_path,'rb'))])
 
-      if not comment_submitted:
+      if comment_submitted:
+         print "RT Ticket generated"
+      else:
+         print "RT Ticket generation failed"
          sf.sub.status = "rt-submission error"
 
 
@@ -423,11 +431,14 @@ def form_submission(sf):
       s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
       s.quit()
 
+      print "DKRZ forms request submitted"
       #  origin = repo.remotes.origin
       #  origin.push()
       #  print "Data submission form sent"
       #  print "A confirmation message will be sent to you"
-   else:
+   
+
+   if not(rt_module_present) and not(is_hosted_service()): 
       print "Please send form: "+sf.sub.subform_path +"\n"
       print "as well as data package: "+sf.sub.package_path+"\n"
       print "to data@dkrz.de with subject \"Cordex data submission form \""
