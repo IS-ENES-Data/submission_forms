@@ -380,10 +380,16 @@ def form_submission(sf):
      - print instructions for manual submission in case all above is not working
    """
    ## to do: validity check first
-   shutil.copy(sf.sub.subform_path,submission_directory)
-   shutil.copy(sf.sub.package_path,submission_directory)
+   shutil.copy(sf.sub.subform_path,join(submission_directory,sf.project))
+   shutil.copy(sf.sub.package_path,join(submission_directory,sf.project))
    repo = Repo(submission_directory)
    #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
+   try: 
+      repo.git.pull()
+   except GitCommandError():
+      print "Synchronization with global submission form repository failed !"
+      # to do: error handling
+
    repo.git.add(".")
    commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
    commit = repo.git.commit(message=commit_message)
@@ -436,7 +442,10 @@ def form_submission(sf):
       #  origin.push()
       #  print "Data submission form sent"
       #  print "A confirmation message will be sent to you"
-   
+      
+      # set notebook and json file read only
+      os.chmod(sf.sub.subformpath,0o444)
+      os.chmod(sf.sub.packagepath,0o444)  
 
    if not(rt_module_present) and not(is_hosted_service()): 
       print "Please send form: "+sf.sub.subform_path +"\n"
