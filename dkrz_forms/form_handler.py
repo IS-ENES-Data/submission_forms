@@ -389,8 +389,10 @@ def form_submission(sf):
    except GitCommandError():
       print "Synchronization with global submission form repository failed !"
       # to do: error handling
-
-   repo.git.add(".")
+   
+   repo.git.add("*")
+   #repo.git.add(join(sf.project,package_name)
+   #repo.git.add(join(sf.project,form_name)
    commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
    commit = repo.git.commit(message=commit_message)
    print commit
@@ -455,8 +457,8 @@ def form_submission(sf):
 def package_submission(sf,comment_on):
        
     
-    pattern = sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+"*"+".ipynb"
-    
+    pattern = sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+sf.sub.keyword+".ipynb"
+ 
     paths = [n for n in glob.glob(pattern) if os.path.isfile(n)]
     
     ## check if multiple possible master files exist ????
@@ -466,7 +468,7 @@ def package_submission(sf,comment_on):
              form_json = form_to_json(sf)
              #parts=sf.form_name.split(".")
              my_jsonform_name = sf.sub.form_name+".json"
-             sf.sub.subform_path=paths[0]
+             sf.sub.subform_path=pattern
              file_path = sf.sub.repo+"/"+my_jsonform_name
              sf.sub.package_path = file_path
              sf.sub.package_name = my_jsonform_name
