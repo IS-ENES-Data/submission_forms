@@ -23,15 +23,36 @@ except ImportError:
 
 
 #print test_config.cordex_directory
-project_dir = join(project_directory["test"])
+project_dir = project_directory["test"]
+
+print "Project directory: ", project_dir
+print project_directory
 # get workflow steps
 #(submission,ingest,checking,publish) = form_handler.get_workflow_steps() 
 #print submission.__dict__
 
+def onerror(func, path, exc_info):
+    """
+    Error handler for ``shutil.rmtree``.
+
+    If the error is due to an access error (read only file)
+    it attempts to add write permission and then retries.
+
+    If the error is for another reason it re-raises the error.
+    
+    Usage : ``shutil.rmtree(path, onerror=onerror)``
+    """
+    import stat
+    if not os.access(path, os.W_OK):
+        # Is the error an access error ?
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise
 
 def init_git_repo(target_dir):
     if os.path.exists(target_dir):
-       shutil.rmtree(target_dir)
+       shutil.rmtree(target_dir,oneerror=oneerror)
     repo = Repo.init(target_dir)
     return repo
 
@@ -45,12 +66,12 @@ my_email = "snkinder@freenet.de"       # example: email = "alf.mitty@gmail.com"
 my_project = "test"  # available alternatives: "Test", "CORDEX","CMIP6","Other"
 my_keyword = "sk1"     # please remember your personal keyword to identify your submission
 
-form_info_json_file = project_dir + "/" + my_project+"_"+my_last_name+"_"+my_keyword+".json"
+form_info_json_file = join(project_dir,my_project+"_"+my_last_name+"_"+my_keyword+".json")
 
 
 
 def test_me():
-    assert project_dir == '/home/stephan/tmp/Repos/test'
+    assert project_dir == os.path.abspath("/Users/stephan/Documents/formhandler/Repos/submission_forms_repo/test")
 
 
 def test_formgeneration():

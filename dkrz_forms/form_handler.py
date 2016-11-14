@@ -165,14 +165,14 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           sf.sub.keyword=my_keyword
           sf.sub.form_name=my_project+'_'+my_last_name+'_'+my_keyword
           #sf.sub.form_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
-          sf.sub.form_path=os.path.join(sf.sub.repo,sf.sub.form_name+'.ipynb')
+          sf.sub.form_path=join(sf.sub.repo,sf.sub.form_name+'.ipynb')
           sf.sub.id = str(uuid.uuid1())
            
           template_name = my_project+"_submission_form.ipynb"
           try:
-              sf.subsource_path = os.path.join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
+              sf.subsource_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
           except:
-              sf.sub.source_path = os.path.join(install_directory,"submission_forms/dkrz_forms/Templates",template_name)
+              sf.sub.source_path = join(install_directory,"submission_forms","dkrz_forms","Templates",template_name)
               #print "Form Handler: Attention !  non standard source for submission form"
          
           #print "--- copy from:", sf.sub.source_path
@@ -185,7 +185,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           ## to do email link to user ....
           print "--------------------------------------------------------------------"
           save_form(sf, "Form Handler: form - initial generation - quiet" )
-        
+          print " ......  initial version saved ..."
           repo = Repo(sf.sub.repo)
           # get commit hash and add to json package
           master = repo.head.reference
@@ -193,7 +193,7 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
           sf.sub.commit_hash = commit_hash
            
           save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
-           
+          print " ....... finalised version saved ..."  
           if is_hosted_service():
                email_form_info(sf)
           return sf          
@@ -322,7 +322,7 @@ def save_form(sf,comment):
            ## later: may be helper function to retrieve notebook according to sha1 value of
            ## corresponding submitted json ...
        
-           result = repo.git.add(sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+"*")
+           result = repo.git.add(join(sf.sub.repo,sf.project+"_"+sf.sub.last_name+"_"+"*"))
            #result = repo.git.add(sf.sub.form_name+'*')
            #print result 
            
