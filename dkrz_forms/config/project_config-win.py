@@ -9,6 +9,7 @@ ToDo: Merge with variable tests ...
 # name spaces for w3c prov transformation of submission provenance information
 from os.path import join as join
 import base64
+import os
 
 name_space={'sub':'http://enes.org/entities/ingest-workflow#',
             'ing':'http://enes.org/entities/ingest-workflow#',
@@ -22,9 +23,8 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
  
 # adapt to your deployment           
 #install_directory = "/opt/formhandler/"
-install_directory = "/home/stephan/Repos/ENES-EUDAT/"
-#dir_prefix = "/opt/formhandler/Repos/"
-dir_prefix = "/home/stephan/tmp/Repos/"
+install_directory = os.path.abspath("/Users/stephan/Documents/") 
+dir_prefix = os.path.abspath("/Users/stephan/Documents/formhandler/Repos/")
 info_db_path = join(dir_prefix,"db/db.json")
 
 submission_directory = join(dir_prefix,"data_forms_repo")

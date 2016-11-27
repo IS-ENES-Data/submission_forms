@@ -52,7 +52,7 @@ def onerror(func, path, exc_info):
 
 def init_git_repo(target_dir):
     if os.path.exists(target_dir):
-       shutil.rmtree(target_dir,oneerror=oneerror)
+       shutil.rmtree(target_dir)
     repo = Repo.init(target_dir)
     return repo
 
