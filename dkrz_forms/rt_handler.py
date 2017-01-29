@@ -11,17 +11,6 @@ from tinydb import TinyDB,Query
 import glob
 import json
 
-from os.path import expanduser
-home = expanduser("~")
-sys.path.append(home + "/.dkrz_forms")
-
-try:
-  from myconfig import info_db_path
-  from myconfig import rt_pwd
-  print "Settings from ~/.dkrz_forms imported"
-except ImportError:
-  print "Info: myconfig not found - taking default config "
-  from config import cordex_directory
 
 def get_info_db(info_directory):
     db = TinyDB(info_directory)
@@ -78,7 +67,7 @@ try:
 except ImportError, e:
    pass
 
-def get_tracker():
+def get_tracker(rt_pwd):
     tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',rt_pwd)
     tracker.login()
     return tracker
