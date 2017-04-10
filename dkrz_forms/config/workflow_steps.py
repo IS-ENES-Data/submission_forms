@@ -22,8 +22,21 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
 #         - associated check status 
 #         - ....    
 
+# Specify the workflow steps in a List
+# for each step in workflow specifiy the W3C prov components:
+# -- entities (input, output)
+# -- activities (transforming input to output)
+# -- agents (persons, SW engaged in activities)
 
-#### submission + review CV  --- separated into sections appropriate for PROV representation 
+Data_Delivery_WFlow = [
+     data_submission, 
+     data_submission_review, 
+     data_ingest, 
+     data_quality_assurance,
+     data_publication,
+     data_preservation ]
+
+# data submission
 submission_agent = { 
               'last_name' : '',
               'first_name' : '',
@@ -35,12 +48,12 @@ submission_activity = {
            'submission_method':''           
             } 
             
-submission_form_template = {
+submission_form_template_entity = {
              'source_path' : '', # filled with path of original template form      
              'form_version': '', # version of form template / form tool 
             }
              
-submission_form_filled = {
+submission_form_filled_entity = {
             'form_name': '',
             'form_path': '',
             'package_name':'', # json package
@@ -48,6 +61,14 @@ submission_form_filled = {
             'repo': '',
             'checks_done' : "none"} 
 
+data_submission = {
+     'entities_in': [submission_form_template_entity]
+     'entities out': [submission_form_filled_entity]
+     'agent': submission_agent,
+     'activity': submission_activity
+}
+
+#  data review
  
 review_agent =  {        
             'responsible_person': ""
@@ -63,21 +84,15 @@ review_report = {
           'report_ticket_subject':'', # subject of ticket describing review 
                                      # --> to do: ticket subject conventions for data managers
           'review_summary': ''
-              }          
-
-submit_part = {}
-submit_part.update(submission_agent)
-submit_part.update(submission_activity)
-submit_part.update(submission_form_template)
-submit_part.update(submission_form_filled)
-
-review_part = {}
-review_part.update(review_activity)
-review_part.update(review_report)
+              } 
+ 
+data_submission_review = {
+    'entities_in': submission_form_filled_entitiy
+    'entities out': review_report
+    'agent': review_agent, 
+    'activity': review_activity
+    }
      
-submission = {}
-submission.update(submit_part)
-submission.update(review_part)
              
 
 # 2. step: information related to data ingest phase             

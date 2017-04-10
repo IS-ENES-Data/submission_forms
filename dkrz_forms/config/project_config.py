@@ -52,6 +52,7 @@ from dkrz_forms.config import workflow_steps
 project_dicts = {}
 # submitted information
 project_dicts['CORDEX']  = {
+             "project":"CORDEX",
              "first_name": "",
              "last_name" : "",
              "email" : "",
@@ -81,7 +82,6 @@ project_dicts['CORDEX']  = {
              'qua':workflow_steps.qua,
              'pub':workflow_steps.publication            
              }
-
 
 generic_dict = {
              "first_name":""
