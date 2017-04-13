@@ -44,7 +44,9 @@ Configuration:
 import os,sys,shutil,uuid
 import glob
 import pkg_resources
-import socket
+import socket#
+import string
+import random
 from datetime import datetime
 try:
     from git import Repo,GitCommandError
@@ -67,16 +69,23 @@ config_dir = os.path.join(expanduser("~"),".dkrz_forms")
 sys.path.append(config_dir)
 
 try:
-  from project_config import project_directory, install_directory, project_dicts, submission_directory
+  from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+  from project_config import PROJECT_DICT, FORM_URL_PATH
+  from workflow_steps import DATA_SUBMISSION
+  
+  
   
 #  from myconfig import rt_pwd
 # print "project config imported"
   
 except ImportError:
-#  print "Info: myconfig not found - taking default config "
-  from dkrz_forms.config.project_config import project_directory, install_directory, project_dicts, submission_directory
-  
-# print "Your submission form repository:", project_directory
+  print "Info: myconfig not found - taking default config "
+  from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+  from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO 
+  from dkrz_forms.config.workflow_steps import DATA_SUBMISSION
+ 
+  ## to do: make global constants explicit e.g. PROJECT_DICT ... etc .... 
+# print "Your submission form repository:", PROJECT_DICT
 
 
 # load form checks
@@ -101,7 +110,8 @@ except ImportError, e:
 
 
 def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
-    ''' initialize a submission form object based on a project dictionary
+    ''' used in form notebooks
+        initialize a submission form object based on a project dictionary
         and associate it with a git repo, where it is stored and maintained
 
         to do: move it to a class function !?
@@ -109,16 +119,18 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
     
     if my_project in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
          
-
+         # To Do: read secret keyword
          #sf = cordex_submission_form()
-         sf = Form(project_dicts[my_project])
+         sf = Form(PROJECT_DICT[my_project])
          # initialize form object with location of git repo where submission forms are stored (locally)
-         sf.sub.repo = project_directory[my_project]
+         sf_submission = Form('DATA_SUBMISSION')
+         sf.sub = sf_submission
+         sf.sub.form_repo = PROJECT_DICT[my_project]
          # empty dictionary containing future submission specific information
          # like status, repo, etc. 
          sf.project=my_project
-         sf.sub.last_name=my_last_name
-         sf.sub.email=my_email
+         sf.sub.agent.last_name=my_last_name
+         sf.sub.agent.email=my_email
          sf.sub.keyword=my_keyword
            
          sf.sub.form_name=my_project+'_'+my_last_name+'_'+my_keyword
@@ -139,61 +151,83 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
          sf = {}
          return sf
 
-def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_keyword):
-    ''' take project notebook template, rename it and copy the result to the
+def generate_submission_form(MY_FIRST_NAME,MY_LAST_NAME,MY_PROJECT,MY_KEYWORD,MY_EMAIL):
+    ''' used in form generation notebook
+        take project notebook template, rename it and copy the result to the
         projects submission form directory as a personal copy for the end user
     '''
         #working_dir = os.getcwd()
       # global variable cordex_directoy used here .. to be improved ..
     
    # from dkrz_forms import form_handler
-    
 
     
-    if my_project in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
+    if MY_PROJECT in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
         
                     
-          sf = Form(project_dicts[my_project])
-          sf.project=my_project
+          sf = Form(PROJECT_DICT[MY_PROJECT])
           
-          print "Form Handler: Initialized form for project:", my_project
-          # print sf.__dict__
-          # initialize form object with location of git repo where submission forms are stored (locally)
-          sf.sub.repo = project_directory[my_project]       
-          sf.sub.last_name=my_last_name
-          sf.sub.email=my_email
-          sf.sub.keyword=my_keyword
-          sf.sub.form_name=my_project+'_'+my_last_name+'_'+my_keyword
-          #sf.sub.form_path=sf.sub.repo+'/'+sf.sub.form_name+'.ipynb'
-          sf.sub.form_path=join(sf.sub.repo,sf.sub.form_name+'.ipynb')
-          sf.sub.id = str(uuid.uuid1())
+          sf.form_repo = FORM_REPO+'/CORDEX'
+          sf.submission_repo = SUBMISSION_REPO+'/CORDEX'
+          sf.form_dir = NOTEBOOK_DIRECTORY+'/CORDEX'
+                 
+          sf.sub = Form(DATA_SUBMISSION)
+          print "Form Handler: Initialized form for project:", MY_PROJECT
+          print sf.project
+          
+          sf.sub.agent.last_name = MY_LAST_NAME
+          sf.sub.agent.first_name=MY_FIRST_NAME
+          sf.sub.agent.email=MY_EMAIL
+          
+          sf.sub.activity.keyword=MY_KEYWORD
+                 
+          sf.sub.entity_out.form_repo = sf.form_repo,
+          sf.sub.entity_out.form_name = MY_PROJECT+'_'+MY_LAST_NAME+'_'+MY_KEYWORD
+          #sf.sub.form_path=sf.sub.form_repo+'/'+sf.sub.form_name+'.ipynb'
+          print sf.form_repo
+          print sf.sub.entity_out.form_name+'.ipynb'
+          sf.sub.entity_out.form_repo_path=join(sf.form_repo,sf.sub.entity_out.form_name+'.ipynb')
+          sf.sub.entity_out.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb')
+          sf.sub.entity_out.pwd = id_generator()
+          
+          
+          if os.path.isfile(sf.form_repo+'/keystore'):
+              keystore = get_persisted_info('forms_pwd',sf.form_repo+'/keystore')
+          else:
+              keystore = {}
+          keystore[sf.sub.entity_out.pwd] = [MY_LAST_NAME, sf.sub.entity_out.form_name, sf.form_repo, 
+                                  join(sf.form_repo,sf.sub.entity_out.form_name+'.json')]
+          persist_info('forms_pwd',keystore,sf.form_repo+'/keystore')
+          print 'Keystore: ', keystore
            
-          template_name = my_project+"_submission_form.ipynb"
+          template_name = MY_PROJECT+"_submission_form.ipynb"
           try:
-              sf.subsource_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
+              sf.sub.entity_in.source_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
           except:
-              sf.sub.source_path = join(install_directory,"submission_forms","dkrz_forms","Templates",template_name)
+              sf.sub.entity_in.source_path = join(INSTALL_DIRECTORY,"submission_forms","dkrz_forms","Templates",template_name)
               #print "Form Handler: Attention !  non standard source for submission form"
-         
-          #print "--- copy from:", sf.sub.source_path
-          #print "--- to: ", sf.sub.form_path
-          shutil.copyfile(sf.sub.source_path,sf.sub.form_path)
+          ## to do: version of template
+          # sf.sub.entity_in.version = ...
+          print "--- copy from:", sf.sub.entity_in.source_path
+          print "--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path
+          shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
+          shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_path)
           print "--------------------------------------------------------------------"
           print "   A submission form was created for you, please visit the following link:"
           # print sf
-          print "    https://data-forms.dkrz.de:8080/notebooks/submission_forms_repo/"+my_project+"/"+sf.sub.form_name+".ipynb"
           ## to do email link to user ....
           print "--------------------------------------------------------------------"
           save_form(sf, "Form Handler: form - initial generation - quiet" )
           print " ......  initial version saved ..."
-          repo = Repo(sf.sub.repo)
+          repo = Repo(sf.form_repo)
           # get commit hash and add to json package
           master = repo.head.reference
           commit_hash = master.commit.hexsha
-          sf.sub.commit_hash = commit_hash
+          sf.sub.activity.commit_hash = commit_hash
            
           save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
-          print " ....... finalised version saved ..."  
+          print " ....... finalised version saved ..." 
+          print "id: ", sf.sub.entity_out.pwd
           if is_hosted_service():
                email_form_info(sf)
           return sf          
@@ -204,6 +238,10 @@ def generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_k
         print "please re-evaluate cell with proper project information"
         return "Error"
 
+
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 
 def prefix_dict(mydict,prefix,keys):
@@ -218,6 +256,10 @@ def prefix_dict(mydict,prefix,keys):
 # Functions to convert form objects into dictionaries into json files and back
 
 class Form(object):
+    ''' translate a dictionary (of dictionaries) into 
+        a (hierarchical) Form object
+        todo: some form checking integration ...
+    '''
     def __init__(self, adict):
         """Convert a dictionary to a class
 
@@ -248,20 +290,25 @@ class FForm(object):
 #    """
 #    return Form(mydict)
  
-## todo: generalize in a recursive function definition ....   
+
 def form_to_dict(sf):
-    new_sf = copy.deepcopy(sf)
-    new_sf.sub = new_sf.sub.__dict__
-    new_sf.ing = new_sf.ing.__dict__
-    new_sf.qua = new_sf.qua.__dict__
-    new_sf.pub = new_sf.pub.__dict__
-    return new_sf.__dict__
+    result = {}
+    for key, val in sf.__dict__.iteritems():
+        
+        if isinstance(val,Form):
+           new_val = form_to_dict(val)
+        else:
+           new_val = val
+        result[key] = new_val
+    return result 
+    
     
 def form_to_json(sf):
     """
     serialize form value object to json string
     """
     sf_dict = form_to_dict(sf)
+    
     s = json.dumps(sf_dict,sort_keys=True, indent=4, separators=(',', ': '))
     return s
 
@@ -302,7 +349,7 @@ def save_form(sf,comment):
    
    
     #print "input for formsave", sf.__dict__
-    repo = Repo(sf.sub.repo)
+    repo = Repo(sf.form_repo)
     #sf.sub['status'] = "stored"
     sf.sub.timestamp = str(datetime.now())
     # .. should be defined prior to "save"
@@ -322,11 +369,11 @@ def save_form(sf,comment):
            ## later: may be helper function to retrieve notebook according to sha1 value of
            ## corresponding submitted json ...
        
-           result = repo.git.add(join(sf.sub.repo,sf.project+"_"+sf.sub.last_name+"_"+"*"))
+           result = repo.git.add(join(sf.form_repo,sf.project+"_"+sf.sub.agent.last_name+"_"+"*"))
            #result = repo.git.add(sf.sub.form_name+'*')
            #print result 
            
-           commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " + comment
+           commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
            commit = repo.git.commit(message=commit_message)
            if comment_on:
                print " --- commit message:"+ commit         
@@ -355,12 +402,12 @@ def email_form_info(sf):
      my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
      msg = MIMEText(my_message)
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
-     msg['From'] = "data_submission@dkrz.de"
+     msg['From'] = "DATA_SUBMISSION@dkrz.de"
      msg['To'] = sf.sub.email
      # Send the message via the data-forms VM SMTP server, but don't include the\n"
      # envelope header.\n",
      s = smtplib.SMTP('localhost')
-     s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
+     s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
      s.quit()
      print "Form submitted to your email address "+sf.sub.email
   else:
@@ -376,13 +423,13 @@ def email_form_info(sf):
 def form_submission(sf):
    """
      - submit to rt system in case RT module is present (True for DKRZ hosted service, probably false for home installations)
-     - submit to "data_submission@dkrz" in case RT is not present but email is configured on installation
+     - submit to "DATA_SUBMISSION@dkrz" in case RT is not present but email is configured on installation
      - print instructions for manual submission in case all above is not working
    """
    ## to do: validity check first
-   shutil.copy(sf.sub.subform_path,join(submission_directory,sf.project))
-   shutil.copy(sf.sub.package_path,join(submission_directory,sf.project))
-   repo = Repo(submission_directory)
+   shutil.copy(sf.sub.subform_path,join(SUBMISSION_REPO,sf.project))
+   shutil.copy(sf.sub.package_path,join(SUBMISSION_REPO,sf.project))
+   repo = Repo(SUBMISSION_REPO)
    #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
    try: 
       repo.git.pull()
@@ -393,7 +440,7 @@ def form_submission(sf):
    repo.git.add("*")
    #repo.git.add(join(sf.project,package_name)
    #repo.git.add(join(sf.project,form_name)
-   commit_message =  "Form Handler: submission form for user "+sf.sub.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
+   commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
    commit = repo.git.commit(message=commit_message)
    print commit
    result = repo.git.push()
@@ -402,14 +449,14 @@ def form_submission(sf):
    if rt_module_present:
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
       tracker.login()
-      ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="DKRZ data form submission: "+sf.project+"--"+sf.sub.last_name,
+      ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="DKRZ data form submission: "+sf.project+"--"+sf.sub.agent.last_name,
                   Priority= 10,Owner="kindermann@dkrz.de")
       sf.sub.ticket_id = ticket_id
       sf.sub.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
       sf.substatus = "submitted"
       is_packaged = package_submission(sf,comment_on=False)
       json_file_name = sf.sub.form_name+".json"
-      comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.last_name,files=[(json_file_name,open(sf.sub.package_path,'rb'))])
+      comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.agent.last_name,files=[(json_file_name,open(sf.sub.package_path,'rb'))])
 
       if comment_submitted:
          print "RT Ticket generated"
@@ -421,7 +468,7 @@ def form_submission(sf):
    # generate updated json file and store in repo
 
    if not(rt_module_present) and is_hosted_service():
-      m_part1 = "A "+sf.myproject+"data submission was requested by: " + sf.first_name + " " + sf.last_name + "\n"
+      m_part1 = "A "+sf.myproject+"data submission was requested by: " + sf.sub.agent.first_name + " " + sf.sub.agent.last_name + "\n"
       m_part2 = "Corresponding email: "+ sf.email +"\n"
       m_part3 = "Submission form url: https://data-forms.dkrz.de:8080/notebooks/"+sf.projectCORDEX+"/"+sf.form_name+".ipynb \n"
       m_part4 = "The submission is commited to the following git repository: "+sf.form_name +"\n"
@@ -430,13 +477,13 @@ def form_submission(sf):
       my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
       msg = MIMEText(my_message)
       msg['Subject'] = 'Test email from DKRZ data submission form management software - please ignore'
-      msg['From'] = "data_submission@dkrz.de"
+      msg['From'] = "DATA_SUBMISSION@dkrz.de"
       msg['To'] = sf.email
       msg['CC'] = "kindermann@dkrz.de"
       # Send the message via the data-forms VM SMTP server, but don't include the\n"
       # envelope header.\n",
       s = smtplib.SMTP('localhost')
-      s.sendmail("data_submission@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
+      s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
       s.quit()
 
       print "DKRZ forms request submitted"
@@ -457,7 +504,8 @@ def form_submission(sf):
 def package_submission(sf,comment_on):
        
     
-    pattern = sf.sub.repo+"/"+sf.project+"_"+sf.sub.last_name+"_"+sf.sub.keyword+".ipynb"
+    pattern = sf.form_repo+"/"+sf.project+"_"+sf.sub.agent.last_name+"_"+sf.sub.activity.keyword+".ipynb"
+    print pattern
  
     paths = [n for n in glob.glob(pattern) if os.path.isfile(n)]
     
@@ -467,11 +515,11 @@ def package_submission(sf,comment_on):
              sf.sub.id = str(uuid.uuid1())
              form_json = form_to_json(sf)
              #parts=sf.form_name.split(".")
-             my_jsonform_name = sf.sub.form_name+".json"
-             sf.sub.subform_path=pattern
-             file_path = sf.sub.repo+"/"+my_jsonform_name
-             sf.sub.package_path = file_path
-             sf.sub.package_name = my_jsonform_name
+             my_jsonform_name = sf.sub.entity_out.form_name+".json"
+             sf.sub.entity_out.subform_path=pattern
+             file_path = sf.form_repo+"/"+my_jsonform_name
+             sf.sub.entity_out.package_path = file_path
+             sf.sub.entity_out.package_name = my_jsonform_name
              
             
              form_file = open(file_path,"w+")
@@ -493,14 +541,14 @@ def package_submission(sf,comment_on):
     
 
 
-def persist_form(form_object,location):
+def persist_info(key,form_object,location):
     p_shelve = shelve.open(location)
-    p_shelve['form_object'] = form_object
+    p_shelve[key] = form_object
     p_shelve.close()
 
-def get_form(location):
+def get_persisted_info(key,location):
     p_shelve = shelve.open(location)
-    form_object = p_shelve['form_object']
+    form_object = p_shelve[key]
     p_shelve.close()
     return form_object
 

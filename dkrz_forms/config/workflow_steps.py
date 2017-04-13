@@ -10,7 +10,7 @@ ToDo: Merge with variable tests ...
 
 workflow_steps_version = "1.0"
 
-name_space={'sub':'http://enes.org/entities/ingest-workflow#',
+NAME_SPACES={'sub':'http://enes.org/entities/ingest-workflow#',
             'ing':'http://enes.org/entities/ingest-workflow#',
             'che':'http://enes.org/entities/ingest-workflow#',
             'pub':'http://enes.org/entities/ingest-workflow# '        
@@ -28,32 +28,25 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
 # -- activities (transforming input to output)
 # -- agents (persons, SW engaged in activities)
 
-Data_Delivery_WFlow = [
-     data_submission, 
-     data_submission_review, 
-     data_ingest, 
-     data_quality_assurance,
-     data_publication,
-     data_preservation ]
 
 # data submission
-submission_agent = { 
+SUBMISSION_AGENT = { 
               'last_name' : '',
               'first_name' : '',
               'key_word': '',
               'email': ''}
 
-submission_activity = {
+SUBMISSION_ACTIVITY = {
            'submission_comment':'',
            'submission_method':''           
             } 
             
-submission_form_template_entity = {
+SUBMISSION_FORMTEMPLATE_ENTITY = {
              'source_path' : '', # filled with path of original template form      
              'form_version': '', # version of form template / form tool 
             }
              
-submission_form_filled_entity = {
+SUBMISSION_FORM_ENTITY = {
             'form_name': '',
             'form_path': '',
             'package_name':'', # json package
@@ -61,36 +54,36 @@ submission_form_filled_entity = {
             'repo': '',
             'checks_done' : "none"} 
 
-data_submission = {
-     'entities_in': [submission_form_template_entity]
-     'entities out': [submission_form_filled_entity]
-     'agent': submission_agent,
-     'activity': submission_activity
+DATA_SUBMISSION = {
+     'entity_in': SUBMISSION_FORMTEMPLATE_ENTITY,
+     'entity_out': SUBMISSION_FORM_ENTITY,
+     'agent': SUBMISSION_AGENT,
+     'activity': SUBMISSION_ACTIVITY
 }
 
 #  data review
  
-review_agent =  {        
+REVIEW_AGENT =  {        
             'responsible_person': ""
             }
             
-review_activity =  {
+REVIEW_ACTIVITY =  {
             'review_comment': '',
             'ticket_url':'',
             'ticket_id' : 0,
            }
 
-review_report = {
+REVIEW_REPORT = {
           'report_ticket_subject':'', # subject of ticket describing review 
                                      # --> to do: ticket subject conventions for data managers
           'review_summary': ''
               } 
  
-data_submission_review = {
-    'entities_in': submission_form_filled_entitiy
-    'entities out': review_report
-    'agent': review_agent, 
-    'activity': review_activity
+DATA_SUBMISSION_REVIEW = {
+    'entity_in': SUBMISSION_FORM_ENTITY,
+    'entity out': SUBMISSION_FORM_ENTITY,
+    'agent': REVIEW_AGENT, 
+    'activity': REVIEW_ACTIVITY
     }
      
              
@@ -102,11 +95,11 @@ data_submission_review = {
 # 
 
 
-ingest_agent = {
+INGEST_AGENT = {
                 "responsible_person": "",
                 }
 
-ingest_activity = {
+INGEST_ACTIVITY = {
              "status": "", 
              "timestamp_started":"",
              "timestamp_finished":"",
@@ -115,25 +108,27 @@ ingest_activity = {
          
              }   
  
-ingest_report =     {
+INGEST_REPORT =     {
              "drsdir_file_pattern": "", #glob file pattern for ingested data
              "target_directory": "",
                }  
                
-               
-data_ingest = {}
-data_ingest.update(ingest_agent)  
-data_ingest.update(ingest_activity)  
-data_ingest.update(ingest_report)           
+
+DATA_INGEST = {
+    'entitiy_in': SUBMISSION_FORM_ENTITY,
+    'entitiy out': SUBMISSION_FORM_ENTITY,
+    'agent': INGEST_AGENT, 
+    'activity': INGEST_ACTIVITY
+    }
+          
 # 3. step: information related to data quality assurance phase:
 #             - ----            
              
-qua_agent = {
+QUA_AGENT = {
              "responsible_person": "",
-
              }
 
-qua_activity = {
+QUA_ACTIVITY= {
              "status": "",
              "timestamp_started":"",
              "timestamp_finished":"",
@@ -142,32 +137,35 @@ qua_activity = {
              "follow_up_ticket": '', # qa feedback to users, follow up actions
              }
 
-qua_report = {
+QUA_REPORT_ENTITY = {
              "target_directory": "", # qa reports
              "qua_status":"",
              "qua_comment":"",
              "qa_tool_version": '',
             }
 
-qua = {}
-qua.update(qua_agent)
-qua.update(qua_activity)
-qua.update(qua_report)
+DATA_QUALITY_ASSURANCE = {
+    'entity_in': SUBMISSION_FORM_ENTITY,
+    'entity out': SUBMISSION_FORM_ENTITY,
+    'agent': QUA_AGENT, 
+    'activity': QUA_ACTIVITY
+    }
+
 # 4. step: information related to ESGF publication phase  
 #           -              
              
-pub_agent = {
+PUBLICATION_AGENT = {
             "responsible_person": "",
            }
 
-pub_activity =  {
+PUBLICATION_ACTIVITY =  {
            "status": "",
            "comment": "",
            "timestamp": "",
            "ticket_id": "", 
            }
 
-pub_report = {
+PUBLICATION_REPORT_ENTITY = {
              "pid_collections" : "",
              "publish_date": "",
              "search_string" : "", # cog url including facet search string
@@ -175,10 +173,51 @@ pub_report = {
              }
 
 
-publication = {}
-publication.update(pub_agent)
-publication.update(pub_activity) 
-publication.update(pub_report)       
+DATA_PUBLICATION = {
+    'entity_in': SUBMISSION_FORM_ENTITY,
+    'entity out': SUBMISSION_FORM_ENTITY,
+    'agent': PUBLICATION_AGENT, 
+    'activity': PUBLICATION_ACTIVITY
+    }
+
+# 5. step: information related to archival, preservation and DOI assignment
+# 
+
+PRESERVATION_AGENT = {
+            "responsible_person": "",
+           }
+
+PRESERVATION_ACTIVITY =  {
+           "status": "",
+           "comment": "",
+           "timestamp": "",
+           "ticket_id": "", 
+           }
+
+PRESERVATION_REPORT_ENTITY = {
+             "pid_collections" : "",
+             "publish_date": "",
+             "search_string" : "", # cog url including facet search string
+             "facet_string": "", # e.g. project=A&model=B& ....
+             }
+
+
+DATA_PRESERVATION = {
+    'entities_in': SUBMISSION_FORM_ENTITY,
+    'entities out': SUBMISSION_FORM_ENTITY,
+    'agent': PRESERVATION_AGENT, 
+    'activity': PRESERVATION_ACTIVITY
+    }
+
+#=============================================================================
+WORKFLOW_DICT = {
+     'data_submission': DATA_SUBMISSION, 
+     'data_submission_review': DATA_SUBMISSION_REVIEW, 
+     'data_ingest': DATA_INGEST, 
+     'data_quality_assurance': DATA_QUALITY_ASSURANCE,
+     'data publication': DATA_PUBLICATION,
+     'data_preservation': DATA_PRESERVATION }
+      
 # submitted information
 #cordex_dict  = {
 #             "first_name": "",

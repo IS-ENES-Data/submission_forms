@@ -10,7 +10,7 @@ ToDo: Merge with variable tests ...
 from os.path import join as join
 import base64
 
-name_space={'sub':'http://enes.org/entities/ingest-workflow#',
+NAME_SPACES={'sub':'http://enes.org/entities/ingest-workflow#',
             'ing':'http://enes.org/entities/ingest-workflow#',
             'qua':'http://enes.org/entities/ingest-workflow#',
             'pub':'http://enes.org/entities/ingest-workflow#',        
@@ -21,22 +21,34 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
             }
  
 # adapt to your deployment           
-#install_directory = "/opt/formhandler/"
-install_directory = "/home/stephan/Repos/ENES-EUDAT/"
-#dir_prefix = "/opt/formhandler/Repos/"
-dir_prefix = "/home/stephan/tmp/Repos/"
-info_db_path = join(dir_prefix,"db/db.json")
 
-submission_directory = join(dir_prefix,"data_forms_repo")
-user_submission_directory = join(dir_prefix,"submission_forms_repo")
+ 
+# directory where submission_forms package is installed
+# leave empty if pip installed
+# install_directory = "/opt/formhandler/"
+INSTALL_DIRECTORY = "/home/stephan/Repos/ENES-EUDAT/"
+
+# Directory where web accessible forms are served
+NOTEBOOK_DIRECTORY = '/home/stephan/Repos/ENES-EUDAT/submission_forms/test/forms'
+
+FORM_URL_PATH = 'http://localhost:8888/notebooks/Repos/ENES-EUDAT/submission_forms/test/forms/'
+# Directory where the project git repos live
+# dir_prefix = "/opt/formhandler/Repos/"
+DIR_PREFIX = "/home/stephan/tmp/Repos/"
+INFO_DB_PATH = join(DIR_PREFIX,"db/db.json")
+
+FORM_REPO = join(DIR_PREFIX,"form_repo")
+
+# final submissions repo (gitlab synchronized)
+SUBMISSION_REPO = join(DIR_PREFIX,"submission_repo")
 
 # rest is deployment independent
-project_directory = {}
-project_directory["CORDEX"] = join(user_submission_directory,"CORDEX")
-project_directory["CMIP6"] = join(user_submission_directory,"CMIP6")
-project_directory["ESGF_replication"] = join(user_submission_directory,"ESGF_replication")
-project_directory["DKRZ_CDP"] = join(user_submission_directory,"DKRZ_CDP")
-project_directory["test"] = join(user_submission_directory,"test")
+#project_directory = {}
+#project_directory["CORDEX"] = join(user_submission_directory,"CORDEX")
+#project_directory["CMIP6"] = join(user_submission_directory,"CMIP6")
+#project_directory["ESGF_replication"] = join(user_submission_directory,"ESGF_replication")
+#project_directory["DKRZ_CDP"] = join(user_submission_directory,"DKRZ_CDP")
+#project_directory["test"] = join(user_submission_directory,"test")
 
 
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
@@ -49,9 +61,10 @@ from dkrz_forms.config import workflow_steps
 
 #print "./dkrz_forms:  workflow steps config imported"
 
-project_dicts = {}
+PROJECT_DICT = {}
+
 # submitted information
-project_dicts['CORDEX']  = {
+PROJECT_DICT['CORDEX']  = {
              "project":"CORDEX",
              "first_name": "",
              "last_name" : "",
@@ -77,11 +90,13 @@ project_dicts['CORDEX']  = {
              "variable_list_sem" : "",
              "variable_list_fx" : "",
              "uniqueness_of_tracking_id" : "",
-             'sub':workflow_steps.submission,
-             'ing':workflow_steps.data_ingest,
-             'qua':workflow_steps.qua,
-             'pub':workflow_steps.publication            
+             "workflow": ["sub","ing","qua","pub"], 
+             #'sub':workflow_steps.data_submission,
+             #'ing':workflow_steps.data_ingest,
+             #'qua':workflow_steps.data_quality_assurance,
+             #S'pub':workflow_steps.data_publication  
              }
+                         
 
 generic_dict = {
              "first_name":""
@@ -89,38 +104,22 @@ generic_dict = {
              
 # to do: put generic info in generic_dict and merge this with 
 #        the project_dicts below
-project_dicts['DKRZ_CDP'] = {
+PROJECT_DICT['DKRZ_CDP'] = {
              'project': 'CMIP6_CDP',
-             'sub':workflow_steps.submission,
-             'ing':workflow_steps.data_ingest,
-             'qua':workflow_steps.qua,
-             'pub':workflow_steps.publication
- 
+             "workflow" : ["sub","ing","qua","pub"]
  }
-project_dicts['test'] = {
+PROJECT_DICT['test'] = {
              'project' : "test",
-             'sub':workflow_steps.submission,
-             'ing':workflow_steps.data_ingest,
-             'qua':workflow_steps.qua,
-             'pub':workflow_steps.publication
- 
+             "workflow" : ["sub","ing","qua","pub"]
  }
-project_dicts['CMIP6']= {
+PROJECT_DICT['CMIP6']= {
              'project' : 'CMIP6',
-             'sub':workflow_steps.submission,
-             'ing':workflow_steps.data_ingest,
-             'qua':workflow_steps.qua,
-             'pub':workflow_steps.publication
-
+             "workflow" : ["sub","ing","qua","pub"]
  }            
  
-project_dicts['ESGF_replication']= {
+PROJECT_DICT['ESGF_replication']= {
              'project' : 'CMIP6_replication',
-             'sub':workflow_steps.submission,
-             'ing':workflow_steps.data_ingest,
-             'qua':workflow_steps.qua,
-             'pub':workflow_steps.publication
-
+             "workflow" : ["sub","ing","qua","pub"]
  }            
 
 #============= Definition of CORDEX specific test functions ===================================
