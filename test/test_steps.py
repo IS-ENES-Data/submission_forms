@@ -1,32 +1,35 @@
-
 import sys, os, shutil
-
 from git import Repo, GitCommandError
 
-"""
-to do: import publish etc dict as objects
-       assign value based on objects (with then predefined attributes)
-
-
-"""
 join = os.path.join
 import_path = os.path.abspath('..')
 sys.path.append(import_path)
 
 from dkrz_forms import form_handler
 
+from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
+from workflow_steps import DATA_SUBMISSION
+
 try:
-  from project_config import project_directory, install_directory, project_dicts, submission_directory
+  from project_config import form_repoectory, install_directory, project_dicts, submission_directory
 except ImportError:
   #  print "Info: myconfig not found - taking default config "
-  from dkrz_forms.config.project_config import project_directory, install_directory, project_dicts, submission_directory
+  from dkrz_forms.config.project_config import form_repoectory, install_directory, project_dicts, submission_directory
 
+init_form = {}
+init_form['first_name'] = "unit_tester"
+init_form['last_name'] = "testsuite"
+init_form['project'] = "test"
+init_form['email'] = "stephan.kindermann@gmail.com"
+init_form['key'] = "1234" 
 
+form_repo = FORM_REPO+'/'+ init_form['project']
 #print test_config.cordex_directory
-project_dir = project_directory["test"]
+sf = {} 
 
-print "Project directory: ", project_dir
-print project_directory
+print "Project directory: ", form_repo
+print form_repoectory
 # get workflow steps
 #(submission,ingest,checking,publish) = form_handler.get_workflow_steps() 
 #print submission.__dict__
@@ -56,39 +59,31 @@ def init_git_repo(target_dir):
     repo = Repo.init(target_dir)
     return repo
 
-
-    
-
-## generic settings for tests
-my_first_name = "stasi"  # example: my_first_name = "Alf"
-my_last_name = "ki"   # example: my_last_name = "Mitty"
-my_email = "snkinder@freenet.de"       # example: email = "alf.mitty@gmail.com"
-my_project = "test"  # available alternatives: "Test", "CORDEX","CMIP6","Other"
-my_keyword = "sk1"     # please remember your personal keyword to identify your submission
-
-form_info_json_file = join(project_dir,my_project+"_"+my_last_name+"_"+my_keyword+".json")
-
+form_info_json_file = join(form_repo,my_project+"_"+my_last_name+"_"+my_keyword+".json")
 
 
 def test_me():
-    assert project_dir == os.path.abspath("/Users/stephan/Documents/formhandler/Repos/submission_forms_repo/test")
+    assert form_repo == os.path.abspath("....")
 
 
 def test_formgeneration():
     ## takes myconfig from .dkrz_forms if existing !! 
-   
-    init_git_repo(project_dir)                 
-    form_handler.generate_submission_form(my_first_name,my_last_name,my_email,my_project,my_keyword)
-    assert os.path.exists(project_dir) == 1
-    files = os.listdir(project_dir)
+    global sf
+    init_git_repo(form_repo)                 
+    sf = form_handler.generate_submission_form(init_form)
+    assert os.path.exists(form_repo) == 1
+    assert sf.form_dir == form_repo
+    assert sf.sub.agent.last_name == "testsuite"
+    # assert sf.sub.activity. ..  --> to do 
+    files = os.listdir(form_repo)
     print files
-    assert my_project+"_"+my_last_name+"_"+my_keyword+".ipynb" in files 
-    assert my_project+"_"+my_last_name+"_"+my_keyword+".json" in files
-
+    assert sf.sub.entity_out.form_repo_path in files
+    assert sf.sub.entity_out.package_path in files
+    
 
 def test_formcompletion():
     ## reads form json file and returns hierachical form object
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
+    workflow_form = form_handler.load_workflow_form(sf.sub.entity_out.package_path)
     submission = workflow_form.sub
     submission.status = "checked"
     submission.check_status = "consistency_checked"

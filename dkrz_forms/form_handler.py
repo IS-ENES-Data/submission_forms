@@ -70,7 +70,7 @@ sys.path.append(config_dir)
 
 try:
   from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from project_config import PROJECT_DICT, FORM_URL_PATH
+  from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
   from workflow_steps import DATA_SUBMISSION
   
   
@@ -109,7 +109,36 @@ except ImportError, e:
 # generalized submission form class based on project dictionary defining to be defined variables
 
 
-def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
+def init_sf(init_form):
+          sf = Form(PROJECT_DICT[init_form['project']])
+          
+          sf.form_repo = FORM_REPO+'/'+ init_form['project']
+          sf.submission_repo = SUBMISSION_REPO+ '/'+ init_form['project']
+          sf.form_dir = NOTEBOOK_DIRECTORY+'/'+ init_form['project']
+                 
+          sf.sub = Form(DATA_SUBMISSION)
+          print "Form Handler: Initialized form for project:", init_form['project']
+          print sf.project
+          
+          sf.sub.agent.last_name = init_form['last_name']
+          sf.sub.agent.first_name= init_form['first_name']
+          sf.sub.agent.email= init_form['email']
+          
+          sf.sub.activity.keyword=init_form['key']
+          sf.sub.activity.pwd=init_form['pwd']
+                 
+          sf.sub.entity_out.form_repo = sf.form_repo,
+          sf.sub.entity_out.form_name = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
+          #sf.sub.form_path=sf.sub.form_repo+'/'+sf.sub.form_name+'.ipynb'
+          print sf.form_repo
+          print sf.sub.entity_out.form_name+'.ipynb'
+          sf.sub.entity_out.form_repo_path=join(sf.form_repo,sf.sub.entity_out.form_name+'.ipynb')
+          sf.sub.entity_out.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
+          
+          return(sf)
+
+
+def init_form(init_form):
     ''' used in form notebooks
         initialize a submission form object based on a project dictionary
         and associate it with a git repo, where it is stored and maintained
@@ -117,23 +146,9 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
         to do: move it to a class function !?
     '''
     
-    if my_project in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
+    if init_form['project'] in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
          
-         # To Do: read secret keyword
-         #sf = cordex_submission_form()
-         sf = Form(PROJECT_DICT[my_project])
-         # initialize form object with location of git repo where submission forms are stored (locally)
-         sf_submission = Form('DATA_SUBMISSION')
-         sf.sub = sf_submission
-         sf.sub.form_repo = PROJECT_DICT[my_project]
-         # empty dictionary containing future submission specific information
-         # like status, repo, etc. 
-         sf.project=my_project
-         sf.sub.agent.last_name=my_last_name
-         sf.sub.agent.email=my_email
-         sf.sub.keyword=my_keyword
-           
-         sf.sub.form_name=my_project+'_'+my_last_name+'_'+my_keyword
+         sf = init_sf(init_form)        
                  
          is_packaged = package_submission(sf,comment_on=False)
          
@@ -151,7 +166,7 @@ def init_form(my_project,my_first_name,my_last_name,my_email,my_keyword):
          sf = {}
          return sf
 
-def generate_submission_form(MY_FIRST_NAME,MY_LAST_NAME,MY_PROJECT,MY_KEYWORD,MY_EMAIL):
+def generate_submission_form(init_form):
     ''' used in form generation notebook
         take project notebook template, rename it and copy the result to the
         projects submission form directory as a personal copy for the end user
@@ -162,45 +177,26 @@ def generate_submission_form(MY_FIRST_NAME,MY_LAST_NAME,MY_PROJECT,MY_KEYWORD,MY
    # from dkrz_forms import form_handler
 
     
-    if MY_PROJECT in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
+    if init_form['project'] in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
         
-                    
-          sf = Form(PROJECT_DICT[MY_PROJECT])
-          
-          sf.form_repo = FORM_REPO+'/CORDEX'
-          sf.submission_repo = SUBMISSION_REPO+'/CORDEX'
-          sf.form_dir = NOTEBOOK_DIRECTORY+'/CORDEX'
-                 
-          sf.sub = Form(DATA_SUBMISSION)
-          print "Form Handler: Initialized form for project:", MY_PROJECT
-          print sf.project
-          
-          sf.sub.agent.last_name = MY_LAST_NAME
-          sf.sub.agent.first_name=MY_FIRST_NAME
-          sf.sub.agent.email=MY_EMAIL
-          
-          sf.sub.activity.keyword=MY_KEYWORD
-                 
-          sf.sub.entity_out.form_repo = sf.form_repo,
-          sf.sub.entity_out.form_name = MY_PROJECT+'_'+MY_LAST_NAME+'_'+MY_KEYWORD
-          #sf.sub.form_path=sf.sub.form_repo+'/'+sf.sub.form_name+'.ipynb'
-          print sf.form_repo
-          print sf.sub.entity_out.form_name+'.ipynb'
-          sf.sub.entity_out.form_repo_path=join(sf.form_repo,sf.sub.entity_out.form_name+'.ipynb')
-          sf.sub.entity_out.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb')
+          sf = init_sf(init_form)          
+         
           sf.sub.entity_out.pwd = id_generator()
-          
-          
+                   
           if os.path.isfile(sf.form_repo+'/keystore'):
               keystore = get_persisted_info('forms_pwd',sf.form_repo+'/keystore')
           else:
               keystore = {}
-          keystore[sf.sub.entity_out.pwd] = [MY_LAST_NAME, sf.sub.entity_out.form_name, sf.form_repo, 
-                                  join(sf.form_repo,sf.sub.entity_out.form_name+'.json')]
+          key_info = copy.deepcopy(init_form)
+          key_info['form_name']= sf.sub.entity_out.form_name
+          key_info['form_repo']= sf.form_repo
+          key_info['form_json']= join(sf.form_repo,sf.sub.entity_out.form_name+'.json')
+          
+          keystore[sf.sub.entity_out.pwd] = key_info
           persist_info('forms_pwd',keystore,sf.form_repo+'/keystore')
           print 'Keystore: ', keystore
            
-          template_name = MY_PROJECT+"_submission_form.ipynb"
+          template_name = init_form['project']+"_submission_form.ipynb"
           try:
               sf.sub.entity_in.source_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
           except:
@@ -215,6 +211,7 @@ def generate_submission_form(MY_FIRST_NAME,MY_LAST_NAME,MY_PROJECT,MY_KEYWORD,MY
           print "--------------------------------------------------------------------"
           print "   A submission form was created for you, please visit the following link:"
           # print sf
+          print FORM_URL_PATH+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb'
           ## to do email link to user ....
           print "--------------------------------------------------------------------"
           save_form(sf, "Form Handler: form - initial generation - quiet" )
@@ -414,10 +411,10 @@ def email_form_info(sf):
      print "This form is not hosted at DKRZ! Thus form information is stored locally on your computer \n"
      print "Here is a summary of the generated and stored information:"
      print "-- form for project: ",sf.project
-     print "-- form name: ",sf.sub.form_name
-     print "-- submission form path: ", sf.sub.subform_path 
-     print "-- package path: ", sf.sub.package_path
-     print "-- package name: ", sf.sub.package_name
+     print "-- form name: ",sf.sub.entity_out.form_name
+     print "-- submission form path: ", sf.sub.entity_out.subform_path 
+     print "-- package path: ", sf.sub.entity_out.package_path
+     print "-- package name: ", sf.sub.entity_out.package_name
 
 
 def form_submission(sf):

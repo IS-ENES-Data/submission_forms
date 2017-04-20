@@ -48,10 +48,11 @@ SUBMISSION_FORMTEMPLATE_ENTITY = {
              
 SUBMISSION_FORM_ENTITY = {
             'form_name': '',
-            'form_path': '',
+            'form_path': '', # where form is served
+            'form_repo_path' :'',
+            'subform_path': '', # where form is stored (repo)
             'package_name':'', # json package
-            'package_path': '', 
-            'repo': '',
+            'package_path': '',
             'checks_done' : "none"} 
 
 DATA_SUBMISSION = {
