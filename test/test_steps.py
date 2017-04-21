@@ -34,30 +34,7 @@ print form_repoectory
 #(submission,ingest,checking,publish) = form_handler.get_workflow_steps() 
 #print submission.__dict__
 
-def onerror(func, path, exc_info):
-    """
-    Error handler for ``shutil.rmtree``.
 
-    If the error is due to an access error (read only file)
-    it attempts to add write permission and then retries.
-
-    If the error is for another reason it re-raises the error.
-    
-    Usage : ``shutil.rmtree(path, onerror=onerror)``
-    """
-    import stat
-    if not os.access(path, os.W_OK):
-        # Is the error an access error ?
-        os.chmod(path, stat.S_IWUSR)
-        func(path)
-    else:
-        raise
-
-def init_git_repo(target_dir):
-    if os.path.exists(target_dir):
-       shutil.rmtree(target_dir)
-    repo = Repo.init(target_dir)
-    return repo
 
 form_info_json_file = join(form_repo,my_project+"_"+my_last_name+"_"+my_keyword+".json")
 
@@ -69,7 +46,7 @@ def test_me():
 def test_formgeneration():
     ## takes myconfig from .dkrz_forms if existing !! 
     global sf
-    init_git_repo(form_repo)                 
+    form_handler.init_git_repo(form_repo)                 
     sf = form_handler.generate_submission_form(init_form)
     assert os.path.exists(form_repo) == 1
     assert sf.form_dir == form_repo

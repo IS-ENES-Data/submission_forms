@@ -41,6 +41,7 @@ Configuration:
 # * most are in standard python library
 # * others are imported conditionally
 #
+from __future__ import print_function
 import os,sys,shutil,uuid
 import glob
 import pkg_resources
@@ -51,8 +52,8 @@ from datetime import datetime
 try:
     from git import Repo,GitCommandError
 except ImportError:
-    print "Warning: please install git module with 'pip install gitpython'"
-    print "otherwise all helper functions for interacting with git will not work"
+    print("Warning: please install git module with 'pip install gitpython'")
+    print("otherwise all helper functions for interacting with git will not work")
 join = os.path.join
 import smtplib
 from email.mime.text import MIMEText
@@ -64,10 +65,18 @@ import base64
 # import non standard settings from home folder
 # e.g. setting for project repositories like cordex_directory
 
+
 from os.path import expanduser
 config_dir = os.path.join(expanduser("~"),".dkrz_forms")
 sys.path.append(config_dir)
 
+#VERBOSE = True
+VERBOSE = False
+def vprint(*txt):
+    if VERBOSE:
+        print(*txt)
+    return
+    
 try:
   from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
@@ -79,7 +88,7 @@ try:
 # print "project config imported"
   
 except ImportError:
-  print "Info: myconfig not found - taking default config "
+  vprint("Info: myconfig not found - taking default config ")
   from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO 
   from dkrz_forms.config.workflow_steps import DATA_SUBMISSION
@@ -101,7 +110,10 @@ try:
 except ImportError, e:
    pass
 
+
 #------------------------------------------------------------------------------------------
+
+
 
 # global variables defined and imported here, which are used in helper functions:
 # cordex_directory, in general: "<project>_directory
@@ -117,8 +129,8 @@ def init_sf(init_form):
           sf.form_dir = NOTEBOOK_DIRECTORY+'/'+ init_form['project']
                  
           sf.sub = Form(DATA_SUBMISSION)
-          print "Form Handler: Initialized form for project:", init_form['project']
-          print sf.project
+          print("Form Handler: Initialized form for project:", init_form['project'])
+          vprint(sf.project)
           
           sf.sub.agent.last_name = init_form['last_name']
           sf.sub.agent.first_name= init_form['first_name']
@@ -130,8 +142,8 @@ def init_sf(init_form):
           sf.sub.entity_out.form_repo = sf.form_repo,
           sf.sub.entity_out.form_name = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
           #sf.sub.form_path=sf.sub.form_repo+'/'+sf.sub.form_name+'.ipynb'
-          print sf.form_repo
-          print sf.sub.entity_out.form_name+'.ipynb'
+          vprint(sf.form_repo)
+          vprint(sf.sub.entity_out.form_name+'.ipynb')
           sf.sub.entity_out.form_repo_path=join(sf.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           sf.sub.entity_out.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
           
@@ -154,15 +166,15 @@ def init_form(init_form):
          
          "to do: check availability of cordex_directoy and whether it is git versioned"
          if is_packaged: 
-             print "submission form intitialized: sf"
-             print "(For the curious: the sf object is used in the following to store and manage all your information)"
+             print("submission form intitialized: sf")
+             print("(For the curious: the sf object is used in the following to store and manage all your information)")
         
          else:
-             print "Please correct above errors, before proceeding"
+             print("Please correct above errors, before proceeding")
              
          return sf     
     else:
-         print "please correct project specification, should be one of CORDEX,CMIP6,ESGF_replication,DKRZ_CP or test"
+         print("please correct project specification, should be one of CORDEX,CMIP6,ESGF_replication,DKRZ_CP or test")
          sf = {}
          return sf
 
@@ -194,7 +206,7 @@ def generate_submission_form(init_form):
           
           keystore[sf.sub.entity_out.pwd] = key_info
           persist_info('forms_pwd',keystore,sf.form_repo+'/keystore')
-          print 'Keystore: ', keystore
+          vprint('Keystore: ', keystore)
            
           template_name = init_form['project']+"_submission_form.ipynb"
           try:
@@ -204,18 +216,18 @@ def generate_submission_form(init_form):
               #print "Form Handler: Attention !  non standard source for submission form"
           ## to do: version of template
           # sf.sub.entity_in.version = ...
-          print "--- copy from:", sf.sub.entity_in.source_path
-          print "--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path
+          vprint("--- copy from:", sf.sub.entity_in.source_path)
+          vprint("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_path)
-          print "--------------------------------------------------------------------"
-          print "   A submission form was created for you, please visit the following link:"
+          print("--------------------------------------------------------------------")
+          print("   A submission form was created for you, please visit the following link:")
           # print sf
-          print FORM_URL_PATH+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb'
+          print(FORM_URL_PATH+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb')
           ## to do email link to user ....
-          print "--------------------------------------------------------------------"
+          print("--------------------------------------------------------------------")
           save_form(sf, "Form Handler: form - initial generation - quiet" )
-          print " ......  initial version saved ..."
+          vprint(" ......  initial version saved ...")
           repo = Repo(sf.form_repo)
           # get commit hash and add to json package
           master = repo.head.reference
@@ -223,17 +235,21 @@ def generate_submission_form(init_form):
           sf.sub.activity.commit_hash = commit_hash
            
           save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
-          print " ....... finalised version saved ..." 
-          print "id: ", sf.sub.entity_out.pwd
+          print("  !!  current version saved in repository") 
+          print("  !!  the above link is only valid for the next 5 hours")
+          print("  !!  to retrieve the form after this use the following link: ")
+          print("       http://localhost:888/notebooks.tst " )
+          print("       with the password:", init_form['pwd'] )
+          vprint("id: ", sf.sub.entity_out.pwd)
           if is_hosted_service():
                email_form_info(sf)
           return sf          
     else:
-        print "--------------xxx------------------------------------"
-        print "currently only submission forms for the following projects are supported: CORDEX,CMIP6,DKRZ_CDP,test,ESGF_replication"
-        print "no submission form created"
-        print "please re-evaluate cell with proper project information"
-        return "Error"
+        print("--------------xxx------------------------------------")
+        print("currently only submission forms for the following projects are supported: CORDEX,CMIP6,DKRZ_CDP,test,ESGF_replication")
+        print("no submission form created")
+        print("please re-evaluate cell with proper project information")
+        return("Error")
 
 
 
@@ -352,7 +368,7 @@ def save_form(sf,comment):
     # .. should be defined prior to "save"
     # sf.sub['form_name']=sf.last_name+"_"+sf.sub['keyword']
     if comment_on: 
-       print "\n\nForm Handler - save form status message:"
+       print("\n\nForm Handler - save form status message:")
     is_packaged = package_submission(sf,comment_on)
    
     #if check_form_name(sf):
@@ -368,18 +384,18 @@ def save_form(sf,comment):
        
            result = repo.git.add(join(sf.form_repo,sf.project+"_"+sf.sub.agent.last_name+"_"+"*"))
            #result = repo.git.add(sf.sub.form_name+'*')
-           #print result 
+           vprint(result)
            
            commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
            commit = repo.git.commit(message=commit_message)
            if comment_on:
-               print " --- commit message:"+ commit         
+               print(" --- commit message:"+ commit)        
            
            #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
            #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
           
        except GitCommandError:
-           print "Error ! Please correct the form name (best copy and paste name from top of this page and add .ipynb extension)"
+           print("Error ! Please correct the form name (best copy and paste name from top of this page and add .ipynb extension)")
 
 
 def is_hosted_service():
@@ -406,15 +422,15 @@ def email_form_info(sf):
      s = smtplib.SMTP('localhost')
      s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
      s.quit()
-     print "Form submitted to your email address "+sf.sub.email
+     print("Form submitted to your email address "+sf.sub.email)
   else:
-     print "This form is not hosted at DKRZ! Thus form information is stored locally on your computer \n"
-     print "Here is a summary of the generated and stored information:"
-     print "-- form for project: ",sf.project
-     print "-- form name: ",sf.sub.entity_out.form_name
-     print "-- submission form path: ", sf.sub.entity_out.subform_path 
-     print "-- package path: ", sf.sub.entity_out.package_path
-     print "-- package name: ", sf.sub.entity_out.package_name
+     print("This form is not hosted at DKRZ! Thus form information is stored locally on your computer \n")
+     print("Here is a summary of the generated and stored information:")
+     print("-- form for project: ",sf.project)
+     print("-- form name: ",sf.sub.entity_out.form_name)
+     print("-- submission form path: ", sf.sub.entity_out.subform_path)
+     print("-- package path: ", sf.sub.entity_out.package_path)
+     print("-- package name: ", sf.sub.entity_out.package_name)
 
 
 def form_submission(sf):
@@ -431,7 +447,7 @@ def form_submission(sf):
    try: 
       repo.git.pull()
    except GitCommandError():
-      print "Synchronization with global submission form repository failed !"
+      print("Synchronization with global submission form repository failed !")
       # to do: error handling
    
    repo.git.add("*")
@@ -439,27 +455,27 @@ def form_submission(sf):
    #repo.git.add(join(sf.project,form_name)
    commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
    commit = repo.git.commit(message=commit_message)
-   print commit
+   vprint(commit)
    result = repo.git.push()
-   print result
+   vprint(result)
    
    if rt_module_present:
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
       tracker.login()
       ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="DKRZ data form submission: "+sf.project+"--"+sf.sub.agent.last_name,
                   Priority= 10,Owner="kindermann@dkrz.de")
-      sf.sub.ticket_id = ticket_id
-      sf.sub.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
-      sf.substatus = "submitted"
+      sf.sub.activity.ticket_id = ticket_id
+      sf.sub.activity.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
+      sf.sub.activity.status = "submitted"
       is_packaged = package_submission(sf,comment_on=False)
       json_file_name = sf.sub.form_name+".json"
       comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.agent.last_name,files=[(json_file_name,open(sf.sub.package_path,'rb'))])
 
       if comment_submitted:
-         print "RT Ticket generated"
+         print("RT Ticket generated")
       else:
-         print "RT Ticket generation failed"
-         sf.sub.status = "rt-submission error"
+         print("RT Ticket generation failed")
+         sf.sub.activity.status = "rt-submission error"
 
 
    # generate updated json file and store in repo
@@ -483,7 +499,7 @@ def form_submission(sf):
       s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
       s.quit()
 
-      print "DKRZ forms request submitted"
+      print("DKRZ forms request submitted")
       #  origin = repo.remotes.origin
       #  origin.push()
       #  print "Data submission form sent"
@@ -494,15 +510,15 @@ def form_submission(sf):
       os.chmod(sf.sub.packagepath,0o444)  
 
    if not(rt_module_present) and not(is_hosted_service()): 
-      print "Please send form: "+sf.sub.subform_path +"\n"
-      print "as well as data package: "+sf.sub.package_path+"\n"
-      print "to data@dkrz.de with subject \"Cordex data submission form \""
+      print("Please send form: "+sf.sub.subform_path +"\n")
+      print("as well as data package: "+sf.sub.package_path+"\n")
+      print("to data@dkrz.de with subject \"Cordex data submission form \"")
 
 def package_submission(sf,comment_on):
        
     
     pattern = sf.form_repo+"/"+sf.project+"_"+sf.sub.agent.last_name+"_"+sf.sub.activity.keyword+".ipynb"
-    print pattern
+    vprint(pattern)
  
     paths = [n for n in glob.glob(pattern) if os.path.isfile(n)]
     
@@ -523,16 +539,16 @@ def package_submission(sf,comment_on):
              form_file.write(form_json+"\r\n")
              form_file.close()
              if comment_on:
-                   print " --- form stored in transfer format in: "+file_path
+                   print(" --- form stored in transfer format in: "+file_path)
              return True
     else:
-       print "Error: "
-       print "your contact details are inconsistent with the form template you are using !"
-       print "Either change your contact details, or the form template name" 
-       print "(klick on name at the top of the page besides the jupyter logo)"
-       print ""
-       print "The template naming should be: "+sf.project+"_\"my_last_name\""+"_keyword"
-       print "The _keyword part of the template name can differ form \"my_keyword\" you provided above" 
+       print("Error: ")
+       print("your contact details are inconsistent with the form template you are using !")
+       print("Either change your contact details, or the form template name")
+       print("(klick on name at the top of the page besides the jupyter logo)")
+       print("")
+       print("The template naming should be: "+sf.project+"_\"my_last_name\""+"_keyword")
+       print("The _keyword part of the template name can differ form \"my_keyword\" you provided above") 
        return False
        
     
@@ -557,6 +573,34 @@ def load_workflow_form(workflow_json_file):
     workflow = Form(workflow_dict) 
     
     return workflow
+
+
+def onerror(func, path, exc_info):
+    """
+    Error handler for ``shutil.rmtree``.
+
+    If the error is due to an access error (read only file)
+    it attempts to add write permission and then retries.
+
+    If the error is for another reason it re-raises the error.
+    
+    Usage : ``shutil.rmtree(path, onerror=onerror)``
+    """
+    import stat
+    if not os.access(path, os.W_OK):
+        # Is the error an access error ?
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise
+
+def init_git_repo(target_dir):
+    if os.path.exists(target_dir):
+       shutil.rmtree(target_dir)
+    repo = Repo.init(target_dir)
+    return repo
+    
+    
 
 # to do: functions to display status info of submission objects (and next steps in workflow)
 
