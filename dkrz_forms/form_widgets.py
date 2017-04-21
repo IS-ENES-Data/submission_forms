@@ -19,7 +19,7 @@ align_kw = dict(
 LAST_NAME = widgets.Text(value="",description="Your last name: ",width=200, **align_kw)
 FIRST_NAME = widgets.Text(value="",description="Your first name: ",width=200, **align_kw)
 EMAIL = widgets.Text(value="", description="    Your email:",width=200, **align_kw)
-PROJECT = widgets.Dropdown(description = "Project selection: ", options=["CORDEX","CMIP6","DKRZ_CDP","test"],**align_kw)
+PROJECT = widgets.Dropdown(description = "Project selection: ", options=["CORDEX","CMIP6","DKRZ_CDP","ESGF_replication","test","Generic"],**align_kw)
 KEY = widgets.Text(value="", description="A key to identifiy your form (confirm with \"ENTER\") ",width=130,**align_kw)
 init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY]
 
