@@ -34,13 +34,13 @@ NOTEBOOK_DIRECTORY = '/home/stephan/Repos/ENES-EUDAT/submission_forms/test/forms
 FORM_URL_PATH = 'http://localhost:8888/notebooks/Repos/ENES-EUDAT/submission_forms/test/forms/'
 # Directory where the project git repos live
 # dir_prefix = "/opt/formhandler/Repos/"
-DIR_PREFIX = "/home/stephan/tmp/Repos/"
+DIR_PREFIX = "/home/stephan/tmp/Repos/"    # for json db storage
 INFO_DB_PATH = join(DIR_PREFIX,"db/db.json")
 
-FORM_REPO = join(DIR_PREFIX,"form_repo")
+FORM_REPO = "/home/stephan/tmp/Repos/form_repo"
 
 # final submissions repo (gitlab synchronized)
-SUBMISSION_REPO = join(DIR_PREFIX,"submission_repo")
+SUBMISSION_REPO = "/home/stephan/tmp/Repos/submission_repo"
 
 # rest is deployment independent
 #project_directory = {}

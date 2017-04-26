@@ -140,12 +140,16 @@ def init_sf(init_form):
           sf.sub.activity.pwd=init_form['pwd']
                  
           sf.sub.entity_out.form_repo = sf.form_repo,
+         
           sf.sub.entity_out.form_name = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
+          sf.sub.entity_out.form_json = join(sf.form_repo,sf.sub.entity_out.form_name+'.json')
           #sf.sub.form_path=sf.sub.form_repo+'/'+sf.sub.form_name+'.ipynb'
           vprint(sf.form_repo)
           vprint(sf.sub.entity_out.form_name+'.ipynb')
           sf.sub.entity_out.form_repo_path=join(sf.form_repo,sf.sub.entity_out.form_name+'.ipynb')
-          sf.sub.entity_out.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
+          
+          sf.sub.entity_in.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
+          sf.sub.entity_in.form_json=join(sf.form_dir,sf.sub.entity_out.form_name+'.json') 
           
           return(sf)
 
@@ -219,7 +223,7 @@ def generate_submission_form(init_form):
           vprint("--- copy from:", sf.sub.entity_in.source_path)
           vprint("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
-          shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_path)
+          shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_in.form_path)
           print("--------------------------------------------------------------------")
           print("   A submission form was created for you, please visit the following link:")
           # print sf
@@ -382,9 +386,12 @@ def save_form(sf,comment):
            ## later: may be helper function to retrieve notebook according to sha1 value of
            ## corresponding submitted json ...
        
-           result = repo.git.add(join(sf.form_repo,sf.project+"_"+sf.sub.agent.last_name+"_"+"*"))
+           result1 = repo.git.add(sf.sub.entity_out.form_repo_path)
+           result2 = repo.git.add(sf.sub.entity_out.form_json)
+           result3 = repo.git.add(sf.form_repo+"/"+"keystore.*")
            #result = repo.git.add(sf.sub.form_name+'*')
-           vprint(result)
+           vprint(result1,result2,result3)
+           # !! to do: check result 1 - if ipynb was changed or not !!!
            
            commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
            commit = repo.git.commit(message=commit_message)
@@ -517,39 +524,24 @@ def form_submission(sf):
 def package_submission(sf,comment_on):
        
     
-    pattern = sf.form_repo+"/"+sf.project+"_"+sf.sub.agent.last_name+"_"+sf.sub.activity.keyword+".ipynb"
-    vprint(pattern)
- 
-    paths = [n for n in glob.glob(pattern) if os.path.isfile(n)]
-    
-    ## check if multiple possible master files exist ????
-    
-    if len(paths) > 0:
-             sf.sub.id = str(uuid.uuid1())
-             form_json = form_to_json(sf)
-             #parts=sf.form_name.split(".")
-             my_jsonform_name = sf.sub.entity_out.form_name+".json"
-             sf.sub.entity_out.subform_path=pattern
-             file_path = sf.form_repo+"/"+my_jsonform_name
-             sf.sub.entity_out.package_path = file_path
-             sf.sub.entity_out.package_name = my_jsonform_name
-             
-            
-             form_file = open(file_path,"w+")
-             form_file.write(form_json+"\r\n")
-             form_file.close()
-             if comment_on:
-                   print(" --- form stored in transfer format in: "+file_path)
-             return True
-    else:
-       print("Error: ")
-       print("your contact details are inconsistent with the form template you are using !")
-       print("Either change your contact details, or the form template name")
-       print("(klick on name at the top of the page besides the jupyter logo)")
-       print("")
-       print("The template naming should be: "+sf.project+"_\"my_last_name\""+"_keyword")
-       print("The _keyword part of the template name can differ form \"my_keyword\" you provided above") 
-       return False
+     sf.sub.id = str(uuid.uuid1())
+     form_json = form_to_json(sf)   
+     shutil.copyfile(sf.sub.entity_in.form_path,sf.sub.entity_out.form_repo_path)
+     form_file = open(sf.sub.entity_out.form_json,"w+")
+     form_file.write(form_json+"\r\n")
+     form_file.close()
+     if comment_on:
+           print(" --- form stored in transfer format in: "+file_path)
+     return True
+    #else:
+    #   print("Error: ")
+    #   print("your contact details are inconsistent with the form template you are using !")
+    #   print("Either change your contact details, or the form template name")
+    #   print("(klick on name at the top of the page besides the jupyter logo)")
+    #   print("")
+    #   print("The template naming should be: "+sf.project+"_\"my_last_name\""+"_keyword")
+    #  print("The _keyword part of the template name can differ form \"my_keyword\" you provided above") 
+    #   return False
        
     
 

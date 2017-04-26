@@ -7,15 +7,10 @@ sys.path.append(import_path)
 
 from dkrz_forms import form_handler
 
-from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
-from workflow_steps import DATA_SUBMISSION
+from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
+from dkrz_forms.config.workflow_steps import DATA_SUBMISSION
 
-try:
-  from project_config import form_repoectory, install_directory, project_dicts, submission_directory
-except ImportError:
-  #  print "Info: myconfig not found - taking default config "
-  from dkrz_forms.config.project_config import form_repoectory, install_directory, project_dicts, submission_directory
 
 init_form = {}
 init_form['first_name'] = "unit_tester"
@@ -23,43 +18,57 @@ init_form['last_name'] = "testsuite"
 init_form['project'] = "test"
 init_form['email'] = "stephan.kindermann@gmail.com"
 init_form['key'] = "1234" 
+init_form['pwd'] = "test123"
 
 form_repo = FORM_REPO+'/'+ init_form['project']
 #print test_config.cordex_directory
 sf = {} 
 
 print "Project directory: ", form_repo
-print form_repoectory
+
 # get workflow steps
 #(submission,ingest,checking,publish) = form_handler.get_workflow_steps() 
 #print submission.__dict__
-
-
-
-form_info_json_file = join(form_repo,my_project+"_"+my_last_name+"_"+my_keyword+".json")
 
 
 def test_me():
     assert form_repo == os.path.abspath("....")
 
 
-def test_formgeneration():
+def test_init_form():
+    global sf
+    global init_form
+    global form_repo
+    
+    form_handler.init_git_repo(form_repo)
+    sf = form_handler.init_form(init_form)
+    
+    assert os.path.exists(FORM_REPO+'/'+init_form['project']) == 1
+    assert sf.form_repo == FORM_REPO+'/'+init_form['project']
+    assert sf.sub.agent.last_name == "testsuite"
+    
+
+
+def test_generate_submission_form():
     ## takes myconfig from .dkrz_forms if existing !! 
     global sf
-    form_handler.init_git_repo(form_repo)                 
+    global init_form               
     sf = form_handler.generate_submission_form(init_form)
+    
     assert os.path.exists(form_repo) == 1
-    assert sf.form_dir == form_repo
+    #assert sf.form_dir == form_repo
     assert sf.sub.agent.last_name == "testsuite"
     # assert sf.sub.activity. ..  --> to do 
     files = os.listdir(form_repo)
-    print files
-    assert sf.sub.entity_out.form_repo_path in files
-    assert sf.sub.entity_out.package_path in files
+    
+    assert sf.sub.entity_out.form_name+".ipynb" in files
+    assert sf.sub.entity_out.form_name+".json" in files
     
 
 def test_formcompletion():
     ## reads form json file and returns hierachical form object
+    global sf
+    print sf
     workflow_form = form_handler.load_workflow_form(sf.sub.entity_out.package_path)
     submission = workflow_form.sub
     submission.status = "checked"
