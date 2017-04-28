@@ -90,7 +90,13 @@ PROJECT_DICT['CORDEX']  = {
              "variable_list_sem" : "",
              "variable_list_fx" : "",
              "uniqueness_of_tracking_id" : "",
-             "workflow": ["sub","ing","qua","pub"], 
+             "workflow": [("sub","data_submission"),
+                          ("rev","data_submission_review"),
+                          ("ing","data_ingest"),
+                          ("qua","data_quality_assurance"),
+                          ("pub","data_publication"),
+                          ("da", "data_archival")
+                         ], 
              #'sub':workflow_steps.data_submission,
              #'ing':workflow_steps.data_ingest,
              #'qua':workflow_steps.data_quality_assurance,
@@ -106,20 +112,44 @@ generic_dict = {
 #        the project_dicts below
 PROJECT_DICT['DKRZ_CDP'] = {
              'project': 'CMIP6_CDP',
-             "workflow" : ["sub","ing","qua","pub"]
+             "workflow": [("sub","data_submission"),
+                          ("rev","data_submission_review"),
+                          ("ing","data_ingest"),
+                          ("qua","data_quality_assurance"),
+                          ("pub","data_publication"),
+                          ("da", "data_archival")
+                         ], 
  }
 PROJECT_DICT['test'] = {
              'project' : "test",
-             "workflow" : ["sub","ing","qua","pub"]
+             "workflow": [("sub","data_submission"),
+                          ("rev","data_submission_review"),
+                          ("ing","data_ingest"),
+                          ("qua","data_quality_assurance"),
+                          ("pub","data_publication"),
+                          ("da", "data_archival")
+                         ], 
  }
 PROJECT_DICT['CMIP6']= {
              'project' : 'CMIP6',
-             "workflow" : ["sub","ing","qua","pub"]
+            "workflow": [("sub","data_submission"),
+                          ("rev","data_submission_review"),
+                          ("ing","data_ingest"),
+                          ("qua","data_quality_assurance"),
+                          ("pub","data_publication"),
+                          ("da", "data_archival")
+                         ], 
  }            
  
 PROJECT_DICT['ESGF_replication']= {
              'project' : 'CMIP6_replication',
-             "workflow" : ["sub","ing","qua","pub"]
+             "workflow": [("sub","data_submission"),
+                          ("rev","data_submission_review"),
+                          ("ing","data_ingest"),
+                          ("qua","data_quality_assurance"),
+                          ("pub","data_publication"),
+                          ("da", "data_archival")
+                         ], 
  }            
 
 #============= Definition of CORDEX specific test functions ===================================

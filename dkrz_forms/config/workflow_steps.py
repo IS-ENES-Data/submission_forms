@@ -82,7 +82,7 @@ REVIEW_REPORT = {
  
 DATA_SUBMISSION_REVIEW = {
     'entity_in': SUBMISSION_FORM_ENTITY,
-    'entity out': SUBMISSION_FORM_ENTITY,
+    'entity out': REVIEW_REPORT,
     'agent': REVIEW_AGENT, 
     'activity': REVIEW_ACTIVITY
     }
@@ -216,8 +216,8 @@ WORKFLOW_DICT = {
      'data_submission_review': DATA_SUBMISSION_REVIEW, 
      'data_ingest': DATA_INGEST, 
      'data_quality_assurance': DATA_QUALITY_ASSURANCE,
-     'data publication': DATA_PUBLICATION,
-     'data_preservation': DATA_PRESERVATION }
+     'data_publication': DATA_PUBLICATION,
+     'data_archival': DATA_PRESERVATION }
       
 # submitted information
 #cordex_dict  = {

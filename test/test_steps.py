@@ -9,7 +9,7 @@ from dkrz_forms import form_handler
 
 from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
 from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
-from dkrz_forms.config.workflow_steps import DATA_SUBMISSION
+from dkrz_forms.config.workflow_steps import WORKFLOW_DICT
 
 
 init_form = {}
@@ -22,7 +22,9 @@ init_form['pwd'] = "test123"
 
 form_repo = FORM_REPO+'/'+ init_form['project']
 #print test_config.cordex_directory
-sf = {} 
+
+FORM_JSON = join(form_repo,init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']+'.json')
+ 
 
 print "Project directory: ", form_repo
 
@@ -65,16 +67,17 @@ def test_generate_submission_form():
     assert sf.sub.entity_out.form_name+".json" in files
     
 
-def test_formcompletion():
+def test_form_completion():
     ## reads form json file and returns hierachical form object
     global sf
-    print sf
-    workflow_form = form_handler.load_workflow_form(sf.sub.entity_out.package_path)
+    
+    workflow_form = form_handler.load_workflow_form(FORM_JSON)
     submission = workflow_form.sub
-    submission.status = "checked"
-    submission.check_status = "consistency_checked"
+    submission.entity_out.status = "checked"
+    submission.entity_out.check_status = "consistency_checked"
+    submission.activity.status = "completed"
    
-    form_handler.save_form(workflow_form, "test: formcompletion()") 
+    sf = form_handler.save_form(workflow_form, "test: formcompletion()") 
     #test_dict['sub']['status'] = "checked"
     #test_dict['sub']['check_status'] = "consistency_checked"
     #test_form = form_handler.dict_to_form(test_dict)
@@ -83,33 +86,34 @@ def test_formcompletion():
    
     #test_dict2 = form_handler.jsonfile_to_dict(form_info_json_file)
     
-    assert workflow_form.sub.status == 'checked'
-    assert workflow_form.sub.check_status =="consistency_checked"
+    assert sf.sub.entity_out.status == 'checked'
+    assert sf.sub.entity_out.check_status =="consistency_checked"
+    assert sf.sub.activity.status == 'completed'
     
     #test_hform = form_handler.dict_to_hform(test_dict)
     #print test_hform.sub
 
-def test_formsubmission():    
+def test_form_submission():    
     
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
+    workflow_form = form_handler.load_workflow_form(FORM_JSON)
     submission = workflow_form.sub
-    submission.status = "submitted"
-    submission.responsible_person = "dkrz_staff"
-    submission.ticket_id = 22949
-    submission.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
+    submission.entity_out.status = "submitted"
+    submission.activity.handover = "dkrz_staff"
+    submission.activity.ticket_id = 22949
+    submission.activity.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
     
-    form_handler.save_form(workflow_form, "test: formsubmission()")
+    sf = form_handler.form_submission(workflow_form)
     
-    assert workflow_form.sub.ticket_id == 22949
+    assert sf.sub.activity.ticket_id == 22949
     
 ## to do: fill form - check validity - perform submit, check, ingest and publication steps ..
     
-def test_formcheck_start():
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
-    submission = workflow_form.sub
+def test_form_review():
+    workflow_form = form_handler.load_workflow_form(FORM_JSON)
+   
+    review = workflow_form.rev
     
-    submission.status = "form_checking"
-    submission.responsible_person = "lenzen"
+    review.activity.responsible_person = "dkrz data manager name"
     
     form_handler.save_form(workflow_form, "test: formcheck_start()")
     

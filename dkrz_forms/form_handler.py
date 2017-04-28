@@ -80,7 +80,7 @@ def vprint(*txt):
 try:
   from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
-  from workflow_steps import DATA_SUBMISSION
+  from workflow_steps import WORKFLOW_DICT
   
   
   
@@ -91,7 +91,7 @@ except ImportError:
   vprint("Info: myconfig not found - taking default config ")
   from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO 
-  from dkrz_forms.config.workflow_steps import DATA_SUBMISSION
+  from dkrz_forms.config.workflow_steps import WORKFLOW_DICT 
  
   ## to do: make global constants explicit e.g. PROJECT_DICT ... etc .... 
 # print "Your submission form repository:", PROJECT_DICT
@@ -127,8 +127,12 @@ def init_sf(init_form):
           sf.form_repo = FORM_REPO+'/'+ init_form['project']
           sf.submission_repo = SUBMISSION_REPO+ '/'+ init_form['project']
           sf.form_dir = NOTEBOOK_DIRECTORY+'/'+ init_form['project']
-                 
-          sf.sub = Form(DATA_SUBMISSION)
+          
+          
+          for (short_name,wflow_step) in sf.workflow:
+              setattr(sf,short_name ,Form(WORKFLOW_DICT[wflow_step]))
+              
+          
           print("Form Handler: Initialized form for project:", init_form['project'])
           vprint(sf.project)
           
@@ -287,6 +291,42 @@ class Form(object):
            if isinstance(v, dict):
               self.__dict__[k] = Form(v)
               
+    def __repr__(self):
+        return "DKRZ Form object"
+        
+    def __str__(self):
+        return "DKRZ Form object"
+        
+        
+#------to be integrated in code: fixed slot Form generation -------------------- 
+def Form_fixed_Generator(slot_list):
+    
+
+    class Meta(type): 
+        def __new__(cls, name, bases, dctn):
+             dctn['__slots__'] = slot_list
+             return type.__new__(cls, name, bases, dctn)
+     
+    class FixedForm(object):
+         __metaclass__ = Meta
+
+         def __init__(self):
+            pass 
+    
+    fixed_form_object = FixedForm()
+    
+    return fixed_form_object  
+
+
+
+#test = Form_fixed_Generator(['x'])
+
+#test.x = 10
+#text.y = 20 
+
+#-------------------------------------------------------------------------------       
+          
+              
 class FForm(object):
   def __init__(self, adict):
         """Convert a dictionary to a class
@@ -396,7 +436,9 @@ def save_form(sf,comment):
            commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
            commit = repo.git.commit(message=commit_message)
            if comment_on:
-               print(" --- commit message:"+ commit)        
+               print(" --- commit message:"+ commit)  
+               
+           return sf    
            
            #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
            #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
@@ -447,25 +489,53 @@ def form_submission(sf):
      - print instructions for manual submission in case all above is not working
    """
    ## to do: validity check first
-   shutil.copy(sf.sub.subform_path,join(SUBMISSION_REPO,sf.project))
-   shutil.copy(sf.sub.package_path,join(SUBMISSION_REPO,sf.project))
-   repo = Repo(SUBMISSION_REPO)
+   form_source = sf.sub.entity_out.form_repo_path
+   json_source = sf.sub.entity_out.form_json
+   form_target = join(SUBMISSION_REPO,sf.project)
+   json_target = join(SUBMISSION_REPO,sf.project)
+   
+   form_name = sf.sub.entity_out.form_name
+   shutil.copy(form_source,form_target)
+   shutil.copy(json_source,json_target)
+   
+   repo = Repo(join(SUBMISSION_REPO,sf.project))
    #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
    try: 
-      repo.git.pull()
-   except GitCommandError():
+      o = repo.remotes.origin
+      o.pull()
+   except GitCommandError:
       print("Synchronization with global submission form repository failed !")
+      
+   except AttributeError:
+      print("No global submission repo !!!")
       # to do: error handling
    
-   repo.git.add("*")
+   repo.git.add(form_name+".ipynb")
+   repo.git.add(form_name+".json")
+   
+   vprint(repo.git.status())
    #repo.git.add(join(sf.project,package_name)
    #repo.git.add(join(sf.project,form_name)
-   commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.form_name + " ## " 
-   commit = repo.git.commit(message=commit_message)
-   vprint(commit)
-   result = repo.git.push()
-   vprint(result)
+   commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ form_name+ " ## " 
+   try: 
+       commit = repo.git.commit(message=commit_message)
+       vprint(commit)
+   except GitCommandError:
+       print("Commit in submissin repo failed")
+       pass
+  
+   try: 
+       result = repo.git.push()
+       vprint(result)
+   except GitCommandError:
+       print("Push to global submission repo failed !")
+       pass
    
+   except AttributeError:
+      print("No global submission repo !!!") 
+      pass
+   
+   rt_module_present = False 
    if rt_module_present:
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
       tracker.login()
@@ -482,7 +552,7 @@ def form_submission(sf):
          print("RT Ticket generated")
       else:
          print("RT Ticket generation failed")
-         sf.sub.activity.status = "rt-submission error"
+         sf.sub.activity.error_status = "rt-submission error"
 
 
    # generate updated json file and store in repo
@@ -513,17 +583,24 @@ def form_submission(sf):
       #  print "A confirmation message will be sent to you"
       
       # set notebook and json file read only
-      os.chmod(sf.sub.subformpath,0o444)
-      os.chmod(sf.sub.packagepath,0o444)  
+      #os.chmod(sf.sub.subformpath,0o444)
+      #os.chmod(sf.sub.packagepath,0o444) 
+     
 
    if not(rt_module_present) and not(is_hosted_service()): 
-      print("Please send form: "+sf.sub.subform_path +"\n")
-      print("as well as data package: "+sf.sub.package_path+"\n")
-      print("to data@dkrz.de with subject \"Cordex data submission form \"")
+      print("Please send form: "+sf.form_dir+"/"+form_name+".ipynb" +"\n")
+      print("to data@dkrz.de with subject", "\"DKRZ data submission form for project\"", sf.project)
+      
+      
+      
+   # Modifications to submission object   
+   sf.sub.entity_out.submission_form = join(SUBMISSION_REPO,sf.sub.entity_out.form_name+".ipynb")
+   sf.sub.entity_out.submission_json = join(SUBMISSION_REPO,sf.sub.entity_out.form_name+".json")  
+   
+   return sf
 
 def package_submission(sf,comment_on):
-       
-    
+         
      sf.sub.id = str(uuid.uuid1())
      form_json = form_to_json(sf)   
      shutil.copyfile(sf.sub.entity_in.form_path,sf.sub.entity_out.form_repo_path)
@@ -531,7 +608,7 @@ def package_submission(sf,comment_on):
      form_file.write(form_json+"\r\n")
      form_file.close()
      if comment_on:
-           print(" --- form stored in transfer format in: "+file_path)
+           print(" --- form stored in transfer format in: "+sf.sub.entity_out.form_json)
      return True
     #else:
     #   print("Error: ")
