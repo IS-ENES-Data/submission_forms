@@ -114,98 +114,85 @@ def test_form_review():
     review = workflow_form.rev
     
     review.activity.responsible_person = "dkrz data manager name"
+    review.activity.handover = "dkrz data manager name"
+    review.activity.status = "reviewed"
     
-    form_handler.save_form(workflow_form, "test: formcheck_start()")
+    sf = form_handler.save_form(workflow_form, "test: form_review()")
     
-    assert submission.status == "form_checking"
+    assert sf.rev.activity.status  == "reviewed"
     
     
-def test_formcheck_end():
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
-    submission = workflow_form.sub
     
-    submission.status = "finalised"
-    submission.comment = "terms of use clarified"
+def test_data_ingest():
+    workflow_form = form_handler.load_workflow_form(FORM_JSON)
     
-    form_handler.save_form(workflow_form, "test: formcheck_end()")
-    
-    assert submission.status == "finalised"   
-    
-def test_dataingest_start():
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
     ingest = workflow_form.ing
-    ingest.status = "ingesting"
-    ingest.responsible_person = "lenzen"
-    ingest.comment = " copying data from ... to ... using ... "
-    ingest.target_directory = "/work/kd0956/cmip5/ingest/cmip5/mpi-m/test"
+    ingest.activity.status = "ingested"
+    ingest.activity.responsible_person = "lenzen"
+    ingest.activity.comment = " copying data from ... to ... using ... "
+    ingest.entity_out.data_target_directory = "/work/kd0956/cmip5/ingest/cmip5/mpi-m/test"
+    ingest.entity_out.data_file_pattern = "cmip5"
     
-    form_handler.save_form(workflow_form,"test: dataingest_start()")
+    sf = form_handler.save_form(workflow_form,"test: data_ingest()")
     
-    assert ingest.status == "ingesting"
+    assert sf.ing.activity.status == "ingested"  
+    
+def test_data_quality_assurance():
     
     
-def test_dataingest_end():    
     
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
-    ingest = workflow_form.ing
-    ingest.status = "ingested"
-    ingest.comment = ingest.comment + " time: about 2 hours, volume: about .. GB "
-    ingest.drs_file_pattern = "project:cmip5 | experiment:test| variables: tua,uav"
-    
-    form_handler.save_form(workflow_form,"test:dataingest_end()")
-    
-    assert ingest.status == "ingested"  
-    
-def test_datacheck_start():
-    
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
+    workflow_form = form_handler.load_workflow_form(FORM_JSON)
+    test_report = {
+    "QA_conclusion": "PASS",
+    "project": "CORDEX",
+    "model": "KNMI-RACMO22E",
+    "domain": "EUR-11",
+    "driving_experiment": [ "ICHEC-EC-EARTH" ],
+    "experiment": [ "historical" ],
+    "ensemble_member": [ "r12i1p1" ],
+    "annotation":
+    [
+        {
+            "scope": [ "mon", "sem" ],
+            "variable": [ "sfcWindmax", "sund", "tasmax", "tasmin" ],
+            "caption": "Attribute <cell_methods> entails <time>:climatology instead of <time>:time_bnds",
+            "comment": "Here, data of variable climatology is equivalent to time_bnds",
+            "severity": "note"
+        }
+    ]
+    }
     
     qua = workflow_form.qua
-    qua.status = "checking"
-    qua.responsible_person = "hdh"
-    qua.comment =  "on lizzard "
-    qua.qa_tool_version = "dkrz_qa_v09"
+    qua.activity.status = "quality_assured"
+    qua.activity.responsible_person = "hdh"
+    qua.activity.comment =  "on lizzard "
+    qua.activity.handover = "data publisher at DKRZ"
+    qua.activity.qa_tool_version = "dkrz_qa_v09"
+    qua.entity_out.report = test_report
     
-    form_handler.save_form(workflow_form, "test: datacheck_start()")
+    sf = form_handler.save_form(workflow_form, "test: quality_assurance()")
    
-    assert qua.status == "checking" 
+    assert sf.qua.activity.status == "quality_assured" 
     
-def test_datacheck_end():
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
-    qua = workflow_form.qua
-    qua.status = "checked"
-    qua.target_directory = "/work/KD0956/qa_results/cmip5/mpi-m/test"
     
-    form_handler.save_form(workflow_form, "test: datacheck_end()")
+def test_data_publication():
+    workflow_form = form_handler.load_workflow_form(FORM_JSON)
     
-    assert qua.status == "checked" 
-    
-def test_publish_start():
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
     publication = workflow_form.pub    
     
-    publication.status = "publishing"
-    publication.responsible_person = "berger"
-    publication.timestamp = "2016-05-20 18:34:28.934536"
+    publication.activity.status = "published"
+    publication.activity.responsible_person = "berger"
+    publication.activity.timestamp = "2016-05-20 18:34:28.934536"
+    publication.entity_out.publication_date = "2016-05-20"
+    publication.entity_out.report = "....report on publication...."
+    publication.entity_out.search_string = " ... "
     
-    form_handler.save_form(workflow_form, "test: publish_start()")
+    sf = form_handler.save_form(workflow_form, "test: publication()")
     
-    assert publication.status == "publishing" 
-
-def test_publish_end():
-    workflow_form = form_handler.load_workflow_form(form_info_json_file)
-    publication = workflow_form.pub  
+    assert sf.pub.activity.status == "published" 
     
-    publication.status = "published"
-    publication.publish_date = "2016-05-20 19"
-    publication.search_string = "&model=cmip5&experiment=test"
-    publication.map_file = "host://path_to_mapfile" 
-    
-    form_handler.save_form(workflow_form, "test: publish_end()")
-    
-    assert publication.status == "published"       
-    
-    
+def test_data_archival():
+    pass
     
     
     

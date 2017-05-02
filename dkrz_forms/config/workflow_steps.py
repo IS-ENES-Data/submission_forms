@@ -82,7 +82,7 @@ REVIEW_REPORT = {
  
 DATA_SUBMISSION_REVIEW = {
     'entity_in': SUBMISSION_FORM_ENTITY,
-    'entity out': REVIEW_REPORT,
+    'entity_out': REVIEW_REPORT,
     'agent': REVIEW_AGENT, 
     'activity': REVIEW_ACTIVITY
     }
@@ -117,7 +117,7 @@ INGEST_REPORT =     {
 
 DATA_INGEST = {
     'entitiy_in': SUBMISSION_FORM_ENTITY,
-    'entitiy out': SUBMISSION_FORM_ENTITY,
+    'entity_out': SUBMISSION_FORM_ENTITY,
     'agent': INGEST_AGENT, 
     'activity': INGEST_ACTIVITY
     }
@@ -147,7 +147,7 @@ QUA_REPORT_ENTITY = {
 
 DATA_QUALITY_ASSURANCE = {
     'entity_in': SUBMISSION_FORM_ENTITY,
-    'entity out': SUBMISSION_FORM_ENTITY,
+    'entity_out': SUBMISSION_FORM_ENTITY,
     'agent': QUA_AGENT, 
     'activity': QUA_ACTIVITY
     }
@@ -176,7 +176,7 @@ PUBLICATION_REPORT_ENTITY = {
 
 DATA_PUBLICATION = {
     'entity_in': SUBMISSION_FORM_ENTITY,
-    'entity out': SUBMISSION_FORM_ENTITY,
+    'entity_out': SUBMISSION_FORM_ENTITY,
     'agent': PUBLICATION_AGENT, 
     'activity': PUBLICATION_ACTIVITY
     }
