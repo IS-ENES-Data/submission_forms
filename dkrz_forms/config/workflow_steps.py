@@ -35,25 +35,100 @@ SUBMISSION_AGENT = {
               'first_name' : '',
               'key_word': '',
               'email': ''}
+              
+SUBMISSION_AGENT_DOC = {
+              'last_name' : 'Last name of the person responsible for the submission form content',
+              'first_name' : 'Correstponding first name',
+              'key_word': 'A user provided key word to remember the submission form',
+              'email': 'Valid user email address: all follow up activities will use this email to contact end user',
+              'doc_string': """Attributes characterizing the person responsible for form completion and submission:
+              
+                                   - last_name
+                                   - first_name
+                                   - email
+                                   - key_word : user provided key word to remember and separate submission
+                             """
+                             }             
 
 SUBMISSION_ACTIVITY = {
            'submission_comment':'',
            'submission_method':''           
             } 
             
+SUBMISSION_ACTIVITY_DOC = {
+           'submission_comment':'a free text comment for this submission',
+           'submission_method':"""
+                  How the submission was generated and submitted to DKRZ: 
+                     'email' or 'formserver' 
+                     """,
+           'doc_string': """
+                         Attributes characterizing the form submission activity:
+                         
+                         - submission_comment : free text comment
+                         - submission_method  : email or DKRZ form server based       
+                         """
+}            
+            
 SUBMISSION_FORMTEMPLATE_ENTITY = {
              'source_path' : '', # filled with path of original template form      
              'form_version': '', # version of form template / form tool 
             }
-             
+            
+SUBMISSION_FORMTEMPLATE_ENTITY_DOC = { 
+            'source_path' : "path to the form template used (jupyter notebook)",
+            'form_version' : "version string for the form template used",                          
+            'doc_string' : """
+                           Attributes defining the form template used:
+                               
+                               - source_path         
+                               - form_version 
+
+                           """                
+}
+
 SUBMISSION_FORM_ENTITY = {
-            'form_name': '',
-            'form_path': '', # where form is served
-            'form_repo_path' :'',
-            'subform_path': '', # where form is stored (repo)
-            'package_name':'', # json package
-            'package_path': '',
-            'checks_done' : "none"} 
+            'form_name': 'Naming pattern of the form: project_name+_+last_name+_+keyword',
+            'form_repo' :'(git) directory where stored forms are maintained',          
+            'form_json': 'full path to json representation of the form',
+            'form_repo_path' : 'full path to notebook representation of the form',
+            'form_dir': 'directoy where forms are served and (temporarily) stored',
+            'status': 'status information of form',
+            'checks_done' : 'consistency checks done for this form',
+            'doc_string': """
+                     Attributes characterizing the form submission process and context:
+                     - form_name: consistent prefix for the form name (postfix=.ipynb and .json)
+                     - form_repo: git repo where forms are stored (before submission)
+                     - form_json, form_repo_path: full paths to json and ipynb representations
+                     - form_dir: directory where form are served to the notebook interface
+                     - status: status information
+                     - checks_done: form consistency checks done
+                     . ...
+                     
+    
+                   """ 
+}            
+                         
+SUBMISSION_FORM_ENTITY_DOC = {
+            'form_name': 'Naming pattern of the form: project_name+_+last_name+_+keyword',
+            'form_repo' :'(git) directory where stored forms are maintained',          
+            'form_json': 'full path to json representation of the form',
+            'form_repo_path' : 'full path to notebook representation of the form',
+            'form_dir': 'directoy where forms are served and (temporarily) stored',
+            'status': 'status information of form',
+            'checks_done' : 'consistency checks done for this form',
+            'doc_string': """
+                     Attributes characterizing the form submission process and context:
+                     - form_name: consistent prefix for the form name (postfix=.ipynb and .json)
+                     - form_repo: git repo where forms are stored (before submission)
+                     - form_json, form_repo_path: full paths to json and ipynb representations
+                     - form_dir: directory where form are served to the notebook interface
+                     - status: status information
+                     - checks_done: form consistency checks done
+                     . ...
+                     
+    
+                   """ 
+}            
 
 DATA_SUBMISSION = {
      'entity_in': SUBMISSION_FORMTEMPLATE_ENTITY,
@@ -61,6 +136,14 @@ DATA_SUBMISSION = {
      'agent': SUBMISSION_AGENT,
      'activity': SUBMISSION_ACTIVITY
 }
+
+DATA_SUBMISSION_DOC = {
+     'entity_in': SUBMISSION_FORMTEMPLATE_ENTITY_DOC,
+     'entity_out': SUBMISSION_FORM_ENTITY_DOC,
+     'agent': SUBMISSION_AGENT_DOC,
+     'activity': SUBMISSION_ACTIVITY_DOC
+}
+
 
 #  data review
  
@@ -219,6 +302,12 @@ WORKFLOW_DICT = {
      'data_publication': DATA_PUBLICATION,
      'data_archival': DATA_PRESERVATION }
       
+DOCUMENTATION_DICT = {
+     'data_submission': DATA_SUBMISSION_DOC }
+
+#DOCUMENTATION_DICT['data_submission'] = DATA_SUBMISSION_DOC
+
+
 # submitted information
 #cordex_dict  = {
 #             "first_name": "",

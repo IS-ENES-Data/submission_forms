@@ -41,7 +41,9 @@ Configuration:
 # * most are in standard python library
 # * others are imported conditionally
 #
+
 from __future__ import print_function
+import abc
 import os,sys,shutil,uuid
 import glob
 import pkg_resources
@@ -80,7 +82,7 @@ def vprint(*txt):
 try:
   from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
-  from workflow_steps import WORKFLOW_DICT
+  from workflow_steps import WORKFLOW_DICT, DOCUMENTATION_DICT
   
   
   
@@ -91,7 +93,7 @@ except ImportError:
   vprint("Info: myconfig not found - taking default config ")
   from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO 
-  from dkrz_forms.config.workflow_steps import WORKFLOW_DICT 
+  from dkrz_forms.config.workflow_steps import WORKFLOW_DICT, DOCUMENTATION_DICT 
  
   ## to do: make global constants explicit e.g. PROJECT_DICT ... etc .... 
 # print "Your submission form repository:", PROJECT_DICT
@@ -277,14 +279,15 @@ def prefix_dict(mydict,prefix,keys):
 # Functions to convert form objects into dictionaries into json files and back
 
 class Form(object):
-    ''' translate a dictionary (of dictionaries) into 
-        a (hierarchical) Form object
-        todo: some form checking integration ...
+    ''' Form object with attributes defined by a dictionary
+        - a hierarchical Form object is created when initializing with a dictionary of dictionary
+        - Form objects carry documentation strings defined in config settings
     '''
+    __metaclass__=abc.ABCMeta
     def __init__(self, adict):
-        """Convert a dictionary to a class
-
-        @param :adict Dictionary
+        """Convert a dictionary to a Form Object
+        
+        :param adict: a python dictionary to be converted to attributes of a Form object
         """
         self.__dict__.update(adict)
         for k, v in adict.items():
@@ -299,6 +302,29 @@ class Form(object):
         
         
 #------to be integrated in code: fixed slot Form generation -------------------- 
+
+def myprop(x, doc):
+    def getx(self):
+        return getattr(self, '_' + x)
+
+    def setx(self, val):
+        setattr(self, '_' + x, val)
+
+    def delx(self):
+        delattr(self, '_' + x)
+
+    return property(getx, setx, delx, doc)
+
+#class C(object):
+#    #__metaclass__=abc.ABCMeta
+#    a = myprop("a", "Hi, I'm A!")
+#    b = myprop("b", "Hi, I'm B!")
+#    
+#    
+#C.d = myprop("d","....DDDDDDDDDDDDDDDD......")
+
+
+
 def Form_fixed_Generator(slot_list):
     
 
