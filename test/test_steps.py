@@ -45,8 +45,8 @@ def test_init_form():
     form_handler.init_git_repo(form_repo)
     sf = form_handler.init_form(init_form)
     
-    assert os.path.exists(FORM_REPO+'/'+init_form['project']) == 1
-    assert sf.form_repo == FORM_REPO+'/'+init_form['project']
+    assert os.path.exists(form_repo) == 1
+    #assert sf.sub.entity_out.form_repo == FORM_REPO+'/'+init_form['project']
     assert sf.sub.agent.last_name == "testsuite"
     
 

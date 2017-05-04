@@ -47,7 +47,7 @@ import abc
 import os,sys,shutil,uuid
 import glob
 import pkg_resources
-import socket#
+import socket
 import string
 import random
 from datetime import datetime
@@ -64,25 +64,28 @@ import json
 import copy
 import base64
 
-# import non standard settings from home folder
-# e.g. setting for project repositories like cordex_directory
 
 
 from os.path import expanduser
 config_dir = os.path.join(expanduser("~"),".dkrz_forms")
 sys.path.append(config_dir)
 
-#VERBOSE = True
-VERBOSE = False
+# To DO: use cerberos type checking
+#
+
+VERBOSE = True
+#VERBOSE = False
 def vprint(*txt):
     if VERBOSE:
         print(*txt)
     return
-    
+
+# import non standard settings from home folder
+# e.g. setting for project repositories like cordex_directory    
 try:
   from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
-  from workflow_steps import WORKFLOW_DICT, DOCUMENTATION_DICT
+  
   
   
   
@@ -93,8 +96,7 @@ except ImportError:
   vprint("Info: myconfig not found - taking default config ")
   from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO 
-  from dkrz_forms.config.workflow_steps import WORKFLOW_DICT, DOCUMENTATION_DICT 
- 
+  from dkrz_forms.config import workflow_steps
   ## to do: make global constants explicit e.g. PROJECT_DICT ... etc .... 
 # print "Your submission form repository:", PROJECT_DICT
 
@@ -121,19 +123,45 @@ except ImportError, e:
 # cordex_directory, in general: "<project>_directory
 # to be completed .. 
 # generalized submission form class based on project dictionary defining to be defined variables
+#def set_doc(sf): 
+#    
+#   # add documentation to form object attributes according to the defined workflow         
+#   for (attribute, wflow_step) in sf.workflow:
+#      print("setting documentation for:",attribute, " -- ",wflow_step)
+#      sf_part = getattr(sf,attribute)
+#      sf_part.__doc__ = sf_part.doc_string
+#      
+#      for facet in ['entity_in','entity_out','agent','activity']:
+#          sub_sf_part = getattr(sf_part,facet)
+#          print("    --> set ",sub_sf_part)
+#          sub_sf_part.__doc__ = sub_sf_part.doc_string 
+#          
+#   return sf
+       
 
 
 def init_sf(init_form):
-          sf = Form(PROJECT_DICT[init_form['project']])
+    
+          # generate an empty form 
+          sf = Form({})
           
-          sf.form_repo = FORM_REPO+'/'+ init_form['project']
-          sf.submission_repo = SUBMISSION_REPO+ '/'+ init_form['project']
-          sf.form_dir = NOTEBOOK_DIRECTORY+'/'+ init_form['project']
-          
-          
-          for (short_name,wflow_step) in sf.workflow:
-              setattr(sf,short_name ,Form(WORKFLOW_DICT[wflow_step]))
+          # generate the project specific form
+          form = Form(PROJECT_DICT[init_form['project']])
+
+          # fill project name and workflow forms
+          sf.project = init_form['project']
+          sf.workflow = form.workflow
+          sf.__doc__ = form.__doc__
+          for (short_name,wflow_step) in form.workflow:
+              setattr(sf,short_name ,Form(workflow_steps.WORKFLOW_DICT[wflow_step]))
               
+              
+              
+          sf.sub.entity_out.form = form    
+          
+          sf.sub.entity_out.form_repo = FORM_REPO+'/'+ init_form['project']
+          sf.sub.submission_repo = SUBMISSION_REPO+ '/'+ init_form['project']
+          sf.form_dir = NOTEBOOK_DIRECTORY+'/'+ init_form['project']
           
           print("Form Handler: Initialized form for project:", init_form['project'])
           vprint(sf.project)
@@ -144,18 +172,18 @@ def init_sf(init_form):
           
           sf.sub.activity.keyword=init_form['key']
           sf.sub.activity.pwd=init_form['pwd']
-                 
-          sf.sub.entity_out.form_repo = sf.form_repo,
          
           sf.sub.entity_out.form_name = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
-          sf.sub.entity_out.form_json = join(sf.form_repo,sf.sub.entity_out.form_name+'.json')
+          sf.sub.entity_out.form_json = join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.json')
           #sf.sub.form_path=sf.sub.form_repo+'/'+sf.sub.form_name+'.ipynb'
-          vprint(sf.form_repo)
+          vprint(sf.sub.entity_out.form_repo)
           vprint(sf.sub.entity_out.form_name+'.ipynb')
-          sf.sub.entity_out.form_repo_path=join(sf.form_repo,sf.sub.entity_out.form_name+'.ipynb')
+          sf.sub.entity_out.form_repo_path=join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           
           sf.sub.entity_in.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
           sf.sub.entity_in.form_json=join(sf.form_dir,sf.sub.entity_out.form_name+'.json') 
+          
+          #sf = set_doc(sf)
           
           return(sf)
 
@@ -205,17 +233,17 @@ def generate_submission_form(init_form):
          
           sf.sub.entity_out.pwd = id_generator()
                    
-          if os.path.isfile(sf.form_repo+'/keystore'):
-              keystore = get_persisted_info('forms_pwd',sf.form_repo+'/keystore')
+          if os.path.isfile(sf.sub.entity_out.form_repo+'/keystore'):
+              keystore = get_persisted_info('forms_pwd',sf.sub.entity_out.form_repo+'/keystore')
           else:
               keystore = {}
           key_info = copy.deepcopy(init_form)
           key_info['form_name']= sf.sub.entity_out.form_name
-          key_info['form_repo']= sf.form_repo
-          key_info['form_json']= join(sf.form_repo,sf.sub.entity_out.form_name+'.json')
+          key_info['form_repo']= sf.sub.entity_out.form_repo
+          key_info['form_json']= join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.json')
           
           keystore[sf.sub.entity_out.pwd] = key_info
-          persist_info('forms_pwd',keystore,sf.form_repo+'/keystore')
+          persist_info('forms_pwd',keystore,sf.sub.entity_out.form_repo+'/keystore')
           vprint('Keystore: ', keystore)
            
           template_name = init_form['project']+"_submission_form.ipynb"
@@ -226,8 +254,8 @@ def generate_submission_form(init_form):
               #print "Form Handler: Attention !  non standard source for submission form"
           ## to do: version of template
           # sf.sub.entity_in.version = ...
-          vprint("--- copy from:", sf.sub.entity_in.source_path)
-          vprint("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
+          print("--- copy from:", sf.sub.entity_in.source_path)
+          print("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_in.form_path)
           print("--------------------------------------------------------------------")
@@ -238,7 +266,7 @@ def generate_submission_form(init_form):
           print("--------------------------------------------------------------------")
           save_form(sf, "Form Handler: form - initial generation - quiet" )
           vprint(" ......  initial version saved ...")
-          repo = Repo(sf.form_repo)
+          repo = Repo(sf.sub.entity_out.form_repo)
           # get commit hash and add to json package
           master = repo.head.reference
           commit_hash = master.commit.hexsha
@@ -279,15 +307,14 @@ def prefix_dict(mydict,prefix,keys):
 # Functions to convert form objects into dictionaries into json files and back
 
 class Form(object):
-    ''' Form object with attributes defined by a dictionary
-        - a hierarchical Form object is created when initializing with a dictionary of dictionary
-        - Form objects carry documentation strings defined in config settings
+    ''' Form object with attributes defined by a configurable project dictionary
     '''
     __metaclass__=abc.ABCMeta
     def __init__(self, adict):
         """Convert a dictionary to a Form Object
         
-        :param adict: a python dictionary to be converted to attributes of a Form object
+        :param adict: a (hierarchical) python dictionary 
+        :returns Form objcet: a hierachical Form object with attributes set based on input dictionary             
         """
         self.__dict__.update(adict)
         for k, v in adict.items():
@@ -295,10 +322,10 @@ class Form(object):
               self.__dict__[k] = Form(v)
               
     def __repr__(self):
-        return "DKRZ Form object"
+        return "DKRZ Form object "
         
     def __str__(self):
-        return "DKRZ Form object"
+        return "DKRZ Form object "
         
         
 #------to be integrated in code: fixed slot Form generation -------------------- 
@@ -432,7 +459,7 @@ def save_form(sf,comment):
    
    
     #print "input for formsave", sf.__dict__
-    repo = Repo(sf.form_repo)
+    repo = Repo(sf.sub.entity_out.form_repo)
     #sf.sub['status'] = "stored"
     sf.sub.timestamp = str(datetime.now())
     # .. should be defined prior to "save"
@@ -454,7 +481,7 @@ def save_form(sf,comment):
        
            result1 = repo.git.add(sf.sub.entity_out.form_repo_path)
            result2 = repo.git.add(sf.sub.entity_out.form_json)
-           result3 = repo.git.add(sf.form_repo+"/"+"keystore.*")
+           result3 = repo.git.add(sf.sub.entity_out.form_repo+"/"+"keystore.*")
            #result = repo.git.add(sf.sub.form_name+'*')
            vprint(result1,result2,result3)
            # !! to do: check result 1 - if ipynb was changed or not !!!
@@ -628,8 +655,13 @@ def form_submission(sf):
 def package_submission(sf,comment_on):
          
      sf.sub.id = str(uuid.uuid1())
-     form_json = form_to_json(sf)   
-     shutil.copyfile(sf.sub.entity_in.form_path,sf.sub.entity_out.form_repo_path)
+     form_json = form_to_json(sf) 
+     vprint(sf.sub.entity_in.form_path)
+     vprint(sf.sub.entity_out.form_repo_path)
+     try:
+         shutil.copyfile(sf.sub.entity_in.form_path,sf.sub.entity_out.form_repo_path)
+     except:
+         pass
      form_file = open(sf.sub.entity_out.form_json,"w+")
      form_file.write(form_json+"\r\n")
      form_file.close()

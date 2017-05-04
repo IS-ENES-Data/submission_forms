@@ -1,0 +1,211 @@
+{
+    "form_dir": "/home/stephan/Repos/ENES-EUDAT/submission_forms/test/forms/test",
+    "ing": {
+        "__doc__": "\n       Attributes characterizing the data ingest workflow step:\n       - entity_in : data review report\n       - entity_out : data ingest report\n       - agent : person or tool related ingest step information \n       - activity : information on the ingest process\n       ",
+        "activity": {
+            "__doc__": "\n        Attributes characterizing the data ingest activity:\n        - status: status information\n        - timestamp_started\n        - timestamp_finished : data ingest timing information\n        - comment : free text comment\n        - ticket_id: related RT ticket number\n        - ingest_report: dictionary with ingest related information (tbd.)\n        ",
+            "comment": "",
+            "doc_string": "\n        Attributes characterizing the data ingest activity:\n        - status: status information\n        - timestamp_started\n        - timestamp_finished : data ingest timing information\n        - comment : free text comment\n        - ticket_id: related RT ticket number\n        - ingest_report: dictionary with ingest related information (tbd.)\n        ",
+            "ingest_report": {},
+            "status": "",
+            "ticket_id": 0,
+            "timestamp_finished": "",
+            "timestamp_started": ""
+        },
+        "agent": {
+            "__doc__": " \n                   Attributes characterizing the person or tool managing the data ingest:\n                    - responsible_person:  \n                    ",
+            "doc_string": " \n                   Attributes characterizing the person or tool managing the data ingest:\n                    - responsible_person:  \n                    ",
+            "responsible_person": ""
+        },
+        "doc_string": "\n       Attributes characterizing the data ingest workflow step:\n       - entity_in : data review report\n       - entity_out : data ingest report\n       - agent : person or tool related ingest step information \n       - activity : information on the ingest process\n       ",
+        "entity_in": {
+            "__doc__": "\n         Attributes characterizing the review results:\n         - data: time stamp of last results\n         - tag: git tag for repo conatining report information\n         - repo: (gitlab) repo containing report information,\n         - comment: free text comment for this review,\n         - status : review status information: ok, undef, uncomplete, error,\n         - dict: report details in dictionary,\n         - dict_type': predefined value: review_report   \n     ",
+            "comment": "",
+            "date": "",
+            "dict": "",
+            "dict_type": "review_report",
+            "doc_string": "\n         Attributes characterizing the review results:\n         - data: time stamp of last results\n         - tag: git tag for repo conatining report information\n         - repo: (gitlab) repo containing report information,\n         - comment: free text comment for this review,\n         - status : review status information: ok, undef, uncomplete, error,\n         - dict: report details in dictionary,\n         - dict_type': predefined value: review_report   \n     ",
+            "repo": "",
+            "status": "",
+            "tag": ""
+        },
+        "entity_out": {
+            "__doc__": "\n     Attributes characterizing the ingest report summary:\n       - date: 'last modification date,\n       - tag : '(git) tag for repo containing report information,\n       - repo: '(gitlab) repo containing report information,\n       - comment : 'free text comment for this review,\n       - status : 'data ingest status information: ok, undef, uncomplete, error,\n       - dict: 'report details in dictionary,\n       - dict_type: 'predefined value: ingest_report   \n     ",
+            "comment": "",
+            "date": "",
+            "dict": "",
+            "dict_type": "ingest_report",
+            "doc_string": "\n     Attributes characterizing the ingest report summary:\n       - date: 'last modification date,\n       - tag : '(git) tag for repo containing report information,\n       - repo: '(gitlab) repo containing report information,\n       - comment : 'free text comment for this review,\n       - status : 'data ingest status information: ok, undef, uncomplete, error,\n       - dict: 'report details in dictionary,\n       - dict_type: 'predefined value: ingest_report   \n     ",
+            "repo": "",
+            "status": "",
+            "tag": ""
+        }
+    },
+    "project": "test",
+    "qua": {
+        "__doc__": "\n        Attributes characterizing the data quality assurance step:\n        - entity_in: data ingest report\n        - entity_out:  data quality assurance report\n        - agent: person and tool responsible for qua checking\n        - activity: info on qua checking process\n    ",
+        "activity": {
+            "__doc__": "\n        Attributes characterizing the data quality assurance activity:\n        - status: status information\n        - timestamp_started\n        - timestamp_finished : data ingest timing information\n        - comment : free text comment\n        - ticket_id: related RT ticket number\n        - follow_up_ticket: in case new data has to be provided\n        - quality_report: dictionary with quality related information (tbd.)\n        ",
+            "comment": "",
+            "doc_string": "\n        Attributes characterizing the data quality assurance activity:\n        - status: status information\n        - timestamp_started\n        - timestamp_finished : data ingest timing information\n        - comment : free text comment\n        - ticket_id: related RT ticket number\n        - follow_up_ticket: in case new data has to be provided\n        - quality_report: dictionary with quality related information (tbd.)\n        ",
+            "follow_up_ticket": "",
+            "status": "",
+            "ticket_id": "",
+            "timestamp_finished": "",
+            "timestamp_started": ""
+        },
+        "agent": {
+            "__doc__": " \n                   Attributes characterizing the person or tool managing the data ingest:\n                    - responsible_person:  \n                    ",
+            "doc_string": " \n                   Attributes characterizing the person or tool managing the data ingest:\n                    - responsible_person:  \n                    ",
+            "responsible_person": ""
+        },
+        "doc_string": "\n        Attributes characterizing the data quality assurance step:\n        - entity_in: data ingest report\n        - entity_out:  data quality assurance report\n        - agent: person and tool responsible for qua checking\n        - activity: info on qua checking process\n    ",
+        "entity_in": {
+            "__doc__": "\n     Attributes characterizing the ingest report summary:\n       - date: 'last modification date,\n       - tag : '(git) tag for repo containing report information,\n       - repo: '(gitlab) repo containing report information,\n       - comment : 'free text comment for this review,\n       - status : 'data ingest status information: ok, undef, uncomplete, error,\n       - dict: 'report details in dictionary,\n       - dict_type: 'predefined value: ingest_report   \n     ",
+            "comment": "",
+            "date": "",
+            "dict": "",
+            "dict_type": "ingest_report",
+            "doc_string": "\n     Attributes characterizing the ingest report summary:\n       - date: 'last modification date,\n       - tag : '(git) tag for repo containing report information,\n       - repo: '(gitlab) repo containing report information,\n       - comment : 'free text comment for this review,\n       - status : 'data ingest status information: ok, undef, uncomplete, error,\n       - dict: 'report details in dictionary,\n       - dict_type: 'predefined value: ingest_report   \n     ",
+            "repo": "",
+            "status": "",
+            "tag": ""
+        },
+        "entity_out": {
+            "__doc__": "\n     Attributes characterizing the quality report summary:\n       - date: 'last modification date,\n       - tag : '(git) tag for repo containing report information,\n       - repo: '(gitlab) repo containing report information,\n       - comment : 'free text comment for this review,\n       - status : 'data ingest status information: ok, undef, uncomplete, error,\n       - dict: 'report details in dictionary,\n       - dict_type: 'predefined value: ingest_report   \n     ",
+            "comment": "",
+            "date": "",
+            "dict": "",
+            "dict_type": "qua_report",
+            "doc_string": "\n     Attributes characterizing the quality report summary:\n       - date: 'last modification date,\n       - tag : '(git) tag for repo containing report information,\n       - repo: '(gitlab) repo containing report information,\n       - comment : 'free text comment for this review,\n       - status : 'data ingest status information: ok, undef, uncomplete, error,\n       - dict: 'report details in dictionary,\n       - dict_type: 'predefined value: ingest_report   \n     ",
+            "repo": "",
+            "status": "",
+            "tag": ""
+        }
+    },
+    "rev": {
+        "__doc__": " \n           Attributes characterizing the data submission review step:\n           - entity_in :  submission form\n           - entity_out: adapted submission form\n           - agent: person or tool related information\n           - activity': submission activity related information\n           ",
+        "activity": {
+            "__doc__": "\n           Attributes characterizing the form review activity:\n            - ticket_url: assigned RT Ticket\n            - ticket_id: RT Ticket id \n            - review_comment: free text comment \n            - review_status: progress status of review\n            - review_report: dictionary with review results and issues\n        ",
+            "doc_string": "\n           Attributes characterizing the form review activity:\n            - ticket_url: assigned RT Ticket\n            - ticket_id: RT Ticket id \n            - review_comment: free text comment \n            - review_status: progress status of review\n            - review_report: dictionary with review results and issues\n        ",
+            "review_comment": "",
+            "review_status": "",
+            "ticket_id": 0,
+            "ticket_url": ""
+        },
+        "agent": {
+            "__doc__": " \n                   Attributes characterizing the person or tool checking the form:\n                    - responsible_person:  \n                    ",
+            "doc_string": " \n                   Attributes characterizing the person or tool checking the form:\n                    - responsible_person:  \n                    ",
+            "responsible_person": ""
+        },
+        "doc_string": " \n           Attributes characterizing the data submission review step:\n           - entity_in :  submission form\n           - entity_out: adapted submission form\n           - agent: person or tool related information\n           - activity': submission activity related information\n           ",
+        "entity_in": {
+            "__doc__": " \n           Attributes characterizing the data submission workflow step:\n           - entity_in : Input (form template and init info)\n           - entity_out: Output (submission form information)\n           - agent: person or tool related information\n           - activity': submission activity related information\n           ",
+            "activity": {
+                "doc_string": "\n                         Attributes characterizing the form submission activity:\n                         \n                         - submission_comment : free text comment\n                         - submission_method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based       \n                         ",
+                "submission_comment": "",
+                "submission_method": ""
+            },
+            "agent": {
+                "doc_string": "Attributes characterizing the person responsible for form completion and submission:\n            \n                                   - last_name: Last name of the person responsible for the submission form content\n                                   - first_name: Corresponding first name\n                                   - email: Valid user email address: all follow up activities will use this email to contact end user\n                                   - key_word : user provided key word to remember and separate submission\n                             ",
+                "email": "",
+                "first_name": "",
+                "key_word": "",
+                "last_name": ""
+            },
+            "doc_string": " \n           Attributes characterizing the data submission workflow step:\n           - entity_in : Input (form template and init info)\n           - entity_out: Output (submission form information)\n           - agent: person or tool related information\n           - activity': submission activity related information\n           ",
+            "entity_in": {
+                "doc_string": "\n                           Attributes defining the form template used:\n                               \n                               - source_path: path to the form template used (jupyter notebook)         \n                               - form_template_version:  version string for the form template used\n                               - tag: git tag of repo containing templates (=source code repo in most cases)\n                ",
+                "form_template_version": "",
+                "source_path": "",
+                "tag": ""
+            },
+            "entity_out": {
+                "checks_done": "",
+                "doc_string": "\n                     Attributes characterizing the form submission process and context:\n                     - form_name: consistent prefix for the form name (postfix=.ipynb and .json)\n                     - form_repo: git repo where forms are stored (before submission)\n                     - form_json, form_repo_path: full paths to json and ipynb representations\n                     - form_dir: directory where form are served to the notebook interface\n                     - status: status information\n                     - checks_done: form consistency checks done\n                     - tag: 'git tag of submission form in submission form repo',\n                     - repo: '(gitlab) repo where the tag relates to','\n                     \n                   ",
+                "form_dir": "",
+                "form_json": "",
+                "form_name": "",
+                "form_path": "",
+                "form_repo": "",
+                "form_repo_path": "",
+                "repo": "",
+                "status": "",
+                "tag": ""
+            }
+        },
+        "entity_out": {
+            "__doc__": "\n         Attributes characterizing the review results:\n         - data: time stamp of last results\n         - tag: git tag for repo conatining report information\n         - repo: (gitlab) repo containing report information,\n         - comment: free text comment for this review,\n         - status : review status information: ok, undef, uncomplete, error,\n         - dict: report details in dictionary,\n         - dict_type': predefined value: review_report   \n     ",
+            "comment": "",
+            "date": "",
+            "dict": "",
+            "dict_type": "review_report",
+            "doc_string": "\n         Attributes characterizing the review results:\n         - data: time stamp of last results\n         - tag: git tag for repo conatining report information\n         - repo: (gitlab) repo containing report information,\n         - comment: free text comment for this review,\n         - status : review status information: ok, undef, uncomplete, error,\n         - dict: report details in dictionary,\n         - dict_type': predefined value: review_report   \n     ",
+            "repo": "",
+            "status": "",
+            "tag": ""
+        }
+    },
+    "sub": {
+        "__doc__": " \n           Attributes characterizing the data submission workflow step:\n           - entity_in : Input (form template and init info)\n           - entity_out: Output (submission form information)\n           - agent: person or tool related information\n           - activity': submission activity related information\n           ",
+        "activity": {
+            "__doc__": "\n                         Attributes characterizing the form submission activity:\n                         \n                         - submission_comment : free text comment\n                         - submission_method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based       \n                         ",
+            "doc_string": "\n                         Attributes characterizing the form submission activity:\n                         \n                         - submission_comment : free text comment\n                         - submission_method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based       \n                         ",
+            "keyword": "1234",
+            "pwd": "test123",
+            "submission_comment": "",
+            "submission_method": ""
+        },
+        "agent": {
+            "__doc__": "Attributes characterizing the person responsible for form completion and submission:\n            \n                                   - last_name: Last name of the person responsible for the submission form content\n                                   - first_name: Corresponding first name\n                                   - email: Valid user email address: all follow up activities will use this email to contact end user\n                                   - key_word : user provided key word to remember and separate submission\n                             ",
+            "doc_string": "Attributes characterizing the person responsible for form completion and submission:\n            \n                                   - last_name: Last name of the person responsible for the submission form content\n                                   - first_name: Corresponding first name\n                                   - email: Valid user email address: all follow up activities will use this email to contact end user\n                                   - key_word : user provided key word to remember and separate submission\n                             ",
+            "email": "stephan.kindermann@gmail.com",
+            "first_name": "unit_tester",
+            "key_word": "",
+            "last_name": "testsuite"
+        },
+        "doc_string": " \n           Attributes characterizing the data submission workflow step:\n           - entity_in : Input (form template and init info)\n           - entity_out: Output (submission form information)\n           - agent: person or tool related information\n           - activity': submission activity related information\n           ",
+        "entity_in": {
+            "__doc__": "\n                           Attributes defining the form template used:\n                               \n                               - source_path: path to the form template used (jupyter notebook)         \n                               - form_template_version:  version string for the form template used\n                               - tag: git tag of repo containing templates (=source code repo in most cases)\n                ",
+            "doc_string": "\n                           Attributes defining the form template used:\n                               \n                               - source_path: path to the form template used (jupyter notebook)         \n                               - form_template_version:  version string for the form template used\n                               - tag: git tag of repo containing templates (=source code repo in most cases)\n                ",
+            "form_json": "/home/stephan/Repos/ENES-EUDAT/submission_forms/test/forms/test/test_testsuite_1234.json",
+            "form_path": "/home/stephan/Repos/ENES-EUDAT/submission_forms/test/forms/test/test_testsuite_1234.ipynb",
+            "form_template_version": "",
+            "source_path": "",
+            "tag": ""
+        },
+        "entity_out": {
+            "__doc__": "\n                     Attributes characterizing the form submission process and context:\n                     - form_name: consistent prefix for the form name (postfix=.ipynb and .json)\n                     - form_repo: git repo where forms are stored (before submission)\n                     - form_json, form_repo_path: full paths to json and ipynb representations\n                     - form_dir: directory where form are served to the notebook interface\n                     - status: status information\n                     - checks_done: form consistency checks done\n                     - tag: 'git tag of submission form in submission form repo',\n                     - repo: '(gitlab) repo where the tag relates to','\n                     \n                   ",
+            "checks_done": "",
+            "doc_string": "\n                     Attributes characterizing the form submission process and context:\n                     - form_name: consistent prefix for the form name (postfix=.ipynb and .json)\n                     - form_repo: git repo where forms are stored (before submission)\n                     - form_json, form_repo_path: full paths to json and ipynb representations\n                     - form_dir: directory where form are served to the notebook interface\n                     - status: status information\n                     - checks_done: form consistency checks done\n                     - tag: 'git tag of submission form in submission form repo',\n                     - repo: '(gitlab) repo where the tag relates to','\n                     \n                   ",
+            "form_dir": "",
+            "form_json": "test_testsuite_1234.json",
+            "form_name": "test_testsuite_1234",
+            "form_path": "",
+            "form_repo": "",
+            "form_repo_path": "test_testsuite_1234.ipynb",
+            "repo": "",
+            "status": "",
+            "tag": ""
+        },
+        "id": "3fd0b0b2-30e1-11e7-bb62-080027f178b4"
+    },
+    "workflow": [
+        [
+            "sub",
+            "data_submission"
+        ],
+        [
+            "rev",
+            "data_submission_review"
+        ],
+        [
+            "ing",
+            "data_ingest"
+        ],
+        [
+            "qua",
+            "data_quality_assurance"
+        ]
+    ]
+}

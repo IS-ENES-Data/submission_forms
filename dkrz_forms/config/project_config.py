@@ -91,16 +91,12 @@ PROJECT_DICT['CORDEX']  = {
              "variable_list_fx" : "",
              "uniqueness_of_tracking_id" : "",
              "workflow": [("sub","data_submission"),
-                          ("rev","data_submission_review"),
-                          ("ing","data_ingest"),
-                          ("qua","data_quality_assurance"),
-                          ("pub","data_publication"),
-                          ("da", "data_archival")
+                       #   ("rev","data_submission_review"),
+                       #   ("ing","data_ingest"),
+                       #   ("qua","data_quality_assurance"),
+                       #   ("pub","data_publication"),
+                       #   ("da", "data_archival")
                          ], 
-             #'sub':workflow_steps.data_submission,
-             #'ing':workflow_steps.data_ingest,
-             #'qua':workflow_steps.data_quality_assurance,
-             #S'pub':workflow_steps.data_publication  
              }
                          
 
@@ -121,13 +117,41 @@ PROJECT_DICT['DKRZ_CDP'] = {
                          ], 
  }
 PROJECT_DICT['test'] = {
-             'project' : "test",
+             '__doc__' :"""
+             Form object for project test
+            
+             Workflow step related sub-forms (filled by data managers):
+               - sub: data submission form
+               - rev: data review_form
+               - ing: data ingest form
+               - qua: data quality assurance form
+               - pub: data publication form
+               
+            
+             
+             Each workfow step form is structured according to
+               - entity_in : input information for this step
+               - entity_out: output information for this step
+               - agent: information related to responsible party for this step
+               - activity: information related the workflow step execution
+               
+              End user provided form information is stored in:
+             
+             _this_form_object.sub.entity_out.form  
+             
+             The following end user attributes are defined:
+           
+               - project: project this form is related to
+               - ....
+               
+             """ ,
+             'project':'test',
              "workflow": [("sub","data_submission"),
                           ("rev","data_submission_review"),
                           ("ing","data_ingest"),
                           ("qua","data_quality_assurance"),
-                          ("pub","data_publication"),
-                          ("da", "data_archival")
+                      #    ("pub","data_publication"),
+                      #    ("da", "data_archival")
                          ], 
  }
 PROJECT_DICT['CMIP6']= {
