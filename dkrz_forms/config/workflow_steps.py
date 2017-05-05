@@ -52,7 +52,8 @@ SUBMISSION_ACTIVITY = {
                          - submission_method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based       
                          """,
            'submission_comment':'',
-           'submission_method':''           
+           'submission_method':'',
+           'pwd':' password to access form '
             } 
        
             

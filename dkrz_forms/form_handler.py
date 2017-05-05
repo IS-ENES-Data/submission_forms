@@ -56,7 +56,7 @@ try:
 except ImportError:
     print("Warning: please install git module with 'pip install gitpython'")
     print("otherwise all helper functions for interacting with git will not work")
-join = os.path.join
+from os.path import join as join
 import smtplib
 from email.mime.text import MIMEText
 import shelve
@@ -86,14 +86,12 @@ try:
   from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
   
-  
-  
-  
+    
 #  from myconfig import rt_pwd
 # print "project config imported"
   
 except ImportError:
-  vprint("Info: myconfig not found - taking default config ")
+  #vprint("Info: myconfig not found - taking default config ")
   from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO 
   from dkrz_forms.config import workflow_steps
@@ -172,6 +170,8 @@ def init_sf(init_form):
           
           sf.sub.activity.keyword=init_form['key']
           sf.sub.activity.pwd=init_form['pwd']
+          
+          sf.sub.entity_out.pwd = init_form['pwd']
          
           sf.sub.entity_out.form_name = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
           sf.sub.entity_out.form_json = join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.json')
@@ -229,21 +229,23 @@ def generate_submission_form(init_form):
     
     if init_form['project'] in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
         
+        
+          init_form['pwd'] = id_generator()
           sf = init_sf(init_form)          
-         
-          sf.sub.entity_out.pwd = id_generator()
-                   
-          if os.path.isfile(sf.sub.entity_out.form_repo+'/keystore'):
-              keystore = get_persisted_info('forms_pwd',sf.sub.entity_out.form_repo+'/keystore')
+          keystore_path =  join(FORM_REPO,'keystore')        
+          if os.path.isfile(keystore_path):
+              keystore = get_persisted_info('forms_pwd',keystore_path)
           else:
               keystore = {}
           key_info = copy.deepcopy(init_form)
           key_info['form_name']= sf.sub.entity_out.form_name
           key_info['form_repo']= sf.sub.entity_out.form_repo
           key_info['form_json']= join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.json')
+          key_info['form_path']= join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           
           keystore[sf.sub.entity_out.pwd] = key_info
-          persist_info('forms_pwd',keystore,sf.sub.entity_out.form_repo+'/keystore')
+          print("TTT:  store in keystore",keystore_path)
+          persist_info('forms_pwd',keystore,keystore_path)
           vprint('Keystore: ', keystore)
            
           template_name = init_form['project']+"_submission_form.ipynb"
@@ -317,15 +319,18 @@ class Form(object):
         :returns Form objcet: a hierachical Form object with attributes set based on input dictionary             
         """
         self.__dict__.update(adict)
+        ## self.__dict__[key] = AttributeDict(**mydict)  ??
         for k, v in adict.items():
            if isinstance(v, dict):
               self.__dict__[k] = Form(v)
               
     def __repr__(self):
+        """
+        """
         return "DKRZ Form object "
         
     def __str__(self):
-        return "DKRZ Form object "
+        return "DKRZ Form object: %s" %  self.__dict__
         
         
 #------to be integrated in code: fixed slot Form generation -------------------- 
@@ -481,9 +486,9 @@ def save_form(sf,comment):
        
            result1 = repo.git.add(sf.sub.entity_out.form_repo_path)
            result2 = repo.git.add(sf.sub.entity_out.form_json)
-           result3 = repo.git.add(sf.sub.entity_out.form_repo+"/"+"keystore.*")
+           
            #result = repo.git.add(sf.sub.form_name+'*')
-           vprint(result1,result2,result3)
+           vprint(result1,result2)
            # !! to do: check result 1 - if ipynb was changed or not !!!
            
            commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment

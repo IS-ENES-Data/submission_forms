@@ -35,27 +35,17 @@ FORM_URL_PATH = 'http://localhost:8888/notebooks/Repos/ENES-EUDAT/submission_for
 # Directory where the project git repos live
 # dir_prefix = "/opt/formhandler/Repos/"
 DIR_PREFIX = "/home/stephan/tmp/Repos/"    # for json db storage
-INFO_DB_PATH = join(DIR_PREFIX,"db/db.json")
+
+# keystore_path is set to join(FORM_REPO,keystore) 
 
 FORM_REPO = "/home/stephan/tmp/Repos/form_repo"
 
 # final submissions repo (gitlab synchronized)
 SUBMISSION_REPO = "/home/stephan/tmp/Repos/submission_repo"
 
-# rest is deployment independent
-#project_directory = {}
-#project_directory["CORDEX"] = join(user_submission_directory,"CORDEX")
-#project_directory["CMIP6"] = join(user_submission_directory,"CMIP6")
-#project_directory["ESGF_replication"] = join(user_submission_directory,"ESGF_replication")
-#project_directory["DKRZ_CDP"] = join(user_submission_directory,"DKRZ_CDP")
-#project_directory["test"] = join(user_submission_directory,"test")
-
-
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
 #print project_directory
 #print "general project config imported"
-
-from dkrz_forms.config import workflow_steps 
 
 # (submission,ingest,checking,publish) = form_handler.get_workflow_steps()
 

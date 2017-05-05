@@ -8,7 +8,10 @@ Created on Thu Apr 13 18:27:28 2017
 from ipywidgets import widgets
 from IPython.display import display, Javascript, Image
 from dkrz_forms import form_handler
-import os
+from dkrz_forms.config.project_config import FORM_REPO, NOTEBOOK_DIRECTORY, FORM_URL_PATH
+import os, shutil
+
+from os.path import join as join
 
 align_kw = dict(
     _css = (('.widget-label', 'min-width', '20ex'),),
@@ -25,25 +28,31 @@ init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY]
 
 submission_type = widgets.Dropdown(description = "Type of submission: ", options=["initial_version","new_version","retract"])
 ## maybe move to config part ..
-PROJ_DICT={}
-PROJ_DICT['CORDEX'] = {}
 
-cordex_sel={}
-cordex_sel['terms_of_use'] = ["unrestricted","non-commercial only"]
-cordex_sel['qc_status'] = ["QC1","QC2","other","unchecked"]
+#cordex_sel={}
+#cordex_sel['terms_of_use'] = ["unrestricted","non-commercial only"]
+#cordex_sel['qc_status'] = ["QC1","QC2","other","unchecked"]
 
 def show_status(status):
-    if status == 'generation':
-        image = Image(filename='ingest-workflow1.png')
+    if status == 'form-generation':
+        image = Image(filename=join(NOTEBOOK_DIRECTORY,'fig','form-generation.png'))
+        display(image)
+    elif status == 'form-retrieval':
+        image = Image(filename=join(NOTEBOOK_DIRECTORY,'fig','form-retrieval.png'))
+        display(image)
+    elif status == 'form-submission':
+        image = Image(filename=join(NOTEBOOK_DIRECTORY,'fig','form-submission.png'))
+        display(image)
+    elif status == 'form-dataingest':
+        image = Image(filename=join(NOTEBOOK_DIRECTORY,'fig','form-datainges.png'))
         display(image)
     else:
         print "Unknown status"
         
 def check_pwd(last_name):
-    form_info = form_handler.get_persisted_info('forms_pwd','/home/stephan/tmp/Repos/form_repo/CORDEX/keystore')
+    form_info = form_handler.get_persisted_info('forms_pwd',join(FORM_REPO,'keystore'))
     
     import getpass
-    #display(LAST_NAME) 
     #my_last_name = getpass.getpass("Enter your last name: ")
     my_pwd = getpass.getpass("Enter your form key: ")
     form_info[my_pwd]['pwd'] = my_pwd
@@ -56,17 +65,34 @@ def check_pwd(last_name):
             print "---- Your Name: ", form_info[my_pwd]['first_name'] + " " + form_info[my_pwd]['last_name']
             print "---- Your email: ", form_info[my_pwd]['last_name']
             print "---- Name of this submission form: ", form_info[my_pwd]['form_name']
-            print "     --->  This name should correspond to the title at the top of this form !!"
-            print "           otherwise you mixed your form password with another form !!"
+    
             return form_info[my_pwd]
         else:
             print "Error: incorrect key or incorrcect last name (case sensitive !)" 
-            return False 
+            return {}
     else:
          print "Error: incorrect key"
          return False
 
-def ask():     
+def check_and_retrieve(last_name):
+    
+    info = check_pwd(last_name)
+    if info:
+        print(info)
+        print("--- copy from:", info['form_path'])
+        print("--- to: ",join(NOTEBOOK_DIRECTORY,info['project']))
+        shutil.copyfile(info['form_path'],join(NOTEBOOK_DIRECTORY,info['project'],info['form_name']+'.ipynb'))
+        print("--------------------------------------------------------------------")
+        print("   Your submission form was retrieved and is accessible via the following link:")
+       
+        print(FORM_URL_PATH+info['project']+'/'+info['form_name']+'.ipynb')
+          ## to do email link to user ....
+        print("--------------------------------------------------------------------")
+
+
+        
+
+def create_form():     
     display(*init_widgets)
     #print "Fill out above fields before entering key below !"
     #check_pwd(LAST_NAME.value)
