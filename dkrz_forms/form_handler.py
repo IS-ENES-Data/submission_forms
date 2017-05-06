@@ -115,26 +115,6 @@ except ImportError, e:
 
 #------------------------------------------------------------------------------------------
 
-
-
-# global variables defined and imported here, which are used in helper functions:
-# cordex_directory, in general: "<project>_directory
-# to be completed .. 
-# generalized submission form class based on project dictionary defining to be defined variables
-#def set_doc(sf): 
-#    
-#   # add documentation to form object attributes according to the defined workflow         
-#   for (attribute, wflow_step) in sf.workflow:
-#      print("setting documentation for:",attribute, " -- ",wflow_step)
-#      sf_part = getattr(sf,attribute)
-#      sf_part.__doc__ = sf_part.doc_string
-#      
-#      for facet in ['entity_in','entity_out','agent','activity']:
-#          sub_sf_part = getattr(sf_part,facet)
-#          print("    --> set ",sub_sf_part)
-#          sub_sf_part.__doc__ = sub_sf_part.doc_string 
-#          
-#   return sf
        
 
 

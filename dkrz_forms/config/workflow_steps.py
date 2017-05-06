@@ -94,7 +94,8 @@ SUBMISSION_FORM_ENTITY = {
             'status': '',
             'checks_done' : '',
             'tag': '',
-            'repo': ''
+            'repo': '',
+            'form_info': {}
 }            
                                  
 
@@ -149,8 +150,8 @@ REVIEW_REPORT = {
          - repo: (gitlab) repo containing report information,
          - comment: free text comment for this review,
          - status : review status information: ok, undef, uncomplete, error,
-         - dict: report details in dictionary,
-         - dict_type': predefined value: review_report   
+         - form_info: report details in dictionary,
+         - form_type': predefined value: review_report   
      """,
      'date': '',
      'tag' : '',
@@ -158,7 +159,7 @@ REVIEW_REPORT = {
      'comment' : '',
      'status' : '',
      'dict': '',
-     'dict_type': 'review_report'
+     'form_type': 'review_report'
 } 
  
 DATA_SUBMISSION_REVIEW = {
@@ -221,16 +222,16 @@ INGEST_REPORT = {
        - repo: '(gitlab) repo containing report information,
        - comment : 'free text comment for this review,
        - status : 'data ingest status information: ok, undef, uncomplete, error,
-       - dict: 'report details in dictionary,
-       - dict_type: 'predefined value: ingest_report   
+       - form_info: 'report details in dictionary,
+       - form_type: 'predefined value: ingest_report   
      """,
      'date': '',
      'tag' : '',
      'repo': '',
      'comment' : '',
      'status' : '',
-     'dict': '',
-     'dict_type': 'ingest_report'
+     'form_info': '',
+     'form_type': 'ingest_report'
 }
 
 
@@ -287,16 +288,16 @@ QUA_REPORT = {
        - repo: '(gitlab) repo containing report information,
        - comment : 'free text comment for this review,
        - status : 'data ingest status information: ok, undef, uncomplete, error,
-       - dict: 'report details in dictionary,
-       - dict_type: 'predefined value: ingest_report   
+       - form_info: 'report details in dictionary,
+       - form_type: 'predefined value: ingest_report   
      """,
      'date': '',
      'tag' : '',
      'repo': '',
      'comment' : '',
      'status' : '',
-     'dict': '',
-     'dict_type': 'qua_report'       
+     'form_info': '',
+     'form_type': 'qua_report'       
     }
 
     
@@ -353,16 +354,16 @@ PUBLICATION_REPORT = {
                - repo: (gitlab) repo containing report information,
                - comment : free text comment for this review,
                - status : data ingest status information: ok, undef, uncomplete, error,
-               - dict: 'report details in dictionary,
-               - dict_type: predefined value: publication_report, 
+               - form_info: 'report details in dictionary,
+               - form_type: predefined value: publication_report, 
              """,
             'date': '',
             'tag' : '',
             'repo': '',
             'comment' : '',
             'status' : '',
-            'dict': '',
-            'dict_type': 'publication_report', 
+            'form_info': '',
+            'form_type': 'publication_report', 
             'facet_string': "# e.g. project=A&model=B& ...."
              }            
 

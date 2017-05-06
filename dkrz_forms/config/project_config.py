@@ -97,13 +97,36 @@ generic_dict = {
 # to do: put generic info in generic_dict and merge this with 
 #        the project_dicts below
 PROJECT_DICT['DKRZ_CDP'] = {
+             '__doc__': """
+             Form object for data replication related information
+             
+             Workflow steps related sub-forms (filled by data manager):
+               - sub: data submission form
+               - rev: data review_form
+               - ing: data ingest form
+               - qua: data quality assurance form
+               - pub: data publication form
+               
+             Each workfow step form is structured according to
+               - entity_in : input information for this step
+               - entity_out: output information for this step
+               - agent: information related to responsible party for this step
+               - activity: information related the workflow step execution
+               
+              End user provided form information is stored in:
+             
+             _this_form_object.sub.entity_out.form  
+             
+             The the documentation of the sub.entity_out subform for 
+             the end-user filled information entities 
+             """,
              'project': 'CMIP6_CDP',
              "workflow": [("sub","data_submission"),
                           ("rev","data_submission_review"),
                           ("ing","data_ingest"),
                           ("qua","data_quality_assurance"),
                           ("pub","data_publication"),
-                          ("da", "data_archival")
+#                          ("da", "data_archival")
                          ], 
  }
 PROJECT_DICT['test'] = {
@@ -151,7 +174,7 @@ PROJECT_DICT['CMIP6']= {
                           ("ing","data_ingest"),
                           ("qua","data_quality_assurance"),
                           ("pub","data_publication"),
-                          ("da", "data_archival")
+#                          ("da", "data_archival")
                          ], 
  }            
  
@@ -162,7 +185,7 @@ PROJECT_DICT['ESGF_replication']= {
                           ("ing","data_ingest"),
                           ("qua","data_quality_assurance"),
                           ("pub","data_publication"),
-                          ("da", "data_archival")
+#                          ("da", "data_archival")
                          ], 
  }            
 
