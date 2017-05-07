@@ -212,21 +212,23 @@ def generate_submission_form(init_form):
         
           init_form['pwd'] = id_generator()
           sf = init_sf(init_form)          
-          keystore_path =  join(FORM_REPO,'keystore')        
-          if os.path.isfile(keystore_path):
+          keystore_path =  join(FORM_REPO,'keystore') 
+         
+          if os.path.isfile(keystore_path+'.dat'):
               keystore = get_persisted_info('forms_pwd',keystore_path)
           else:
               keystore = {}
+              vprint("Warning: no keystore - new keystore generated")
           key_info = copy.deepcopy(init_form)
           key_info['form_name']= sf.sub.entity_out.form_name
           key_info['form_repo']= sf.sub.entity_out.form_repo
           key_info['form_json']= join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.json')
           key_info['form_path']= join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           
-          keystore[sf.sub.entity_out.pwd] = key_info
-          print("TTT:  store in keystore",keystore_path)
+          keystore[init_form['pwd']] = key_info
+          print("TTT:  store key in keystore",init_form['pwd'],keystore_path)
           persist_info('forms_pwd',keystore,keystore_path)
-          vprint('Keystore: ', keystore)
+          #vprint('Keystore: ', keystore)
            
           template_name = init_form['project']+"_submission_form.ipynb"
           try:
