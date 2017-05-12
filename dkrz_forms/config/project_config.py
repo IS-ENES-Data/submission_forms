@@ -22,10 +22,10 @@ name_space={'sub':'http://enes.org/entities/ingest-workflow#',
 #install_directory = "/home/dkrz/k202015"
 #info_db_path = "/home/dkrz/k202015/db.json"
 
-submission_directory = "/home/stephan/tmp/data_forms_repo_test"
-project_directory = "/home/stephan/tmp/gen_forms"
-install_directory = "/home/stephan/Repos/ENES-EUDAT"
-info_db_path = "/home/stephan/tmp/db.json"
+submission_directory = "C:\\Users\\Stephan Kindermann\\test-sub"
+project_directory = "C:\\Users\\Stephan Kindermann\\test"
+install_directory = "C:\\Users\\Stephan Kindermann\\Documents\\GitHub"
+info_db_path = "C:\\Users\\Stephan Kindermann\\test\\db.json"
 
 import base64
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
