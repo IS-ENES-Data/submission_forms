@@ -279,13 +279,14 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def prefix_dict(mydict,prefix,keys):
+def prefix_dict(mydict,prefix):
     ''' Return a copy of a submission object with specified keys prefixed by a namespace
       to do: makes no senso fo sf objects - work on dicts instead ... 
     '''
     pr_dict = {}
-    for key in keys:
-        pr_dict[prefix + ':' + key] = mydict[key]
+    for key,val in mydict.iteritems():
+        if (key != "__doc__") and not isinstance(val,dict):
+            pr_dict[prefix + ':' + key] = mydict[key]
     return pr_dict
 
 # Functions to convert form objects into dictionaries into json files and back

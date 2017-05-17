@@ -38,6 +38,7 @@ SUBMISSION_AGENT = {
                                    - email: Valid user email address: all follow up activities will use this email to contact end user
                                    - key_word : user provided key word to remember and separate submission
                              """,
+              'i_name': 'submission_agent',               
               'last_name' : '',
               'first_name' : '',
               'key_word': '',
@@ -51,6 +52,7 @@ SUBMISSION_ACTIVITY = {
                          - submission_comment : free text comment
                          - submission_method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based       
                          """,
+           'i_name':'submission_activity',              
            'submission_comment':'',
            'submission_method':'',
            'pwd':' password to access form '
@@ -65,6 +67,7 @@ SUBMISSION_FORMTEMPLATE_ENTITY = {
                                - form_template_version:  version string for the form template used
                                - tag: git tag of repo containing templates (=source code repo in most cases)
                 """,
+             'i_name': 'submission_form_template_entity',   
              'source_path' : '', # filled with path of original template form      
              'form_template_version': '', # version of form template / form tool
              'tag': '' # git tag
@@ -84,6 +87,7 @@ SUBMISSION_FORM_ENTITY = {
                      - repo: '(gitlab) repo where the tag relates to','
                      
                    """,
+            'i_name': 'submission_form_entity',       
             'form': '',       
             'form_name': '',
             'form_repo' :'',          
@@ -107,6 +111,7 @@ DATA_SUBMISSION = {
            - agent: person or tool related information
            - activity': submission activity related information
            """,
+     'i_name':'data_submission',      
      'entity_in': SUBMISSION_FORMTEMPLATE_ENTITY,
      'entity_out': SUBMISSION_FORM_ENTITY,
      'agent': SUBMISSION_AGENT,
@@ -121,7 +126,8 @@ REVIEW_AGENT =  {
             '__doc__':""" 
                    Attributes characterizing the person or tool checking the form:
                     - responsible_person:  
-                    """,      
+                    """,
+            'i_name':'review_agent',         
             'responsible_person': ""
             }
                                    
@@ -135,6 +141,7 @@ REVIEW_ACTIVITY =  {
             - review_status: progress status of review
             - review_report: dictionary with review results and issues
         """,
+            'i_name':'review_activity',
             'review_comment': '',
             'ticket_url':'',
             'ticket_id' :0,
@@ -150,16 +157,15 @@ REVIEW_REPORT = {
          - repo: (gitlab) repo containing report information,
          - comment: free text comment for this review,
          - status : review status information: ok, undef, uncomplete, error,
-         - form_info: report details in dictionary,
-         - form_type': predefined value: review_report   
+         - form_info: report details in dictionary   
      """,
+     'i_name':'review_report',
      'date': '',
      'tag' : '',
      'repo': '',
      'comment' : '',
      'status' : '',
-     'dict': '',
-     'form_type': 'review_report'
+     'dict': ''
 } 
  
 DATA_SUBMISSION_REVIEW = {
@@ -170,7 +176,8 @@ DATA_SUBMISSION_REVIEW = {
            - agent: person or tool related information
            - activity': submission activity related information
            """,
-    'entity_in': DATA_SUBMISSION,
+    'i_name': 'data_submission_review',       
+    'entity_in': SUBMISSION_FORM_ENTITY,
     'entity_out': REVIEW_REPORT,
     'agent': REVIEW_AGENT, 
     'activity': REVIEW_ACTIVITY
@@ -191,6 +198,7 @@ INGEST_AGENT = {
                    Attributes characterizing the person or tool managing the data ingest:
                     - responsible_person:  
                     """,
+                'i_name':'ingest_agent',    
                 "responsible_person": "",
                 }
               
@@ -205,6 +213,7 @@ INGEST_ACTIVITY = {
         - ticket_id: related RT ticket number
         - ingest_report: dictionary with ingest related information (tbd.)
         """,
+     "i_name":'ingest_activity',   
      "status": "", 
      "timestamp_started":"",
      "timestamp_finished":"",
@@ -223,15 +232,14 @@ INGEST_REPORT = {
        - comment : 'free text comment for this review,
        - status : 'data ingest status information: ok, undef, uncomplete, error,
        - form_info: 'report details in dictionary,
-       - form_type: 'predefined value: ingest_report   
      """,
+     'i_name':'ingest_report',
      'date': '',
      'tag' : '',
      'repo': '',
      'comment' : '',
      'status' : '',
-     'form_info': '',
-     'form_type': 'ingest_report'
+     'form_info': ''
 }
 
 
@@ -243,6 +251,7 @@ DATA_INGEST = {
        - agent : person or tool related ingest step information 
        - activity : information on the ingest process
        """,
+    'i_name':'data_ingest',
     'entity_in': REVIEW_REPORT,
     'entity_out': INGEST_REPORT,
     'agent': INGEST_AGENT, 
@@ -257,6 +266,7 @@ QUA_AGENT = {
                    Attributes characterizing the person or tool managing the data ingest:
                     - responsible_person:  
                     """,
+             'i_name':'qua_agent',       
              "responsible_person": ""
              }              
 
@@ -271,6 +281,7 @@ QUA_ACTIVITY= {
         - follow_up_ticket: in case new data has to be provided
         - quality_report: dictionary with quality related information (tbd.)
         """,
+      'i_name':'qua_activity',  
       "status": "",
       "timestamp_started":"",
       "timestamp_finished":"",
@@ -288,16 +299,15 @@ QUA_REPORT = {
        - repo: '(gitlab) repo containing report information,
        - comment : 'free text comment for this review,
        - status : 'data ingest status information: ok, undef, uncomplete, error,
-       - form_info: 'report details in dictionary,
-       - form_type: 'predefined value: ingest_report   
+       - form_info: 'report details in dictionary   
      """,
+     'i_name':'qua_report',
      'date': '',
      'tag' : '',
      'repo': '',
      'comment' : '',
      'status' : '',
-     'form_info': '',
-     'form_type': 'qua_report'       
+     'form_info': ''      
     }
 
     
@@ -309,6 +319,7 @@ DATA_QUALITY_ASSURANCE = {
         - agent: person and tool responsible for qua checking
         - activity: info on qua checking process
     """,
+    'i_name':'data_quality_assurance',
     'entity_in': INGEST_REPORT,
     'entity_out': QUA_REPORT,
     'agent': QUA_AGENT, 
@@ -324,6 +335,7 @@ PUBLICATION_AGENT = {
          - responsible_person: person name
          - publication_tool: string characterizing the publication tool
      """,
+    'i_name':'publication_agent', 
     "responsible_person": "",
     'publication_tool':""
  }
@@ -338,6 +350,7 @@ PUBLICATION_ACTIVITY =  {
         - ticket_id: related RT ticket number
         - follow_up_ticket: in case new data has to be provided
         """,
+      'i_name':'publication_activity',  
       "status": "",
       'timestamp_started':"",
       'timestamp_finished':"",
@@ -354,16 +367,15 @@ PUBLICATION_REPORT = {
                - repo: (gitlab) repo containing report information,
                - comment : free text comment for this review,
                - status : data ingest status information: ok, undef, uncomplete, error,
-               - form_info: 'report details in dictionary,
-               - form_type: predefined value: publication_report, 
+               - form_info: 'report details in dictionary
              """,
+            'i_name':'publication_report', 
             'date': '',
             'tag' : '',
             'repo': '',
             'comment' : '',
             'status' : '',
             'form_info': '',
-            'form_type': 'publication_report', 
             'facet_string': "# e.g. project=A&model=B& ...."
              }            
 
@@ -376,6 +388,7 @@ DATA_PUBLICATION = {
         - agent:
         - activity:
      """,
+    'i_name': 'data_publication', 
     'entity_in': QUA_REPORT,
     'entity_out': PUBLICATION_REPORT,
     'agent': PUBLICATION_AGENT, 
