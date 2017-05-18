@@ -1,5 +1,5 @@
 import sys, os, shutil
-from git import Repo, GitCommandError
+#from git import Repo, GitCommandError
 
 join = os.path.join
 import_path = os.path.abspath('..')
@@ -7,11 +7,11 @@ sys.path.append(import_path)
 
 from dkrz_forms import form_handler
 
-from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
-from dkrz_forms.config.workflow_steps import WORKFLOW_DICT
+#from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY,FORM_URL_PATH, FORM_REPO
+#from dkrz_forms.config.project_config import PROJECT_DICT 
+#from dkrz_forms.config.workflow_steps import WORKFLOW_DICT
 
-
+from dkrz_forms.config.settings import FORM_REPO
 init_form = {}
 init_form['first_name'] = "unit_tester"
 init_form['last_name'] = "testsuite"

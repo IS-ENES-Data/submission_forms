@@ -45,18 +45,14 @@ Configuration:
 from __future__ import print_function
 import abc
 import os,sys,shutil,uuid
+from os.path import join as join
+from os.path import expanduser
 import glob
 import pkg_resources
 import socket
 import string
 import random
 from datetime import datetime
-try:
-    from git import Repo,GitCommandError
-except ImportError:
-    print("Warning: please install git module with 'pip install gitpython'")
-    print("otherwise all helper functions for interacting with git will not work")
-from os.path import join as join
 import smtplib
 from email.mime.text import MIMEText
 import shelve
@@ -65,10 +61,29 @@ import copy
 import base64
 
 
+# automatically detect installed optional dependencies
+# move to utils
+dep = {}
+try:
+    from git import Repo,GitCommandError
+    dep['git'] = True    
+except ImportError:
+    print("Warning: to use git based form versioning please install git module with 'pip install gitpython'")
+    print("otherwise all helper functions for interacting with git will not work")
+    dep['git'] = False
 
-from os.path import expanduser
-config_dir = os.path.join(expanduser("~"),".dkrz_forms")
-sys.path.append(config_dir)
+config_file = os.path.join(expanduser("~"),".dkrz_forms")
+if os.path.isfile(config_file):
+    sys.path.append(config_file)
+    dep['config_file'] = True
+else:
+    dep['config_file'] = False
+        
+try:
+   import rt
+   dep['rt'] = True 
+except ImportError, e:
+   dep['rt'] = False   
 
 # To DO: use cerberos type checking
 #
@@ -81,41 +96,25 @@ def vprint(*txt):
     return
 
 # import non standard settings from home folder
-# e.g. setting for project repositories like cordex_directory    
-try:
-  from project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO
-  
-    
-#  from myconfig import rt_pwd
-# print "project config imported"
-  
-except ImportError:
-  #vprint("Info: myconfig not found - taking default config ")
-  from dkrz_forms.config.project_config import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from dkrz_forms.config.project_config import PROJECT_DICT, FORM_URL_PATH, FORM_REPO 
-  from dkrz_forms.config import workflow_steps
-  ## to do: make global constants explicit e.g. PROJECT_DICT ... etc .... 
-# print "Your submission form repository:", PROJECT_DICT
+# e.g. setting for project repositories like cordex_directory 
 
-
-# load form checks
+if dep['config_file']:  
+  from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+  from settings import FORM_URL_PATH, FORM_REPO
+else: 
+  from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+  from dkrz_forms.config.settings import FORM_URL_PATH, FORM_REPO 
+  
+from dkrz_forms.config.project_config import PROJECT_DICT  
+  
+from dkrz_forms.config import workflow_steps
 from checks import *
 
-#from dkrz_forms import checks
-#from dkrz_forms.config import workflow_steps
 
-rt_module_present = False
-try:
-   import rt
-   rt_module_present = True
-except ImportError, e:
-   pass
+
 
 
 #------------------------------------------------------------------------------------------
-
-       
 
 
 def init_sf(init_form):
@@ -229,9 +228,9 @@ def generate_submission_form(init_form):
           key_info['form_path']= join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           
           keystore[init_form['pwd']] = key_info
-          print("TTT:  store key in keystore",init_form['pwd'],keystore_path)
+          vprint("TTT:  store key in keystore",init_form['pwd'],keystore_path)
           persist_info('forms_pwd',keystore,keystore_path)
-          #vprint('Keystore: ', keystore)
+        
            
           template_name = init_form['project']+"_submission_form.ipynb"
           try:
@@ -252,24 +251,34 @@ def generate_submission_form(init_form):
           print(FORM_URL_PATH+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb')
           ## to do email link to user ....
           print("--------------------------------------------------------------------")
+          
+          
+         
           save_form(sf, "Form Handler: form - initial generation - quiet" )
           vprint(" ......  initial version saved ...")
-          repo = Repo(sf.sub.entity_out.form_repo)
-          # get commit hash and add to json package
-          master = repo.head.reference
-          commit_hash = master.commit.hexsha
-          sf.sub.activity.commit_hash = commit_hash
-           
-          save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
-          print("  !!  current version saved in repository") 
-          print("  !!  the above link is only valid for the next 5 hours")
-          print("  !!  to retrieve the form after this use the following link: ")
-          print("       http://localhost:888/notebooks.tst " )
-          print("       with the password:", init_form['pwd'] )
-          vprint("id: ", sf.sub.entity_out.pwd)
-          if is_hosted_service():
-               email_form_info(sf)
-          return sf          
+              
+          if dep['git']: 
+              repo = Repo(sf.sub.entity_out.form_repo)
+              # get commit hash and add to json package
+              master = repo.head.reference
+              commit_hash = master.commit.hexsha
+              sf.sub.activity.commit_hash = commit_hash
+               
+              save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
+              print("  !!  current version saved in repository") 
+              print("  !!  the above link is only valid for the next 5 hours")
+              print("  !!  to retrieve the form after this use the following link: ")
+              print("       http://localhost:888/notebooks.tst " )
+              print("       with the password:", init_form['pwd'] )
+              vprint("id: ", sf.sub.entity_out.pwd)
+              if is_hosted_service():
+                   email_form_info(sf)
+          else:
+              print("Warning: no version information stored")
+              print("Install git and gitpython to enable this")
+              
+          return sf    
+                
     else:
         print("--------------xxx------------------------------------")
         print("currently only submission forms for the following projects are supported: CORDEX,CMIP6,DKRZ_CDP,test,ESGF_replication")
@@ -449,20 +458,16 @@ def save_form(sf,comment):
     if comment.endswith("quiet"):
       comment_on = False
    
-   
-    #print "input for formsave", sf.__dict__
-    repo = Repo(sf.sub.entity_out.form_repo)
-    #sf.sub['status'] = "stored"
-    sf.sub.timestamp = str(datetime.now())
-    # .. should be defined prior to "save"
-    # sf.sub['form_name']=sf.last_name+"_"+sf.sub['keyword']
     if comment_on: 
        print("\n\nForm Handler - save form status message:")
     is_packaged = package_submission(sf,comment_on)
    
     #if check_form_name(sf):
-    if is_packaged:
-       try:
+    if is_packaged and dep['git']:
+        repo = Repo(sf.sub.entity_out.form_repo)
+        sf.sub.timestamp = str(datetime.now())
+
+        try:
            ## to do: change this to: git add last_name__pre_name* 
            ## ..... - reuse form for mulltiple transmissions ?
            ## to do: first commit notebook - remember commit sha1 - add sha1 to json
@@ -481,16 +486,19 @@ def save_form(sf,comment):
            commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
            commit = repo.git.commit(message=commit_message)
            if comment_on:
-               print(" --- commit message:"+ commit)  
-               
-           return sf    
+               print(" --- commit message:"+ commit)              
            
            #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
            #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
           
-       except GitCommandError:
+        except GitCommandError:
            print("Error ! Please correct the form name (best copy and paste name from top of this page and add .ipynb extension)")
-
+           
+    else:
+         vprint("saving without committing to a git repo")
+        
+    
+    return sf 
 
 def is_hosted_service():
     hostname = socket.gethostname()
@@ -543,45 +551,55 @@ def form_submission(sf):
    shutil.copy(form_source,form_target)
    shutil.copy(json_source,json_target)
    
-   repo = Repo(join(SUBMISSION_REPO,sf.project))
-   #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
-   try: 
-      o = repo.remotes.origin
-      o.pull()
-   except GitCommandError:
-      print("Synchronization with global submission form repository failed !")
+   if dep['git']:
+       repo = Repo(join(SUBMISSION_REPO,sf.project))
+       #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
+       try: 
+          o = repo.remotes.origin
+          o.pull()
+       except GitCommandError:
+          print("Synchronization with global submission form repository failed !")
+          pass
+          
+       except AttributeError:
+          print("No global submission repo !!!")
+          pass
+          # to do: error handling
+       
+       repo.git.add(form_name+".ipynb")
+       repo.git.add(form_name+".json")
+       
+       vprint(repo.git.status())
+       #repo.git.add(join(sf.project,package_name)
+       #repo.git.add(join(sf.project,form_name)
+       commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ form_name+ " ## " 
+       try: 
+           commit = repo.git.commit(message=commit_message)
+           vprint(commit)
+       except GitCommandError:
+           print("Commit in submissin repo failed")
+           pass
+          
       
-   except AttributeError:
-      print("No global submission repo !!!")
-      # to do: error handling
+       try: 
+           result = repo.git.push()
+           vprint(result)
+          
+       except GitCommandError:
+           print("Push to global submission repo failed !")
+           pass       
+       
+       except AttributeError:
+          print("No global submission repo !!!") 
+          pass
+        
+   else:
+       print("Warning: submission was not stored and versioned in git repo")
+      
    
-   repo.git.add(form_name+".ipynb")
-   repo.git.add(form_name+".json")
    
-   vprint(repo.git.status())
-   #repo.git.add(join(sf.project,package_name)
-   #repo.git.add(join(sf.project,form_name)
-   commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ form_name+ " ## " 
-   try: 
-       commit = repo.git.commit(message=commit_message)
-       vprint(commit)
-   except GitCommandError:
-       print("Commit in submissin repo failed")
-       pass
-  
-   try: 
-       result = repo.git.push()
-       vprint(result)
-   except GitCommandError:
-       print("Push to global submission repo failed !")
-       pass
-   
-   except AttributeError:
-      print("No global submission repo !!!") 
-      pass
-   
-   rt_module_present = False 
-   if rt_module_present:
+   if dep['rt'] and is_hosted_service(): 
+      vprint("Proceeding with ticket generation")
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
       tracker.login()
       ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="DKRZ data form submission: "+sf.project+"--"+sf.sub.agent.last_name,
@@ -601,8 +619,9 @@ def form_submission(sf):
 
 
    # generate updated json file and store in repo
-
-   if not(rt_module_present) and is_hosted_service():
+   
+   if not(dep['rt']) and is_hosted_service():
+      vprint("Proceeding with email generation")
       m_part1 = "A "+sf.myproject+"data submission was requested by: " + sf.sub.agent.first_name + " " + sf.sub.agent.last_name + "\n"
       m_part2 = "Corresponding email: "+ sf.email +"\n"
       m_part3 = "Submission form url: https://data-forms.dkrz.de:8080/notebooks/"+sf.projectCORDEX+"/"+sf.form_name+".ipynb \n"
@@ -632,7 +651,7 @@ def form_submission(sf):
       #os.chmod(sf.sub.packagepath,0o444) 
      
 
-   if not(rt_module_present) and not(is_hosted_service()): 
+   if not(dep['rt']) and not(is_hosted_service()): 
       print("Please send form: "+sf.form_dir+"/"+form_name+".ipynb" +"\n")
       print("to data@dkrz.de with subject", "\"DKRZ data submission form for project\"", sf.project)
       
@@ -645,7 +664,10 @@ def form_submission(sf):
    return sf
 
 def package_submission(sf,comment_on):
-         
+     '''
+     store notebook and json file in form directory
+     change sf.sub.id to identify this action (remove later .. !?)
+     '''
      sf.sub.id = str(uuid.uuid1())
      form_json = form_to_json(sf) 
      vprint(sf.sub.entity_in.form_path)
@@ -653,6 +675,9 @@ def package_submission(sf,comment_on):
      try:
          shutil.copyfile(sf.sub.entity_in.form_path,sf.sub.entity_out.form_repo_path)
      except:
+         print("Error in file copy operation")
+         print("Source: ",sf.sub.entity_in.form_path)
+         print("Target: ",sf.sub.entity_out.form_repo_path)
          pass
      form_file = open(sf.sub.entity_out.form_json,"w+")
      form_file.write(form_json+"\r\n")
@@ -717,8 +742,13 @@ def init_git_repo(target_dir):
     vprint("Initialize git repo:",target_dir)
     if os.path.exists(target_dir):
        shutil.rmtree(target_dir)
-    repo = Repo.init(target_dir)
-    return repo
+    if dep['git']:   
+       repo = Repo.init(target_dir)
+       return True
+    else:
+       os.makedirs(target_dir)
+       print("Warning: form directory - ",target_dir," created - but no git versioning support")
+       return False
     
     
 

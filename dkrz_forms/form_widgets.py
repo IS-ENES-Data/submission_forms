@@ -4,11 +4,23 @@ Created on Thu Apr 13 18:27:28 2017
 
 @author: stephan
 """
-
+import os,sys
 from ipywidgets import widgets
 from IPython.display import display, Javascript, Image
 from dkrz_forms import form_handler
-from dkrz_forms.config.project_config import FORM_REPO, NOTEBOOK_DIRECTORY, FORM_URL_PATH
+
+from os.path import expanduser
+config_file = os.path.join(expanduser("~"),".dkrz_forms")
+if os.path.isfile(config_file):
+    sys.path.append(config_file)
+    CONFIG_FILE = True
+else:
+    CONFIG_FILE = False
+    
+if CONFIG_FILE:
+   from settings import FORM_REPO, NOTEBOOK_DIRECTORY, FORM_URL_PATH  
+else:    
+   from dkrz_forms.config.settings import FORM_REPO, NOTEBOOK_DIRECTORY, FORM_URL_PATH
 import os, shutil
 
 from os.path import join as join

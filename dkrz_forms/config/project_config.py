@@ -23,25 +23,7 @@ NAME_SPACES={'sub':'http://enes.org/entities/ingest-workflow#',
 # adapt to your deployment           
 
  
-# directory where submission_forms package is installed
-# leave empty if pip installed
-# install_directory = "/opt/formhandler/"
-INSTALL_DIRECTORY = "/home/stephan/Repos/ENES-EUDAT/"
 
-# Directory where web accessible forms are served
-NOTEBOOK_DIRECTORY = '/home/stephan/Repos/ENES-EUDAT/submission_forms/test/forms'
-
-FORM_URL_PATH = 'http://localhost:8888/notebooks/Repos/ENES-EUDAT/submission_forms/test/forms/'
-# Directory where the project git repos live
-# dir_prefix = "/opt/formhandler/Repos/"
-DIR_PREFIX = "/home/stephan/tmp/Repos/"    # for json db storage
-
-# keystore_path is set to join(FORM_REPO,keystore) 
-
-FORM_REPO = "/home/stephan/tmp/Repos/form_repo"
-
-# final submissions repo (gitlab synchronized)
-SUBMISSION_REPO = "/home/stephan/tmp/Repos/submission_repo"
 
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
 #print project_directory
