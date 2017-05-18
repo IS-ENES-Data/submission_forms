@@ -137,9 +137,9 @@ def init_sf(init_form):
               
           sf.sub.entity_out.form = form    
           
-          sf.sub.entity_out.form_repo = FORM_REPO+'/'+ init_form['project']
-          sf.sub.submission_repo = SUBMISSION_REPO+ '/'+ init_form['project']
-          sf.form_dir = NOTEBOOK_DIRECTORY+'/'+ init_form['project']
+          sf.sub.entity_out.form_repo = join(FORM_REPO, init_form['project'])
+          sf.sub.submission_repo = join(SUBMISSION_REPO, init_form['project'])
+          sf.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
           
           print("Form Handler: Initialized form for project:", init_form['project'])
           vprint(sf.project)
@@ -160,6 +160,7 @@ def init_sf(init_form):
           vprint(sf.sub.entity_out.form_name+'.ipynb')
           sf.sub.entity_out.form_repo_path=join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           
+          vprint("entity_in.form_path", sf.form_dir)
           sf.sub.entity_in.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
           sf.sub.entity_in.form_json=join(sf.form_dir,sf.sub.entity_out.form_name+'.json') 
           
@@ -178,7 +179,9 @@ def init_form(init_form):
     
     if init_form['project'] in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
          
-         sf = init_sf(init_form)        
+         sf = init_sf(init_form)
+         print("entity_out.form_repo:",sf.sub.entity_out.form_repo)
+         print("entity_out:form:json:", sf.sub.entity_out.form_json)
                  
          is_packaged = package_submission(sf,comment_on=False)
          
@@ -240,6 +243,7 @@ def generate_submission_form(init_form):
           # sf.sub.entity_in.version = ...
           print("--- copy from:", sf.sub.entity_in.source_path)
           print("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
+          print("--- too: ",   sf.sub.entity_in.form_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_in.form_path)
           print("--------------------------------------------------------------------")
@@ -710,6 +714,7 @@ def onerror(func, path, exc_info):
         raise
 
 def init_git_repo(target_dir):
+    vprint("Initialize git repo:",target_dir)
     if os.path.exists(target_dir):
        shutil.rmtree(target_dir)
     repo = Repo.init(target_dir)

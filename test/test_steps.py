@@ -20,7 +20,8 @@ init_form['email'] = "stephan.kindermann@gmail.com"
 init_form['key'] = "1234" 
 init_form['pwd'] = "test123"
 
-form_repo = FORM_REPO+'/'+ init_form['project']
+print "FORM_REPO: ...",FORM_REPO
+form_repo = join(FORM_REPO, init_form['project'])
 #print test_config.cordex_directory
 
 FORM_JSON = join(form_repo,init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']+'.json')
