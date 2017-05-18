@@ -7,14 +7,15 @@
 
 """
 =============================================
-Data submission information management tools
+Data submission form tools
 =============================================
 
-Provided functionality:
+Supports the generation and evaluation of forms.
+Forms are python notebook based and provide: 
 
 * Information collection
-* Information storage in git repo
-* Jupyter notebook interface
+* Information storage and management (json serialization, versioning)
+* Jupyter notebook interfaces
 * email / rt request tracker and git integration
 
 Configuration:
