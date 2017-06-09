@@ -1,37 +1,52 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Mar  6 23:11:02 2016
+
+Project dictionaries
+======================
+
+The dictionaries defining the keywords for the individual projects are defined here.
+They get accessible to the FormFabric code by adding them to the PROJECT_DICT dictionary.
+
+Thus e.g. PROJECT_DICT['CMIP6'] refers to the keyword dictionary used for CMIP6 data
+
+To define the data management steps used in the individual projects, the 'workflow' keyword is used.
+
+Thus e.g. PROJECT_DICT['CMIP6']['workflow'] provides the list (of lists) defining the workflow steps.
+
+The workflow steps are defined in .ref workflow_steps.py
 
 @author: stephan
 
-ToDo: Merge with variable tests ...
+
+.. automodule:: dkrz_forms.config.settings
+.. automodule:: dkrz_forms.config.workflow_steps
+
+ToDo: 
+
+* Merge with variable tests ...
+* refine NAME_SPACE definitions (later move e.g. to a separate W3C prov handling package
+
 """
+
+#================================================================================================
+# This first section should stay as it is .. make project specific extensions in the second part
+# 
+
 # name spaces for w3c prov transformation of submission provenance information
 from os.path import join as join
 import base64
 
-NAME_SPACES={'sub':'http://enes.org/entities/ingest-workflow#',
-            'ing':'http://enes.org/entities/ingest-workflow#',
-            'qua':'http://enes.org/entities/ingest-workflow#',
-            'pub':'http://enes.org/entities/ingest-workflow#',        
-            'wf':'http://enes.org/entities/ingest-workflow#',        
-            'dm':'http://enes.org/entities/ingest-workflow#',        
-            'dp':'http://enes.org/entities/ingest-workflow#',        
-            'node':'http://enes.org/entities/ingest-workflow#',        
-            }
- 
-# adapt to your deployment           
-
- 
 
 
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
-#print project_directory
-#print "general project config imported"
 
-# (submission,ingest,checking,publish) = form_handler.get_workflow_steps()
+# End of first part
+#================================================================================================
 
-#print "./dkrz_forms:  workflow steps config imported"
+
+#================================================================================================
+# Second section: definition of project dictionaries
+# 
 
 PROJECT_DICT = {}
 
@@ -63,21 +78,15 @@ PROJECT_DICT['CORDEX']  = {
              "variable_list_fx" : "",
              "uniqueness_of_tracking_id" : "",
              "workflow": [("sub","data_submission"),
-                       #   ("rev","data_submission_review"),
-                       #   ("ing","data_ingest"),
-                       #   ("qua","data_quality_assurance"),
-                       #   ("pub","data_publication"),
-                       #   ("da", "data_archival")
+                          ("rev","data_submission_review"),
+                          ("ing","data_ingest"),
+                          ("qua","data_quality_assurance"),
+                          ("pub","data_publication"),
+                          ("da", "data_archival")
                          ], 
              }
                          
 
-generic_dict = {
-             "first_name":""
-             }
-             
-# to do: put generic info in generic_dict and merge this with 
-#        the project_dicts below
 PROJECT_DICT['DKRZ_CDP'] = {
              '__doc__': """
              Form object for data replication related information
@@ -169,7 +178,9 @@ PROJECT_DICT['ESGF_replication']= {
                           ("pub","data_publication"),
 #                          ("da", "data_archival")
                          ], 
- }            
+ } 
 
-#============= Definition of CORDEX specific test functions ===================================
+#           
+# End of section two
+#================================================================================
 

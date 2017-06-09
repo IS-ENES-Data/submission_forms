@@ -14,14 +14,15 @@ Contents:
    :maxdepth: 2
 
    introduction
+
    tutorial
+
    examples
 
+.. automodule:: dkrz_forms.config.project_config
 .. automodule:: dkrz_forms.form_handler
 .. automodule:: dkrz_forms.utils
-.. automodule:: dkrz_forms.config.project_config
-.. automodule:: dkrz_forms.config.settings
-.. automodule:: dkrz_forms.config.workflow_steps
+
    :members:
 
 Indices and tables

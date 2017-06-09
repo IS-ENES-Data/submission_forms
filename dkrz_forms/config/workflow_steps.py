@@ -1,6 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Mar  6 23:11:02 2016
+
+Form handling workflow definitions
+===================================
+
+workflow steps are characterized by dictionaries
+
+workflow entities are characterized according to the W3C PROV model
+
+* ENTITIES defining the input or output of workflow steps
+* AGENTS defining the persons (or tools) responsible for the workflow steps
+* ACTIVITEIS defining the execution progress and status of workflow steps
+
+The definitions in this configuration are generic, and thus can be applied to all FormFabric supported projects
+
 
 @author: stephan
 
@@ -11,25 +24,19 @@ ToDo: Merge with variable tests ...
 workflow_steps_version = "1.0"
 
 NAME_SPACES={'sub':'http://enes.org/entities/ingest-workflow#',
-            'ing':'http://enes.org/entities/ingest-workflow#',
-            'che':'http://enes.org/entities/ingest-workflow#',
-            'pub':'http://enes.org/entities/ingest-workflow# '        
+             'ing':'http://enes.org/entities/ingest-workflow#',
+             'qua':'http://enes.org/entities/ingest-workflow#',
+             'pub':'http://enes.org/entities/ingest-workflow#',        
+             'wf':'http://enes.org/entities/ingest-workflow#',        
+             'dm':'http://enes.org/entities/ingest-workflow#',        
+             'dp':'http://enes.org/entities/ingest-workflow#',        
+             'node':'http://enes.org/entities/ingest-workflow#',        
             }
+
             
-            # 1.step: information related to submission management phase
-#         - associated rt tickets
-#         - associated git commit(s)
-#         - associated check status 
-#         - ....    
 
-# Specify the workflow steps in a List
-# for each step in workflow specifiy the W3C prov components:
-# -- entities (input, output)
-# -- activities (transforming input to output)
-# -- agents (persons, SW engaged in activities)
-
-
-# data submission
+# -------------------------------------------------------------------------------------------------------------------------
+# workflow step: data submission
 SUBMISSION_AGENT = { 
              '__doc__': """Attributes characterizing the person responsible for form completion and submission:
             
@@ -118,8 +125,11 @@ DATA_SUBMISSION = {
      'activity': SUBMISSION_ACTIVITY
 }
 
-
-# ----------------------- data review --------------------------------------------------------------
+# 
+#---------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
+# workfow step: submission review
+#
 
 
 REVIEW_AGENT =  {  
@@ -183,14 +193,11 @@ DATA_SUBMISSION_REVIEW = {
     'activity': REVIEW_ACTIVITY
     }
 
-     
-             
+#    
+#-------------------------------------------------------------------------------------------------------- 
 
-# 2. step: information related to data ingest phase             
-#          - associated rt ticket(s) or ticket comments
-#          - target directory (input for QA step)
-#          - ..
-# 
+#--------------------------------------------------------------------------------------------------------
+# workflow step: data ingest            
 
 
 INGEST_AGENT = {
@@ -257,9 +264,13 @@ DATA_INGEST = {
     'agent': INGEST_AGENT, 
     'activity': INGEST_ACTIVITY
     }       
-          
-# 3. step: information related to data quality assurance phase:
-#             - ----            
+# 
+#----------------------------------------------------------------------------------------------------- 
+
+
+#-----------------------------------------------------------------------------------------------------         
+# workflow step: data quality assurance
+#             
              
 QUA_AGENT = {
             '__doc__':""" 
@@ -325,7 +336,10 @@ DATA_QUALITY_ASSURANCE = {
     'agent': QUA_AGENT, 
     'activity': QUA_ACTIVITY
     }
-# 4. step: information related to ESGF publication phase  
+
+#
+#-------------------------------------------------------------------------------------------
+# workflow step: data publication  
 #           -              
              
 
@@ -395,7 +409,11 @@ DATA_PUBLICATION = {
     'activity': PUBLICATION_ACTIVITY
     }
 
-# 5. step: information related to archival, preservation and DOI assignment
+#
+#-------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------------------------
+# workflow step: data archival (and DOI assignment for data citation)
 # 
 
 PRESERVATION_AGENT = {
@@ -424,7 +442,13 @@ DATA_PRESERVATION = {
     'activity': PRESERVATION_ACTIVITY
     }
 
-#=============================================================================
+#
+#-------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------------------------
+# summary dict for workflow steps known to the system
+# 
+
 WORKFLOW_DICT = {
      'data_submission': DATA_SUBMISSION, 
      'data_submission_review': DATA_SUBMISSION_REVIEW, 
@@ -434,43 +458,5 @@ WORKFLOW_DICT = {
     # 'data_archival': DATA_PRESERVATION 
      }
       
-
-#DOCUMENTATION_DICT['data_submission'] = DATA_SUBMISSION_DOC
-
-
-# submitted information
-#cordex_dict  = {
-#             "first_name": "",
-#             "last_name" : "",
-#             "email" : "",
-#             "submission_type" : "",
-#             "institution" : "",
-#             "institute_id" : "",
-#             "model_id" : "",
-#             "experiment_id" : "",
-#             "time_period" : "",
-#             "example_file_name" : "",
-#             "grid_mapping_name" : "",
-#             "grid_as_specified_if_rotated_pole" : "",
-#             "data_qc_status" : "",
-#             "data_qc_comment" : "",
-#             "terms_of_use" : "",
-#             "directory_structure" : "",
-#             "data_path" : "",
-#             "data_information" : "",
-#             "exclude_variables_list" : "",
-#             "variable_list_day" : "",
-#             "variable_list_mon" : "",
-#             "variable_list_sem" : "",
-#             "variable_list_fx" : "",
-#             "uniqueness_of_tracking_id" : "",
-#             'sub': submission,
-#             'ing': data_ingest,
-#             'che':qua,
-#             'pub':publication
-#             
-#             }
- 
-
-#============= Definition of CORDEX specific test functions ===================================
-
+#
+#---------------------------------------------------------------------------------------------------
