@@ -147,15 +147,20 @@ REVIEW_ACTIVITY =  {
            Attributes characterizing the form review activity:
             - ticket_url: assigned RT Ticket
             - ticket_id: RT Ticket id 
-            - review_comment: free text comment 
-            - review_status: progress status of review
-            - review_report: dictionary with review results and issues
+            - comment: free text comment 
+            - status: progress status of review
+            - report: dictionary with review results and issues
+            - start_time: activity start
+            - end_time: activity end
         """,
             'i_name':'review_activity',
-            'review_comment': '',
-            'ticket_url':'',
-            'ticket_id' :0,
-            'review_status':'',
+            'comment': '',
+            'ticket_url':'https://dm-rt.dkrz.de/Ticket/Display.html?',
+            'ticket_id' : '0',
+            'status':'',
+            "start_time": '',
+            "end_time": '',
+            'report': { }
            }
 
 
@@ -167,7 +172,7 @@ REVIEW_REPORT = {
          - repo: (gitlab) repo containing report information,
          - comment: free text comment for this review,
          - status : review status information: ok, undef, uncomplete, error,
-         - form_info: report details in dictionary   
+         - report: report dictionary
      """,
      'i_name':'review_report',
      'date': '',
@@ -175,7 +180,7 @@ REVIEW_REPORT = {
      'repo': '',
      'comment' : '',
      'status' : '',
-     'dict': ''
+     'report': { }
 } 
  
 DATA_SUBMISSION_REVIEW = {
@@ -214,19 +219,20 @@ INGEST_ACTIVITY = {
     '__doc__': """
         Attributes characterizing the data ingest activity:
         - status: status information
-        - timestamp_started
-        - timestamp_finished : data ingest timing information
+        - start_time, end_time: data ingest activity timing information
         - comment : free text comment
         - ticket_id: related RT ticket number
-        - ingest_report: dictionary with ingest related information (tbd.)
+        - report: dictionary with ingest related information (tbd.)
         """,
      "i_name":'ingest_activity',   
      "status": "", 
-     "timestamp_started":"",
-     "timestamp_finished":"",
+     "start_time":"",
+     "end_time":"",
      "comment":"", 
      "ticket_id": 0,
-     "ingest_report": {}         
+     "report": {'__doc__' : 'ingest activity report',
+                       'comment' : '' 
+                       }         
 }   
             
 
@@ -234,19 +240,17 @@ INGEST_REPORT = {
      '__doc__': """
      Attributes characterizing the ingest report summary:
        - date: 'last modification date,
-       - tag : '(git) tag for repo containing report information,
-       - repo: '(gitlab) repo containing report information,
+       - tag: 'tag identifier for this report'
        - comment : 'free text comment for this review,
        - status : 'data ingest status information: ok, undef, uncomplete, error,
-       - form_info: 'report details in dictionary,
+       - report: 'report details in dictionary,
      """,
      'i_name':'ingest_report',
      'date': '',
      'tag' : '',
-     'repo': '',
      'comment' : '',
      'status' : '',
-     'form_info': ''
+     'report': ''
 }
 
 
