@@ -250,7 +250,7 @@ INGEST_REPORT = {
      'tag' : '',
      'comment' : '',
      'status' : '',
-     'report': ''
+     'report': {}
 }
 
 
@@ -289,8 +289,7 @@ QUA_ACTIVITY= {
     '__doc__': """
         Attributes characterizing the data quality assurance activity:
         - status: status information
-        - timestamp_started
-        - timestamp_finished : data ingest timing information
+        - start_time, end_time: data ingest timing information
         - comment : free text comment
         - ticket_id: related RT ticket number
         - follow_up_ticket: in case new data has to be provided
@@ -298,12 +297,14 @@ QUA_ACTIVITY= {
         """,
       'i_name':'qua_activity',  
       "status": "",
-      "timestamp_started":"",
-      "timestamp_finished":"",
+      "start_time":"",
+      "end_time":"",
       "comment":"",      
       "ticket_id": "",
       "follow_up_ticket": '', # qa feedback to users, follow up actions
-             }
+      "report": {'__doc__': 'data quality report'}       
+      }
+     
               
     
 QUA_REPORT = {
@@ -314,7 +315,7 @@ QUA_REPORT = {
        - repo: '(gitlab) repo containing report information,
        - comment : 'free text comment for this review,
        - status : 'data ingest status information: ok, undef, uncomplete, error,
-       - form_info: 'report details in dictionary   
+       - report: 'report details in dictionary   
      """,
      'i_name':'qua_report',
      'date': '',
@@ -322,7 +323,7 @@ QUA_REPORT = {
      'repo': '',
      'comment' : '',
      'status' : '',
-     'form_info': ''      
+     'report': {}     
     }
 
     
@@ -362,19 +363,20 @@ PUBLICATION_AGENT = {
 PUBLICATION_ACTIVITY =  {
      '__doc__': """ Attributes characterizing the data publication activity:
         - status: status information
-        - timestamp_started
-        - timestamp_finished : data ingest timing information
+        - start_time, end_time: data ingest timing information
         - comment : free text comment
         - ticket_id: related RT ticket number
         - follow_up_ticket: in case new data has to be provided
+        - report: dictionary for publication report info
         """,
       'i_name':'publication_activity',  
       "status": "",
-      'timestamp_started':"",
-      'timestamp_finished':"",
+      'start_time':"",
+      'end_time':"",
       "comment": "",
       "ticket_id": "", 
-      'follow_up_ticket':""
+      'follow_up_ticket':"",
+      'report': {}
            }
              
 PUBLICATION_REPORT = {
@@ -385,7 +387,7 @@ PUBLICATION_REPORT = {
                - repo: (gitlab) repo containing report information,
                - comment : free text comment for this review,
                - status : data ingest status information: ok, undef, uncomplete, error,
-               - form_info: 'report details in dictionary
+               - report: 'report details in dictionary
              """,
             'i_name':'publication_report', 
             'date': '',
@@ -393,7 +395,7 @@ PUBLICATION_REPORT = {
             'repo': '',
             'comment' : '',
             'status' : '',
-            'form_info': '',
+            'report': {},
             'facet_string': "# e.g. project=A&model=B& ...."
              }            
 

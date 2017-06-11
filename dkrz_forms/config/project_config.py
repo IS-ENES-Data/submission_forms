@@ -33,7 +33,7 @@ ToDo:
 # 
 
 # name spaces for w3c prov transformation of submission provenance information
-from os.path import join as join
+
 import base64
 
 
@@ -154,7 +154,7 @@ PROJECT_DICT['test'] = {
                           ("rev","data_submission_review"),
                           ("ing","data_ingest"),
                           ("qua","data_quality_assurance"),
-                          ("pub","data_publication"),
+                          ("pub","data_publication")
                       #    ("da", "data_archival")
                          ], 
  }
