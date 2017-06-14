@@ -83,7 +83,7 @@ SUBMISSION_FORMTEMPLATE_ENTITY = {
 SUBMISSION_FORM_ENTITY = {
             '__doc__': """
                      Attributes characterizing the form submission process and context:
-                     - form: Form object for all end user provided information
+                     - report: Form object for all end user provided information
                      - form_name: consistent prefix for the form name (postfix=.ipynb and .json)
                      - form_repo: git repo where forms are stored (before submission)
                      - form_json, form_repo_path: full paths to json and ipynb representations
@@ -95,7 +95,7 @@ SUBMISSION_FORM_ENTITY = {
                      
                    """,
             'i_name': 'submission_form_entity',       
-            'form': '',       
+            'report': {},       
             'form_name': '',
             'form_repo' :'',          
             'form_json': '',
@@ -105,9 +105,8 @@ SUBMISSION_FORM_ENTITY = {
             'status': '',
             'checks_done' : '',
             'tag': '',
-            'repo': '',
-            'form_info': {}
-}            
+            'repo': ''
+            }
                                  
 
 DATA_SUBMISSION = {
@@ -433,7 +432,7 @@ PRESERVATION_ACTIVITY =  {
            "ticket_id": "", 
            }
 
-PRESERVATION_REPORT_ENTITY = {
+PRESERVATION_REPORT = {
              "pid_collections" : "",
              "publish_date": "",
              "search_string" : "", # cog url including facet search string
@@ -442,8 +441,8 @@ PRESERVATION_REPORT_ENTITY = {
 
 
 DATA_PRESERVATION = {
-    'entities_in': SUBMISSION_FORM_ENTITY,
-    'entities out': SUBMISSION_FORM_ENTITY,
+    'entities_in': PUBLICATION_REPORT,
+    'entities out': PRESERVATION_REPORT,
     'agent': PRESERVATION_AGENT, 
     'activity': PRESERVATION_ACTIVITY
     }
@@ -461,7 +460,7 @@ WORKFLOW_DICT = {
      'data_ingest': DATA_INGEST, 
      'data_quality_assurance': DATA_QUALITY_ASSURANCE,
      'data_publication': DATA_PUBLICATION,
-    # 'data_archival': DATA_PRESERVATION 
+     'data_archival': DATA_PRESERVATION 
      }
       
 #

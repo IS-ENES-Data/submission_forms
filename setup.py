@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 import sys,os
 
 setup(
-   # DKRZ data submission form handler
+   # FormFabric: DKRZ data submission form handler tools
    name="dkrz_forms",
 
-   version="0.1.0",
+   version="0.4.0",
 
    author="Stephan Kindermann",
    author_email="kindermann@dkrz.de",
@@ -14,13 +14,13 @@ setup(
    include_package_data=True,
    zip_safe=False,
 
-   url="http://pypi.python.org/pypi/form_handler_v010/",
+   url="http://pypi.python.org/pypi/submission_forms_v040/",
 
    description = " Jupyter python notebook support code for data submission form handling",
 
    # Dependent Packages
 
-   install_requires = [], 
+   install_requires = ['gitpython', 'prov'], 
 
 )
 

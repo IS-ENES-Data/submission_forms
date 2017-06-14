@@ -4,12 +4,17 @@ Created on Thu Apr 13 18:27:28 2017
 
 @author: stephan
 """
-import os,sys
+from __future__ import print_function
+import os,sys,shutil
+from os.path import join as join
+from os.path import expanduser
+
 from ipywidgets import widgets
 from IPython.display import display, Javascript, Image
+
 from dkrz_forms import form_handler
 
-from os.path import expanduser
+
 config_file = os.path.join(expanduser("~"),".dkrz_forms")
 if os.path.isfile(config_file):
     sys.path.append(config_file)
@@ -18,12 +23,50 @@ else:
     CONFIG_FILE = False
     
 if CONFIG_FILE:
-   from settings import FORM_REPO, NOTEBOOK_DIRECTORY, FORM_URL_PATH  
+   from settings import FORM_DIRECTORY, NOTEBOOK_DIRECTORY
 else:    
-   from dkrz_forms.config.settings import FORM_REPO, NOTEBOOK_DIRECTORY, FORM_URL_PATH
-import os, shutil
+   from dkrz_forms.config.settings import FORM_DIRECTORY, NOTEBOOK_DIRECTORY
+   
+VERBOSE = True
+def vprint(*txt):
+    if VERBOSE:
+        print(*txt)
+    return  
 
-from os.path import join as join
+FORM_REPO = join(FORM_DIRECTORY,'form_repo')
+### detecting url of notebook server
+FORM_URL_PATH = 'http://localhost:8888'  # default
+import notebook
+from notebook import notebookapp
+servers = list(notebookapp.list_running_servers())
+if len(servers) > 0:
+    server = servers[0]    
+    nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir']) 
+    
+    FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
+    vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
+else:
+    vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH) 
+
+
+    
+if os.getenv('INSTALL_DIRECTORY'):
+    INSTALL_DIRECTORY = os.getenv('INSTALL_DIRECTORY')
+    vprint("unsing env setting for INSTALL_DIRECTORY:",INSTALL_DIRECTORY)
+    
+if os.getenv('SUBMISSION_REPO'):
+    INSTALL_DIRECTORY = os.getenv('SUBMISSION_REOP')
+    vprint("unsing env setting for SUBMISSION_REPO:",SUBMISSION_REPO)
+
+if os.getenv('NOTEBOOK_DIRECTORY'):
+    INSTALL_DIRECTORY = os.getenv('NOTEBOOK_DIRECTORY')
+    vprint("unsing env setting for NOTEBOOK_DIRECTORY:",NOTEBOOK_DIRECTORY)
+
+if os.getenv('FORM_REPO'):
+    INSTALL_DIRECTORY = os.getenv('FORM_REPO')
+    vprint("unsing env setting for FORM_REPO:",FORM_REPO)    
+
+
 
 align_kw = dict(
     _css = (('.widget-label', 'min-width', '20ex'),),
@@ -59,7 +102,7 @@ def show_status(status):
         image = Image(filename=join(NOTEBOOK_DIRECTORY,'fig','form-datainges.png'))
         display(image)
     else:
-        print "Unknown status"
+        print("Unknown status")
         
 def check_pwd(last_name):
     form_info = form_handler.get_persisted_info('forms_pwd',join(FORM_REPO,'keystore'))
@@ -74,16 +117,16 @@ def check_pwd(last_name):
         if form_info[my_pwd]['last_name'] == last_name:
             ## 
             
-            print "---- Your Name: ", form_info[my_pwd]['first_name'] + " " + form_info[my_pwd]['last_name']
-            print "---- Your email: ", form_info[my_pwd]['last_name']
-            print "---- Name of this submission form: ", form_info[my_pwd]['form_name']
+            print("---- Your Name: ", form_info[my_pwd]['first_name'] + " " + form_info[my_pwd]['last_name'])
+            print("---- Your email: ", form_info[my_pwd]['last_name'])
+            print("---- Name of this submission form: ", form_info[my_pwd]['form_name'])
     
             return form_info[my_pwd]
         else:
-            print "Error: incorrect key or incorrcect last name (case sensitive !)" 
+            print("Error: incorrect key or incorrcect last name (case sensitive !)" )
             return {}
     else:
-         print "Error: incorrect key"
+         print("Error: incorrect key")
          return False
 
 def check_and_retrieve(last_name):
@@ -97,7 +140,7 @@ def check_and_retrieve(last_name):
         print("--------------------------------------------------------------------")
         print("   Your submission form was retrieved and is accessible via the following link:")
        
-        print(FORM_URL_PATH+info['project']+'/'+info['form_name']+'.ipynb')
+        print(FORM_URL_PATH+'/'+info['project']+'/'+info['form_name']+'.ipynb')
           ## to do email link to user ....
         print("--------------------------------------------------------------------")
 
@@ -115,7 +158,6 @@ def create_form():
   #  FIRST_NAME.on_submit(handle_submit)
 
 def generate(val):
-    print LAST_NAME.value
     init_form = {} 
     init_form['first_name'] = FIRST_NAME.value
     init_form['last_name'] = LAST_NAME.value

@@ -52,6 +52,46 @@ PROJECT_DICT = {}
 
 # submitted information
 PROJECT_DICT['CORDEX']  = {
+          '__doc__': """
+             Form object for CORDEX data submission
+             
+             Workflow steps related sub-forms (filled by data manager):
+               - sub: data submission form
+               - rev: data review_form
+               - ing: data ingest form
+               - qua: data quality assurance form
+               - pub: data publication form
+               
+             Each workfow step form is structured according to
+               - entity_in : input information for this step
+               - entity_out: output information for this step
+               - agent: information related to responsible party for this step
+               - activity: information related the workflow step execution
+               
+              End user provided form information is stored in:
+             
+              this_form_object.sub.entity_out.report  
+             
+              see the documentation of this report sub entitiy for
+              the end-user filled information entities 
+             """,
+             "project":"CORDEX",
+             
+             "workflow": [("sub","data_submission"),
+                          ("rev","data_submission_review"),
+                          ("ing","data_ingest"),
+                          ("qua","data_quality_assurance"),
+                          ("pub","data_publication"),
+                          ("da", "data_archival")
+                         ], 
+             }
+
+PROJECT_DICT['CORDEX_FORM'] = {
+             "__doc__":"""
+                         CORDEX information collected as part of form completion process
+                         see CORDEX template
+                         .. details on etries .. to be completed
+                        """,
              "project":"CORDEX",
              "first_name": "",
              "last_name" : "",
@@ -76,16 +116,7 @@ PROJECT_DICT['CORDEX']  = {
              "variable_list_mon" : "",
              "variable_list_sem" : "",
              "variable_list_fx" : "",
-             "uniqueness_of_tracking_id" : "",
-             "workflow": [("sub","data_submission"),
-                          ("rev","data_submission_review"),
-                          ("ing","data_ingest"),
-                          ("qua","data_quality_assurance"),
-                          ("pub","data_publication"),
-                          ("da", "data_archival")
-                         ], 
-             }
-                         
+             "uniqueness_of_tracking_id" : ""}                         
 
 PROJECT_DICT['DKRZ_CDP'] = {
              '__doc__': """

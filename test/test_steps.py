@@ -1,4 +1,5 @@
 import sys, os, shutil
+import utils
 #from git import Repo, GitCommandError
 
 join = os.path.join
@@ -11,7 +12,7 @@ from dkrz_forms import form_handler
 #from dkrz_forms.config.project_config import PROJECT_DICT 
 #from dkrz_forms.config.workflow_steps import WORKFLOW_DICT
 
-from dkrz_forms.config.settings import FORM_REPO
+from dkrz_forms.config.settings import FORM_DIRECTORY
 init_form = {}
 init_form['first_name'] = "unit_tester"
 init_form['last_name'] = "testsuite"
@@ -19,6 +20,8 @@ init_form['project'] = "test"
 init_form['email'] = "stephan.kindermann@gmail.com"
 init_form['key'] = "1234" 
 init_form['pwd'] = "test123"
+
+FORM_REPO = join(FORM_DIRECTORY,'form_repo')
 
 print "FORM_REPO: ...",FORM_REPO
 form_repo = join(FORM_REPO, init_form['project'])
@@ -43,7 +46,7 @@ def test_init_form():
     global init_form
     global form_repo
     
-    form_handler.init_git_repo(form_repo)
+    utils.init_git_repo(form_repo)
     sf = form_handler.init_form(init_form)
     
     assert os.path.exists(form_repo) == 1
@@ -72,7 +75,7 @@ def test_form_completion():
     ## reads form json file and returns hierachical form object
     global sf
     
-    workflow_form = form_handler.load_workflow_form(FORM_JSON)
+    workflow_form = utils.load_workflow_form(FORM_JSON)
     submission = workflow_form.sub
     submission.entity_out.status = "checked"
     submission.entity_out.check_status = "consistency_checked"
@@ -96,7 +99,7 @@ def test_form_completion():
 
 def test_form_submission():    
     
-    workflow_form = form_handler.load_workflow_form(FORM_JSON)
+    workflow_form = utils.load_workflow_form(FORM_JSON)
     submission = workflow_form.sub
     submission.entity_out.status = "submitted"
     submission.activity.handover = "dkrz_staff"
@@ -110,7 +113,7 @@ def test_form_submission():
 ## to do: fill form - check validity - perform submit, check, ingest and publication steps ..
     
 def test_form_review():
-    workflow_form = form_handler.load_workflow_form(FORM_JSON)
+    workflow_form = utils.load_workflow_form(FORM_JSON)
    
     review = workflow_form.rev
     
@@ -125,7 +128,7 @@ def test_form_review():
     
     
 def test_data_ingest():
-    workflow_form = form_handler.load_workflow_form(FORM_JSON)
+    workflow_form = utils.load_workflow_form(FORM_JSON)
     
     ingest = workflow_form.ing
     ingest.activity.status = "ingested"
@@ -142,7 +145,7 @@ def test_data_quality_assurance():
     
     
     
-    workflow_form = form_handler.load_workflow_form(FORM_JSON)
+    workflow_form = utils.load_workflow_form(FORM_JSON)
     test_report = {
     "QA_conclusion": "PASS",
     "project": "CORDEX",
@@ -177,7 +180,7 @@ def test_data_quality_assurance():
     
     
 def test_data_publication():
-    workflow_form = form_handler.load_workflow_form(FORM_JSON)
+    workflow_form = utils.load_workflow_form(FORM_JSON)
     
     publication = workflow_form.pub    
     

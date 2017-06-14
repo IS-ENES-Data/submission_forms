@@ -44,98 +44,105 @@ Configuration:
 #
 
 from __future__ import print_function
-import abc
+#import abc
 import os,sys,shutil,uuid
 from os.path import join as join
 from os.path import expanduser
 import glob
 import pkg_resources
-import socket
-import string
-import random
+
 from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 import shelve
-import json
+
 import copy
 import base64
 
+from utils import Form, id_generator, form_to_dict, form_to_json, json_to_dict, jsonfile_to_dict
+from utils import is_hosted_service, email_form_info
+from utils import persist_info, get_persisted_info, load_workflow_form, init_git_repo
+from utils import vprint
+from utils import dep
 
-# automatically detect installed optional dependencies
-# move to utils
-dep = {}
 try:
     from git import Repo,GitCommandError
-    dep['git'] = True    
 except ImportError:
     print("Warning: to use git based form versioning please install git module with 'pip install gitpython'")
     print("otherwise all helper functions for interacting with git will not work")
-    dep['git'] = False
 
-config_file = os.path.join(expanduser("~"),".dkrz_forms")
-if os.path.isfile(config_file):
-    sys.path.append(config_file)
-    dep['config_file'] = True
-else:
-    dep['config_file'] = False
-        
-try:
-   import rt
-   dep['rt'] = True 
-except ImportError, e:
-   dep['rt'] = False   
-
-# To DO: use cerberos type checking
-#
 
 VERBOSE = True
-#VERBOSE = False
-def vprint(*txt):
-    if VERBOSE:
-        print(*txt)
-    return
 
-# import non standard settings from home folder
-# e.g. setting for project repositories like cordex_directory 
+called_with_env_variables = False
 
-if dep['config_file']:  
-  from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from settings import FORM_URL_PATH, FORM_REPO
-else: 
-  from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from dkrz_forms.config.settings import FORM_URL_PATH, FORM_REPO 
-  
+# ---------------------------
+
 from dkrz_forms.config.project_config import PROJECT_DICT  
   
 from dkrz_forms.config import workflow_steps
 from checks import *
 
 
+if dep['config_file']:  
+  from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+  from settings import FORM_DIRECTORY
+    
+else: 
+  from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+  from dkrz_forms.config.settings import FORM_DIRECTORY
+
+
+# over-write variables in case Env settings are given
+if os.getenv('INSTALL_DIRECTORY'):
+    INSTALL_DIRECTORY = os.getenv('INSTALL_DIRECTORY')
+    vprint("unsing env setting for INSTALL_DIRECTORY:",INSTALL_DIRECTORY)
+    
+if os.getenv('SUBMISSION_REPO'):
+    INSTALL_DIRECTORY = os.getenv('SUBMISSION_REOP')
+    vprint("unsing env setting for SUBMISSION_REPO:",SUBMISSION_REPO)
+
+if os.getenv('NOTEBOOK_DIRECTORY'):
+    INSTALL_DIRECTORY = os.getenv('NOTEBOOK_DIRECTORY')
+    vprint("unsing env setting for NOTEBOOK_DIRECTORY:",NOTEBOOK_DIRECTORY)
+
+if os.getenv('FORM_DIRECTORY'):
+    INSTALL_DIRECTORY = os.getenv('FORM_DIRECTORY')
+    vprint("unsing env setting for FORM_DIRECTORY:",FORM_DIRECTORY)    
+
+
+FORM_REPO = join(FORM_DIRECTORY,'form_repo')  
+  
 
 
 
+### detecting url of notebook server
+FORM_URL_PATH = 'http://localhost:8888'  # default
+import notebook
+from notebook import notebookapp
+servers = list(notebookapp.list_running_servers())
+if len(servers) > 0:
+    server = servers[0]    
+    nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir']) 
+    
+    FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
+    vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
+else:
+    vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH) 
+    
 #------------------------------------------------------------------------------------------
 
-
 def init_sf(init_form):
-    
-          # generate an empty form 
-          sf = Form({})
-          
-          # generate the project specific form
-          form = Form(PROJECT_DICT[init_form['project']])
-
-          # fill project name and workflow forms
-          sf.project = init_form['project']
-          sf.workflow = form.workflow
-          sf.__doc__ = form.__doc__
-          for (short_name,wflow_step) in form.workflow:
+            
+          # generate the generic project form
+          sf = Form(PROJECT_DICT[init_form['project']])
+          # generate the submission infor sub_form
+          form = Form(PROJECT_DICT[init_form['project']+'_FORM'])
+        
+          for (short_name,wflow_step) in sf.workflow:
               setattr(sf,short_name ,Form(workflow_steps.WORKFLOW_DICT[wflow_step]))
-              
-              
-              
-          sf.sub.entity_out.form = form    
+                             
+          sf.sub.entity_out.report = form    
           
           sf.sub.entity_out.form_repo = join(FORM_REPO, init_form['project'])
           sf.sub.submission_repo = join(SUBMISSION_REPO, init_form['project'])
@@ -235,7 +242,8 @@ def generate_submission_form(init_form):
            
           template_name = init_form['project']+"_submission_form.ipynb"
           try:
-              sf.sub.entity_in.source_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates"+template_name)
+              sf.sub.entity_in.source_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates",template_name)
+              vprint("taking pip installed template files")
           except:
               sf.sub.entity_in.source_path = join(INSTALL_DIRECTORY,"submission_forms","dkrz_forms","Templates",template_name)
               #print "Form Handler: Attention !  non standard source for submission form"
@@ -243,13 +251,13 @@ def generate_submission_form(init_form):
           # sf.sub.entity_in.version = ...
           print("--- copy from:", sf.sub.entity_in.source_path)
           print("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
-          print("--- too: ",   sf.sub.entity_in.form_path)
+          print("--- and to: ",   sf.sub.entity_in.form_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_in.form_path)
           print("--------------------------------------------------------------------")
           print("   A submission form was created for you, please visit the following link:")
           # print sf
-          print(FORM_URL_PATH+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb')
+          print(FORM_URL_PATH+'/'+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb')
           ## to do email link to user ....
           print("--------------------------------------------------------------------")
           
@@ -269,9 +277,9 @@ def generate_submission_form(init_form):
               print("  !!  current version saved in repository") 
               print("  !!  the above link is only valid for the next 5 hours")
               print("  !!  to retrieve the form after this use the following link: ")
-              print("       http://localhost:888/notebooks.tst " )
+              print(FORM_URL_PATH+'/'+'Create_Submission_Form'+'.ipynb' )
               print("       with the password:", init_form['pwd'] )
-              vprint("id: ", sf.sub.entity_out.pwd)
+              
               if is_hosted_service():
                    email_form_info(sf)
           else:
@@ -288,164 +296,6 @@ def generate_submission_form(init_form):
         return("Error")
 
 
-
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
-
-
-def prefix_dict(mydict,prefix):
-    ''' Return a copy of a submission object with specified keys prefixed by a namespace
-      to do: makes no senso fo sf objects - work on dicts instead ... 
-    '''
-    pr_dict = {}
-    for key,val in mydict.iteritems():
-        if (key != "__doc__") and not isinstance(val,dict):
-            pr_dict[prefix + ':' + key] = mydict[key]
-    return pr_dict
-
-# Functions to convert form objects into dictionaries into json files and back
-
-class Form(object):
-    ''' Form object with attributes defined by a configurable project dictionary
-    '''
-    __metaclass__=abc.ABCMeta
-    def __init__(self, adict):
-        """Convert a dictionary to a Form Object
-        
-        :param adict: a (hierarchical) python dictionary 
-        :returns Form objcet: a hierachical Form object with attributes set based on input dictionary             
-        """
-        self.__dict__.update(adict)
-        ## self.__dict__[key] = AttributeDict(**mydict)  ??
-        for k, v in adict.items():
-           if isinstance(v, dict):
-              self.__dict__[k] = Form(v)
-              
-    def __repr__(self):
-        """
-        """
-        return "DKRZ Form object "
-        
-    def __str__(self):
-        return "DKRZ Form object: %s" %  self.__dict__
-        
-        
-#------to be integrated in code: fixed slot Form generation -------------------- 
-
-def myprop(x, doc):
-    def getx(self):
-        return getattr(self, '_' + x)
-
-    def setx(self, val):
-        setattr(self, '_' + x, val)
-
-    def delx(self):
-        delattr(self, '_' + x)
-
-    return property(getx, setx, delx, doc)
-
-#class C(object):
-#    #__metaclass__=abc.ABCMeta
-#    a = myprop("a", "Hi, I'm A!")
-#    b = myprop("b", "Hi, I'm B!")
-#    
-#    
-#C.d = myprop("d","....DDDDDDDDDDDDDDDD......")
-
-
-
-def Form_fixed_Generator(slot_list):
-    
-
-    class Meta(type): 
-        def __new__(cls, name, bases, dctn):
-             dctn['__slots__'] = slot_list
-             return type.__new__(cls, name, bases, dctn)
-     
-    class FixedForm(object):
-         __metaclass__ = Meta
-
-         def __init__(self):
-            pass 
-    
-    fixed_form_object = FixedForm()
-    
-    return fixed_form_object  
-
-
-
-#test = Form_fixed_Generator(['x'])
-
-#test.x = 10
-#text.y = 20 
-
-#-------------------------------------------------------------------------------       
-          
-              
-class FForm(object):
-  def __init__(self, adict):
-        """Convert a dictionary to a class
-
-        @param :adict Dictionary
-        """
-        self.__dict__.update(adict)
-    
-#def dict_to_form(mydict):
-#  """
-#   converts a recursive dictionary to a (flat) python object, with dictionary properties
-#  """
-#  return FForm(mydict)
-  
-#def dict_to_hform(mydict):
-#    """
-#    converts a recursive dictionary to a recursive python object, with object properties
-#    """
-#    return Form(mydict)
- 
-
-def form_to_dict(sf):
-    result = {}
-    for key, val in sf.__dict__.iteritems():
-        
-        if isinstance(val,Form):
-           new_val = form_to_dict(val)
-        else:
-           new_val = val
-        result[key] = new_val
-    return result 
-    
-    
-def form_to_json(sf):
-    """
-    serialize form value object to json string
-    """
-    sf_dict = form_to_dict(sf)
-    
-    s = json.dumps(sf_dict,sort_keys=True, indent=4, separators=(',', ': '))
-    return s
-
-def json_to_dict(mystring):
-    """
-    :param arg1: json string
-    :type arg1: string
-    :return: dictionary
-    :rtype: dict
-
-    """
-    mydict = json.loads(mystring)
-    return mydict
-    
-def jsonfile_to_dict(jsonfilename):
-    jsonfile = open(jsonfilename,"r")
-    json_info = jsonfile.read()
-    jsonfile.close()
-    json_dict = json.loads(json_info)
-    return json_dict
-    
-
-
-def json_to_form(mystring):
-    return FForm(json_to_dict(mystring))
 
 #----------------------------------------------------------------------------   
 
@@ -501,39 +351,6 @@ def save_form(sf,comment):
     
     return sf 
 
-def is_hosted_service():
-    hostname = socket.gethostname()
-    if hostname == "data-forms.dkrz.de":
-      return True
-    else:
-      return False
-
-def email_form_info(sf):
-  if is_hosted_service():
-     m_part1 = "You edited and saved a form for project: "+sf.project+"\n"
-     m_part2 = "This form is accessible at: \n"
-     m_part3 = "https://data-forms.dkrz.de:8080/notebooks/"+sf.project+"/"+sf.sub.form_name+".ipynb \n"
-     m_part4 = "to officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n"
-     m_part5 = "in case of problems please contact data@dkrz.de"
-     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
-     msg = MIMEText(my_message)
-     msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
-     msg['From'] = "DATA_SUBMISSION@dkrz.de"
-     msg['To'] = sf.sub.email
-     # Send the message via the data-forms VM SMTP server, but don't include the\n"
-     # envelope header.\n",
-     s = smtplib.SMTP('localhost')
-     s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
-     s.quit()
-     print("Form submitted to your email address "+sf.sub.email)
-  else:
-     print("This form is not hosted at DKRZ! Thus form information is stored locally on your computer \n")
-     print("Here is a summary of the generated and stored information:")
-     print("-- form for project: ",sf.project)
-     print("-- form name: ",sf.sub.entity_out.form_name)
-     print("-- submission form path: ", sf.sub.entity_out.subform_path)
-     print("-- package path: ", sf.sub.entity_out.package_path)
-     print("-- package name: ", sf.sub.entity_out.package_name)
 
 
 def form_submission(sf):
@@ -696,63 +513,5 @@ def package_submission(sf,comment_on):
     #  print("The _keyword part of the template name can differ form \"my_keyword\" you provided above") 
     #   return False
        
-    
-
-
-def persist_info(key,form_object,location):
-    p_shelve = shelve.open(location)
-    p_shelve[key] = form_object
-    p_shelve.close()
-
-def get_persisted_info(key,location):
-    p_shelve = shelve.open(location)
-    form_object = p_shelve[key]
-    p_shelve.close()
-    return form_object
-
-# load workflow steps 
-def load_workflow_form(workflow_json_file): 
-
-    workflow_dict = jsonfile_to_dict(workflow_json_file)
-    
-    workflow = Form(workflow_dict) 
-    
-    return workflow
-
-
-def onerror(func, path, exc_info):
-    """
-    Error handler for ``shutil.rmtree``.
-
-    If the error is due to an access error (read only file)
-    it attempts to add write permission and then retries.
-
-    If the error is for another reason it re-raises the error.
-    
-    Usage : ``shutil.rmtree(path, onerror=onerror)``
-    """
-    import stat
-    if not os.access(path, os.W_OK):
-        # Is the error an access error ?
-        os.chmod(path, stat.S_IWUSR)
-        func(path)
-    else:
-        raise
-
-def init_git_repo(target_dir):
-    vprint("Initialize git repo:",target_dir)
-    if os.path.exists(target_dir):
-       shutil.rmtree(target_dir)
-    if dep['git']:   
-       repo = Repo.init(target_dir)
-       return True
-    else:
-       os.makedirs(target_dir)
-       print("Warning: form directory - ",target_dir," created - but no git versioning support")
-       return False
-    
-    
-
-# to do: functions to display status info of submission objects (and next steps in workflow)
 
 
