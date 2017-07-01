@@ -18,7 +18,7 @@ init_form['first_name'] = "unit_tester"
 init_form['last_name'] = "testsuite"
 init_form['project'] = "test"
 init_form['email'] = "stephan.kindermann@gmail.com"
-init_form['key'] = "1234" 
+init_form['key'] = "123" 
 init_form['pwd'] = "test123"
 
 FORM_REPO = join(FORM_DIRECTORY,'form_repo')

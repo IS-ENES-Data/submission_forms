@@ -59,9 +59,9 @@ import shelve
 import copy
 import base64
 
-from utils import Form, id_generator, form_to_dict, form_to_json, json_to_dict, jsonfile_to_dict
+from utils import Form, id_generator, form_to_json
 from utils import is_hosted_service, email_form_info
-from utils import persist_info, get_persisted_info, load_workflow_form, init_git_repo
+from utils import persist_info, get_persisted_info
 from utils import vprint
 from utils import dep
 
@@ -71,8 +71,6 @@ except ImportError:
     print("Warning: to use git based form versioning please install git module with 'pip install gitpython'")
     print("otherwise all helper functions for interacting with git will not work")
 
-
-VERBOSE = True
 
 called_with_env_variables = False
 
@@ -146,9 +144,10 @@ def init_sf(init_form):
           
           sf.sub.entity_out.form_repo = join(FORM_REPO, init_form['project'])
           sf.sub.submission_repo = join(SUBMISSION_REPO, init_form['project'])
-          sf.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
+          sf.sub.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
           
-          print("Form Handler: Initialized form for project:", init_form['project'])
+          print("Form Handler: ")
+          print ("    -- initializing form for project:", init_form['project'])
           vprint(sf.project)
           
           sf.sub.agent.last_name = init_form['last_name']
@@ -167,9 +166,9 @@ def init_sf(init_form):
           vprint(sf.sub.entity_out.form_name+'.ipynb')
           sf.sub.entity_out.form_repo_path=join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           
-          vprint("entity_in.form_path", sf.form_dir)
-          sf.sub.entity_in.form_path=join(sf.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
-          sf.sub.entity_in.form_json=join(sf.form_dir,sf.sub.entity_out.form_name+'.json') 
+          vprint("entity_in.form_path", sf.sub.form_dir)
+          sf.sub.entity_in.form_path=join(sf.sub.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
+          sf.sub.entity_in.form_json=join(sf.sub.form_dir,sf.sub.entity_out.form_name+'.json') 
           
           #sf = set_doc(sf)
           
@@ -187,15 +186,16 @@ def init_form(init_form):
     if init_form['project'] in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
          
          sf = init_sf(init_form)
-         print("entity_out.form_repo:",sf.sub.entity_out.form_repo)
-         print("entity_out:form:json:", sf.sub.entity_out.form_json)
+         vprint("entity_out.form_repo:",sf.sub.entity_out.form_repo)
+         vprint("entity_out.form.json:", sf.sub.entity_out.form_json)
                  
          is_packaged = package_submission(sf,comment_on=False)
          
          "to do: check availability of cordex_directoy and whether it is git versioned"
          if is_packaged: 
-             print("submission form intitialized: sf")
-             print("(For the curious: the sf object is used in the following to store and manage all your information)")
+             print("    -- submission form intitialized")
+             print("    -- (For the curious: the resulting sf object is used in the following")
+             print("        to store and manage all your submission related information)")
         
          else:
              print("Please correct above errors, before proceeding")
@@ -470,7 +470,7 @@ def form_submission(sf):
      
 
    if not(dep['rt']) and not(is_hosted_service()): 
-      print("Please send form: "+sf.form_dir+"/"+form_name+".ipynb" +"\n")
+      print("Please send form: "+sf.sub.form_dir+"/"+form_name+".ipynb" +"\n")
       print("to data@dkrz.de with subject", "\"DKRZ data submission form for project\"", sf.project)
       
       
