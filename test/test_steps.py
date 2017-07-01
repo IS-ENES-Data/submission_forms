@@ -1,12 +1,12 @@
 import sys, os, shutil
-import utils
+
 #from git import Repo, GitCommandError
 
 join = os.path.join
 import_path = os.path.abspath('..')
 sys.path.append(import_path)
 
-from dkrz_forms import form_handler
+from dkrz_forms import form_handler, utils
 
 #from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY,FORM_URL_PATH, FORM_REPO
 #from dkrz_forms.config.project_config import PROJECT_DICT 
@@ -37,8 +37,8 @@ print "Project directory: ", form_repo
 #print submission.__dict__
 
 
-def test_me():
-    assert form_repo == os.path.abspath("....")
+#def test_me():
+#    assert form_repo == os.path.abspath("....")
 
 
 def test_init_form():

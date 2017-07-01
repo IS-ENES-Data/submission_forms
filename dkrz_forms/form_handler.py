@@ -138,7 +138,7 @@ def init_sf(init_form):
           sf = Form(PROJECT_DICT[init_form['project']])
           # generate the submission infor sub_form
           form = Form(PROJECT_DICT[init_form['project']+'_FORM'])
-        
+          
           for (short_name,wflow_step) in sf.workflow:
               setattr(sf,short_name ,Form(workflow_steps.WORKFLOW_DICT[wflow_step]))
                              

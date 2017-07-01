@@ -7,7 +7,9 @@ Project dictionaries
 The dictionaries defining the keywords for the individual projects are defined here.
 They get accessible to the FormFabric code by adding them to the PROJECT_DICT dictionary.
 
-Thus e.g. PROJECT_DICT['CMIP6'] refers to the keyword dictionary used for CMIP6 data
+Thus e.g. PROJECT_DICT['CMIP6'] defines to the overall keyword dictionary used for CMIP6 data
+     e.g. PROJECT_DICT['CMIP6_FORM'] defines the keyword (sub-)dictionary with the information from the data providers
+                                     (by filling the jupyter notebook based FORMs)
 
 To define the data management steps used in the individual projects, the 'workflow' keyword is used.
 
@@ -21,11 +23,6 @@ The workflow steps are defined in .ref workflow_steps.py
 .. automodule:: dkrz_forms.config.settings
 .. automodule:: dkrz_forms.config.workflow_steps
 
-ToDo: 
-
-* Merge with variable tests ...
-* refine NAME_SPACE definitions (later move e.g. to a separate W3C prov handling package
-
 """
 
 #================================================================================================
@@ -35,7 +32,7 @@ ToDo:
 # name spaces for w3c prov transformation of submission provenance information
 
 import base64
-
+from string import Template
 
 
 rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
@@ -50,47 +47,57 @@ rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
 
 PROJECT_DICT = {}
 
-# submitted information
-PROJECT_DICT['CORDEX']  = {
-          '__doc__': """
-             Form object for CORDEX data submission
-             
-             Workflow steps related sub-forms (filled by data manager):
+PROJECTS = ['CORDEX','CMIP6','test','ESGF_replication','DKRZ_CDP']
+
+
+generic_wflow_description = Template("""
+        Form object for project $project
+            
+             Workflow step related sub-forms (filled by data managers):
                - sub: data submission form
                - rev: data review_form
                - ing: data ingest form
                - qua: data quality assurance form
                - pub: data publication form
-               
+                  
              Each workfow step form is structured according to
                - entity_in : input information for this step
                - entity_out: output information for this step
                - agent: information related to responsible party for this step
                - activity: information related the workflow step execution
                
-              End user provided form information is stored in:
+              End user provided form information is stored in
+                _this_form_object.sub.entity_out.form  
              
-              this_form_object.sub.entity_out.report  
-             
-              see the documentation of this report sub entitiy for
-              the end-user filled information entities 
-             """,
-             "project":"CORDEX",
-             
-             "workflow": [("sub","data_submission"),
-                          ("rev","data_submission_review"),
-                          ("ing","data_ingest"),
-                          ("qua","data_quality_assurance"),
-                          ("pub","data_publication"),
-                          ("da", "data_archival")
-                         ], 
-             }
+             The following generic attributes are defined:
+           
+               - project: project this form is related to
+               - workflow: the workflow steps which are defined for this project
+               - status: overall workflow status 
+                   (keyword-structure = "workflow_step"_start, "workflow_step"_end
+                   e.g. sub_start, sub_end
+               """)
+
+for project in PROJECTS:
+# submitted information
+    PROJECT_DICT[project]  = {
+          '__doc__': generic_wflow_description.substitute(project=project),
+          "project":project,        
+          "workflow": [("sub","data_submission"),
+                       ("rev","data_submission_review"),
+                       ("ing","data_ingest"),
+                       ("qua","data_quality_assurance"),
+                       ("pub","data_publication"),
+                       ("da", "data_archival")
+           ],
+          "status":  "sub_start"           
+            }  
 
 PROJECT_DICT['CORDEX_FORM'] = {
              "__doc__":"""
                          CORDEX information collected as part of form completion process
                          see CORDEX template
-                         .. details on etries .. to be completed
+                         .. details on entries .. to be completed
                         """,
              "project":"CORDEX",
              "first_name": "",
@@ -118,98 +125,16 @@ PROJECT_DICT['CORDEX_FORM'] = {
              "variable_list_fx" : "",
              "uniqueness_of_tracking_id" : ""}                         
 
-PROJECT_DICT['DKRZ_CDP'] = {
-             '__doc__': """
-             Form object for data replication related information
-             
-             Workflow steps related sub-forms (filled by data manager):
-               - sub: data submission form
-               - rev: data review_form
-               - ing: data ingest form
-               - qua: data quality assurance form
-               - pub: data publication form
-               
-             Each workfow step form is structured according to
-               - entity_in : input information for this step
-               - entity_out: output information for this step
-               - agent: information related to responsible party for this step
-               - activity: information related the workflow step execution
-               
-              End user provided form information is stored in:
-             
-             _this_form_object.sub.entity_out.form  
-             
-             The the documentation of the sub.entity_out subform for 
-             the end-user filled information entities 
-             """,
-             'project': 'CMIP6_CDP',
-             "workflow": [("sub","data_submission"),
-                          ("rev","data_submission_review"),
-                          ("ing","data_ingest"),
-                          ("qua","data_quality_assurance"),
-                          ("pub","data_publication"),
-#                          ("da", "data_archival")
-                         ], 
- }
-PROJECT_DICT['test'] = {
-             '__doc__' :"""
-             Form object for project test
-            
-             Workflow step related sub-forms (filled by data managers):
-               - sub: data submission form
-               - rev: data review_form
-               - ing: data ingest form
-               - qua: data quality assurance form
-               - pub: data publication form
-               
-            
-             
-             Each workfow step form is structured according to
-               - entity_in : input information for this step
-               - entity_out: output information for this step
-               - agent: information related to responsible party for this step
-               - activity: information related the workflow step execution
-               
-              End user provided form information is stored in:
-             
-             _this_form_object.sub.entity_out.form  
-             
-             The following end user attributes are defined:
-           
-               - project: project this form is related to
-               - ....
-               
-             """ ,
-             'project':'test',
-             "workflow": [("sub","data_submission"),
-                          ("rev","data_submission_review"),
-                          ("ing","data_ingest"),
-                          ("qua","data_quality_assurance"),
-                          ("pub","data_publication")
-                      #    ("da", "data_archival")
-                         ], 
- }
-PROJECT_DICT['CMIP6']= {
-             'project' : 'CMIP6',
-            "workflow": [("sub","data_submission"),
-                          ("rev","data_submission_review"),
-                          ("ing","data_ingest"),
-                          ("qua","data_quality_assurance"),
-                          ("pub","data_publication"),
-#                          ("da", "data_archival")
-                         ], 
- }            
- 
-PROJECT_DICT['ESGF_replication']= {
-             'project' : 'CMIP6_replication',
-             "workflow": [("sub","data_submission"),
-                          ("rev","data_submission_review"),
-                          ("ing","data_ingest"),
-                          ("qua","data_quality_assurance"),
-                          ("pub","data_publication"),
-#                          ("da", "data_archival")
-                         ], 
- } 
+
+PROJECT_DICT['DKRZ_CDP_FORM'] = {}
+
+PROJECT_DICT['CMIP6_FORM'] = {}
+
+PROJECT_DICT['test_FORM'] = {}
+
+PROJECT_DICT['ESGF_replication_FORM'] = {} 
+
+
 
 #           
 # End of section two
