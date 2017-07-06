@@ -21,16 +21,14 @@ init_form['email'] = "stephan.kindermann@gmail.com"
 init_form['key'] = "123" 
 init_form['pwd'] = "test123"
 
-FORM_REPO = join(FORM_DIRECTORY,'form_repo')
+FORM_REPO = FORM_DIRECTORY
 
-print "FORM_REPO: ...",FORM_REPO
+
 form_repo = join(FORM_REPO, init_form['project'])
 #print test_config.cordex_directory
 
 FORM_JSON = join(form_repo,init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']+'.json')
  
-
-print "Project directory: ", form_repo
 
 # get workflow steps
 #(submission,ingest,checking,publish) = form_handler.get_workflow_steps() 

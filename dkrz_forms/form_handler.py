@@ -109,14 +109,14 @@ if os.getenv('FORM_DIRECTORY'):
     vprint("unsing env setting for FORM_DIRECTORY:",FORM_DIRECTORY)    
 
 
-FORM_REPO = join(FORM_DIRECTORY,'form_repo')  
+FORM_REPO = FORM_DIRECTORY 
   
 
 
 
 ### detecting url of notebook server
 FORM_URL_PATH = 'http://localhost:8888'  # default
-import notebook
+
 from notebook import notebookapp
 servers = list(notebookapp.list_running_servers())
 if len(servers) > 0:

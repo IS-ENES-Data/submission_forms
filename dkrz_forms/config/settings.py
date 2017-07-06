@@ -30,10 +30,10 @@ Created on Thu May 18 10:55:26 2017
 # directory where submission_forms package is installed
 # 
 # use INSTLL_DIRECTORY = "pip" in case FormFabric was installed via pip
-INSTALL_DIRECTORY = "/home/stephan/Repos/ENES-EUDAT/"
+INSTALL_DIRECTORY = "/home/stephan/Repos/"
 
 # Directory where web accessible forms are served
-NOTEBOOK_DIRECTORY = '/home/stephan/Repos/ENES-EUDAT/submission_forms/test/forms'
+NOTEBOOK_DIRECTORY = '/home/stephan/Repos/submission_forms/test/forms'
 
 # Url where notebooks are served ..
 # FORM_URL_PATH = 'http://localhost:8888/notebooks/Repos/ENES-EUDAT/submission_forms/test/forms/'

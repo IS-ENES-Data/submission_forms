@@ -83,8 +83,10 @@ def gen_prov_graph(file_path,option):
 
     global_in_out = d1.entity("subm:"+"form_name_xx")
     
+    print("workflow definition: ",sf_dict['workflow'])
     for [act_name,act] in sf_dict['workflow']:
-           
+        
+        print("adding entities for workflow_step: ",act_name)
         entity_in_dict = sf_dict[act_name]['entity_in']
         entity_out_dict = sf_dict[act_name]['entity_out']
         agent_dict = sf_dict[act_name]['agent']

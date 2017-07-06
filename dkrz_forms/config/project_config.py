@@ -88,7 +88,7 @@ for project in PROJECTS:
                        ("ing","data_ingest"),
                        ("qua","data_quality_assurance"),
                        ("pub","data_publication"),
-                       ("da", "data_archival")
+                      # ("da", "data_archival")
            ],
           "status":  "sub_start"           
             }  

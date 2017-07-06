@@ -13,7 +13,7 @@ from ipywidgets import widgets
 from IPython.display import display, Javascript, Image
 
 from dkrz_forms import form_handler
-
+from notebook import notebookapp
 
 config_file = os.path.join(expanduser("~"),".dkrz_forms")
 if os.path.isfile(config_file):
@@ -33,20 +33,21 @@ def vprint(*txt):
         print(*txt)
     return  
 
-FORM_REPO = join(FORM_DIRECTORY,'form_repo')
+FORM_REPO = FORM_DIRECTORY
 ### detecting url of notebook server
-FORM_URL_PATH = 'http://localhost:8888'  # default
-import notebook
-from notebook import notebookapp
-servers = list(notebookapp.list_running_servers())
-if len(servers) > 0:
-    server = servers[0]    
-    nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir']) 
-    
-    FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
-    vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
-else:
-    vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH) 
+
+def get_form_url_path():
+    FORM_URL_PATH = 'http://localhost:8888'  # default
+    servers = list(notebookapp.list_running_servers())
+    if len(servers) > 0:
+        server = servers[0]    
+        nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir']) 
+        
+        FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
+       
+    else:
+        vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH) 
+    return FORM_URL_PATH    
 
 
     
@@ -140,7 +141,7 @@ def check_and_retrieve(last_name):
         print("--------------------------------------------------------------------")
         print("   Your submission form was retrieved and is accessible via the following link:")
        
-        print(FORM_URL_PATH+'/'+info['project']+'/'+info['form_name']+'.ipynb')
+        print(get_form_url_path()+'/'+info['project']+'/'+info['form_name']+'.ipynb')
           ## to do email link to user ....
         print("--------------------------------------------------------------------")
 
