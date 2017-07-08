@@ -17,12 +17,13 @@ FormFabric provides:
 ## Installation
 
 * git clone https://github.com/IS-ENES-Data/submission_forms.git
-* export PYTHONPATH=..path..to..submission_forms:$PYTHONPATH
-
+* export PYTHONPATH=..your_installation_directory..:$PYTHONPATH
+* see documention
 * Dependencies:
-   * pip install gitpython prov
-* a anaconda based python installation (https://www.continuum.io/downloads) is recommended 
+   * a conda based python (2.7) installation (https://www.continuum.io/downloads) is recommended 
+   * best a full anaconda (2.7) installation and additionally:
+        * pip install gitpython prov
 
 ## Usage
 
-* see demo notebooks in test directory
+* see tutorial and demo notebooks in the "turorial" and "test" directories

@@ -20,23 +20,11 @@ Forms are python notebook based and provide:
 
 Configuration:
 
-* global variable setting in .dkrz_forms in home directoy
-   * e.g. project_directoy = "path" specifies to git reop for project *cordex*
+* global variable settings in .settings in home directoy
 
-* use as library::
+* use as library or in juypter notebooks::
 
-     from dkrz_forms import form_handler
-
-* use in jupyter notebooks::
-
-     from dkrz_forms import form_handler
-
-     my_project = "CORDEX"
-     form_handler.generate_submission_form(my_first_name,my_last_name,my_email,my_project)
-
-  copies a jupyter notebook template for project "CORDEX" into your project repository
-
-
+     from dkrz_forms import form_handler, utils
 """
 # import all necessary libraries
 # * most are in standard python library

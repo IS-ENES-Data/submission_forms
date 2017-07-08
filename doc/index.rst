@@ -18,10 +18,9 @@ Contents:
    tutorial
 
    examples
+   
+   source_documentation
 
-.. automodule:: dkrz_forms.config.project_config
-.. automodule:: dkrz_forms.form_handler
-.. automodule:: dkrz_forms.utils
 
    :members:
 

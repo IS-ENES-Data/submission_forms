@@ -29,7 +29,7 @@ except ImportError:
     print("otherwise all helper functions for interacting with git will not work")
     dep['git'] = False
 
-config_file = os.path.join(expanduser("~"),".dkrz_forms")
+config_file = os.path.join(expanduser("~"),".settings.py")
 if os.path.isfile(config_file):
     sys.path.append(config_file)
     dep['config_file'] = True
