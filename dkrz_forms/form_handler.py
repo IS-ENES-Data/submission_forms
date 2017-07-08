@@ -429,7 +429,7 @@ def form_submission(sf):
    if not(dep['rt']) and is_hosted_service():
       vprint("Proceeding with email generation")
       m_part1 = "A "+sf.myproject+"data submission was requested by: " + sf.sub.agent.first_name + " " + sf.sub.agent.last_name + "\n"
-      m_part2 = "Corresponding email: "+ sf.email +"\n"
+      m_part2 = "Corresponding email: "+ sf.sub.agent.email +"\n"
       m_part3 = "Submission form url: https://data-forms.dkrz.de:8080/notebooks/"+sf.projectCORDEX+"/"+sf.form_name+".ipynb \n"
       m_part4 = "The submission is commited to the following git repository: "+sf.form_name +"\n"
       m_part5 = "Time of submission:"+ str(datetime.now())
@@ -438,7 +438,7 @@ def form_submission(sf):
       msg = MIMEText(my_message)
       msg['Subject'] = 'Test email from DKRZ data submission form management software - please ignore'
       msg['From'] = "DATA_SUBMISSION@dkrz.de"
-      msg['To'] = sf.email
+      msg['To'] = sf.sub.agent.email
       msg['CC'] = "kindermann@dkrz.de"
       # Send the message via the data-forms VM SMTP server, but don't include the\n"
       # envelope header.\n",
