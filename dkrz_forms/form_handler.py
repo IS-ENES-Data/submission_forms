@@ -51,7 +51,7 @@ from utils import Form, id_generator, form_to_json
 from utils import is_hosted_service, email_form_info
 from utils import persist_info, get_persisted_info
 from utils import vprint
-from utils import dep
+from utils import dep, is_hosted_service
 
 try:
     from git import Repo,GitCommandError
@@ -115,6 +115,10 @@ if len(servers) > 0:
     vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
 else:
     vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH) 
+
+if is_hosted_service():
+   FORM_URL_PATH = 'https://data-forms.dkrz.de:8080/notebooks'
+   
     
 #------------------------------------------------------------------------------------------
 
@@ -265,7 +269,7 @@ def generate_submission_form(init_form):
               print("  !!  current version saved in repository") 
               print("  !!  the above link is only valid for the next 5 hours")
               print("  !!  to retrieve the form after this use the following link: ")
-              print(FORM_URL_PATH+'/'+'Create_Submission_Form'+'.ipynb' )
+              print(FORM_URL_PATH+'/START/Retrieve_Form.ipynb' )
               print("       with the password:", init_form['pwd'] )
               
               if is_hosted_service():

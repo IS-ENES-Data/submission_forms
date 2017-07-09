@@ -6,6 +6,7 @@ Created on Thu Apr 13 18:27:28 2017
 """
 from __future__ import print_function
 import os,sys,shutil
+import utils
 from os.path import join as join
 from os.path import expanduser
 
@@ -39,7 +40,9 @@ FORM_REPO = FORM_DIRECTORY
 def get_form_url_path():
     FORM_URL_PATH = 'http://localhost:8888'  # default
     servers = list(notebookapp.list_running_servers())
-    if len(servers) > 0:
+    if utils.is_hosted_service():
+        FORM_URL_PATH='https://data-forms.dkrz.de:8080/notebooks'
+    elif len(servers) > 0:
         server = servers[0]    
         nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir']) 
         
