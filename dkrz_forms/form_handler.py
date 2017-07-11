@@ -50,7 +50,7 @@ import base64
 from utils import Form, id_generator, form_to_json
 from utils import is_hosted_service, email_form_info
 from utils import persist_info, get_persisted_info
-from utils import vprint
+from utils import vprint, get_formurlpath
 from utils import dep, is_hosted_service
 
 try:
@@ -82,19 +82,19 @@ else:
 # over-write variables in case Env settings are given
 if os.getenv('INSTALL_DIRECTORY'):
     INSTALL_DIRECTORY = os.getenv('INSTALL_DIRECTORY')
-    vprint("unsing env setting for INSTALL_DIRECTORY:",INSTALL_DIRECTORY)
+    vprint("using env setting for INSTALL_DIRECTORY:",INSTALL_DIRECTORY)
     
 if os.getenv('SUBMISSION_REPO'):
-    INSTALL_DIRECTORY = os.getenv('SUBMISSION_REOP')
-    vprint("unsing env setting for SUBMISSION_REPO:",SUBMISSION_REPO)
+    INSTALL_DIRECTORY = os.getenv('SUBMISSION_REPO')
+    vprint("using env setting for SUBMISSION_REPO:",SUBMISSION_REPO)
 
 if os.getenv('NOTEBOOK_DIRECTORY'):
     INSTALL_DIRECTORY = os.getenv('NOTEBOOK_DIRECTORY')
-    vprint("unsing env setting for NOTEBOOK_DIRECTORY:",NOTEBOOK_DIRECTORY)
+    vprint("using env setting for NOTEBOOK_DIRECTORY:",NOTEBOOK_DIRECTORY)
 
 if os.getenv('FORM_DIRECTORY'):
     INSTALL_DIRECTORY = os.getenv('FORM_DIRECTORY')
-    vprint("unsing env setting for FORM_DIRECTORY:",FORM_DIRECTORY)    
+    vprint("using env setting for FORM_DIRECTORY:",FORM_DIRECTORY)    
 
 
 FORM_REPO = FORM_DIRECTORY 
@@ -103,21 +103,8 @@ FORM_REPO = FORM_DIRECTORY
 
 
 ### detecting url of notebook server
-FORM_URL_PATH = 'http://localhost:8888'  # default
 
-from notebook import notebookapp
-servers = list(notebookapp.list_running_servers())
-if len(servers) > 0:
-    server = servers[0]    
-    nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir']) 
-    
-    FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
-    vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
-else:
-    vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH) 
-
-if is_hosted_service():
-   FORM_URL_PATH = 'https://data-forms.dkrz.de:8080/notebooks'
+FORM_URL_PATH = get_formurlpath()
    
     
 #------------------------------------------------------------------------------------------

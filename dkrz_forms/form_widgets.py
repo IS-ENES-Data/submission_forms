@@ -37,23 +37,6 @@ def vprint(*txt):
 FORM_REPO = FORM_DIRECTORY
 ### detecting url of notebook server
 
-def get_form_url_path():
-    FORM_URL_PATH = 'http://localhost:8888'  # default
-    servers = list(notebookapp.list_running_servers())
-    if utils.is_hosted_service():
-        FORM_URL_PATH='https://data-forms.dkrz.de:8080/notebooks'
-    elif len(servers) > 0:
-        server = servers[0]    
-        nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir']) 
-        
-        FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
-       
-    else:
-        vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH) 
-    return FORM_URL_PATH    
-
-
-    
 if os.getenv('INSTALL_DIRECTORY'):
     INSTALL_DIRECTORY = os.getenv('INSTALL_DIRECTORY')
     vprint("unsing env setting for INSTALL_DIRECTORY:",INSTALL_DIRECTORY)
@@ -113,7 +96,7 @@ def check_pwd(last_name):
     
     import getpass
     #my_last_name = getpass.getpass("Enter your last name: ")
-    my_pwd = getpass.getpass("Enter your form key: ")
+    my_pwd = getpass.getpass("Enter your form password: ")
     form_info[my_pwd]['pwd'] = my_pwd
     
     if my_pwd in form_info.keys():
@@ -144,7 +127,7 @@ def check_and_retrieve(last_name):
         print("--------------------------------------------------------------------")
         print("   Your submission form was retrieved and is accessible via the following link:")
        
-        print(get_form_url_path()+'/'+info['project']+'/'+info['form_name']+'.ipynb')
+        print(utils.get_formurlpath()+'/'+info['project']+'/'+info['form_name']+'.ipynb')
           ## to do email link to user ....
         print("--------------------------------------------------------------------")
 

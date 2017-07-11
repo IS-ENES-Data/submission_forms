@@ -29,7 +29,7 @@ except ImportError:
     print("otherwise all helper functions for interacting with git will not work")
     dep['git'] = False
 
-config_file = os.path.join(expanduser("~"),".settings.py")
+config_file = os.path.join(expanduser("~"),"settings.py")
 if os.path.isfile(config_file):
     sys.path.append(config_file)
     dep['config_file'] = True
@@ -50,6 +50,24 @@ def vprint(*txt):
         print(*txt)
     return
 
+def get_formurlpath():
+
+    FORM_URL_PATH = 'http://localhost:8888'  # default
+
+    from notebook import notebookapp
+    servers = list(notebookapp.list_running_servers())
+    if is_hosted_service():
+        FORM_URL_PATH = 'https://data-forms.dkrz.de:8080/notebooks'
+    elif len(servers) > 0:
+        server = servers[0]
+        nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir'])
+
+        FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
+    else:
+        vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH)
+
+    vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
+    return FORM_URL_PATH
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -207,11 +225,13 @@ def is_hosted_service():
 def email_form_info(sf):
   if is_hosted_service():
      m_part1 = "You edited and saved a form for project: "+sf.project+"\n"
-     m_part2 = "This form is accessible at: \n"
-     m_part3 = "https://data-forms.dkrz.de:8080/notebooks/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
-     m_part4 = "to officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n"
-     m_part5 = "in case of problems please contact data@dkrz.de"
-     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
+     m_part2 = "This form is temporarily accessible at: \n"
+     m_part3 = "    https://data-forms.dkrz.de:8080/notebooks/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
+     m_part4 = "To retrieve and activate this form at a later time, please go to\n"
+     m_part5 = "    https://data-forms.dkrz.de:8080/notebooks/Start/Retrieve_Form.ipnb \n"
+     m_part6 = "    Remember your password: "+sf.sub.entity_out.pwd
+     m_part7 = '''\n \nto officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n in case of problems please contact data@dkrz.de'''
+     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 + m_part6 + m_part7
      msg = MIMEText(my_message)
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
      msg['From'] = "DATA_SUBMISSION@dkrz.de"
@@ -219,7 +239,7 @@ def email_form_info(sf):
      # Send the message via the data-forms VM SMTP server, but don't include the\n"
      # envelope header.\n",
      s = smtplib.SMTP('localhost')
-     s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
+     s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de",sf.sub.agent.email], msg.as_string())
      s.quit()
      print("Form submitted to your email address "+sf.sub.agent.email)
   else:
