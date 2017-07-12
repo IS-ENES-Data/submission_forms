@@ -126,14 +126,37 @@ PROJECT_DICT['CORDEX_FORM'] = {
              "uniqueness_of_tracking_id" : ""}                         
 
 
-PROJECT_DICT['DKRZ_CDP_FORM'] = {}
+PROJECT_DICT['DKRZ_CDP_FORM'] = {
+            "__doc__":"""
+                 DKRZ CMIP Data pool ingest request related informtion .. to be completed 
+             """,
+             "project":"DKRZ_CDP",
+             "comment": ""
+             }
 
-PROJECT_DICT['CMIP6_FORM'] = {}
+PROJECT_DICT['CMIP6_FORM'] = {
+            "__doc__":"""
+                 DKRZ CMIP6 data ingest and publication request information  .. to be completed 
+             """,
+             "project":"CMIP6",
+             "comment": ""
+            }
 
-PROJECT_DICT['test_FORM'] = {}
+PROJECT_DICT['test_FORM'] = {
+            "__doc__":"""
+                 test request related informtion .. to be completed 
+             """,
+             "project":"test",
+             "comment": ""
+}
 
-PROJECT_DICT['ESGF_replication_FORM'] = {} 
-
+PROJECT_DICT['ESGF_replication_FORM'] = { 
+            "__doc__":"""
+                 ESGF replication request related informtion .. to be completed 
+             """,
+             "project":"ESGF_replication",
+             "comment": ""
+            }
 
 
 #           

@@ -10,7 +10,7 @@ import utils
 from os.path import join as join
 from os.path import expanduser
 
-from ipywidgets import widgets
+from ipywidgets import widgets, Layout
 from IPython.display import display, Javascript, Image
 
 from dkrz_forms import form_handler
@@ -56,16 +56,16 @@ if os.getenv('FORM_REPO'):
 
 
 align_kw = dict(
-    _css = (('.widget-label', 'min-width', '20ex'),),
-    margin = '0px 0px 5px 12px'
+    _css = (('.widget-label', 'min-width', '10ex'),),
+    margin = '0px 0px 50px 12px'
 )
 
-
-LAST_NAME = widgets.Text(value="",description="Your last name: ",width=200, **align_kw)
-FIRST_NAME = widgets.Text(value="",description="Your first name: ",width=200, **align_kw)
-EMAIL = widgets.Text(value="", description="    Your email:",width=200, **align_kw)
-PROJECT = widgets.Dropdown(description = "Project selection: ", options=["CORDEX","CMIP6","DKRZ_CDP","ESGF_replication","test","Generic"],**align_kw)
-KEY = widgets.Text(value="", description="A key to identifiy your form (confirm with \"ENTER\") ",width=130,**align_kw)
+# old ,**align_kw  has no effect anymore .. !?
+LAST_NAME = widgets.Text(value="",description="Last name: ")
+FIRST_NAME = widgets.Text(value="",description="First name: ")
+EMAIL = widgets.Text(value="", description="Email:")
+PROJECT = widgets.Dropdown(description = "Project: ", options=["CORDEX","CMIP6","DKRZ_CDP","ESGF_replication","test","Generic"],**align_kw)
+KEY = widgets.Text(value="", placeholder=" A short key to remember your form, confirm input with \"ENTER\" ", description="A key: ", disabled=False, layout=Layout(width='50%', height='100%'))
 init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY]
 
 submission_type = widgets.Dropdown(description = "Type of submission: ", options=["initial_version","new_version","retract"])

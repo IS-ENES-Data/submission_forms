@@ -78,6 +78,9 @@ else:
   from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from dkrz_forms.config.settings import FORM_DIRECTORY
 
+if dep['rt']:
+   import rt
+
 
 # over-write variables in case Env settings are given
 if os.getenv('INSTALL_DIRECTORY'):
@@ -339,17 +342,18 @@ def form_submission(sf):
      - print instructions for manual submission in case all above is not working
    """
    ## to do: validity check first
+   target_dir = join(SUBMISSION_REPO,sf.project)
+   vprint("Target dir: ", target_dir)
    form_source = sf.sub.entity_out.form_repo_path
    json_source = sf.sub.entity_out.form_json
-   form_target = join(SUBMISSION_REPO,sf.project)
-   json_target = join(SUBMISSION_REPO,sf.project)
    
    form_name = sf.sub.entity_out.form_name
-   shutil.copy(form_source,form_target)
-   shutil.copy(json_source,json_target)
+   vprint("form_name: ", form_name)
+   shutil.copy(form_source,target_dir)
+   shutil.copy(json_source,target_dir)
    
    if dep['git']:
-       repo = Repo(join(SUBMISSION_REPO,sf.project))
+       repo = Repo(SUBMISSION_REPO)
        #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
        try: 
           o = repo.remotes.origin
@@ -363,8 +367,8 @@ def form_submission(sf):
           pass
           # to do: error handling
        
-       repo.git.add(form_name+".ipynb")
-       repo.git.add(form_name+".json")
+       repo.git.add(join(sf.project,form_name)+".ipynb")
+       repo.git.add(join(sf.project,form_name)+".json")
        
        vprint(repo.git.status())
        #repo.git.add(join(sf.project,package_name)
@@ -397,16 +401,17 @@ def form_submission(sf):
    
    if dep['rt'] and is_hosted_service(): 
       vprint("Proceeding with ticket generation")
+      json_file_name = sf.sub.entity_out.form_name+".json"
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
       tracker.login()
-      ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="DKRZ data form submission: "+sf.project+"--"+sf.sub.agent.last_name,
+      ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="DKRZ data form submission: project="+sf.project+"  json-file="+json_file_name,
                   Priority= 10,Owner="kindermann@dkrz.de")
       sf.sub.activity.ticket_id = ticket_id
       sf.sub.activity.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
       sf.sub.activity.status = "submitted"
-      is_packaged = package_submission(sf,comment_on=False)
-      json_file_name = sf.sub.form_name+".json"
-      comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.agent.last_name,files=[(json_file_name,open(sf.sub.package_path,'rb'))])
+      is_packaged = package_submission(sf,comment_on=True)
+      vprint("open file: ", join(target_dir,json_file_name))
+      comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.agent.last_name,files=[(json_file_name,open(sf.sub.entity_out.form_json,'rb'))])
 
       if comment_submitted:
          print("RT Ticket generated")
@@ -424,7 +429,6 @@ def form_submission(sf):
       m_part3 = "Submission form url: https://data-forms.dkrz.de:8080/notebooks/"+sf.projectCORDEX+"/"+sf.form_name+".ipynb \n"
       m_part4 = "The submission is commited to the following git repository: "+sf.form_name +"\n"
       m_part5 = "Time of submission:"+ str(datetime.now())
-
       my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
       msg = MIMEText(my_message)
       msg['Subject'] = 'Test email from DKRZ data submission form management software - please ignore'
@@ -457,6 +461,9 @@ def form_submission(sf):
    # Modifications to submission object   
    sf.sub.entity_out.submission_form = join(SUBMISSION_REPO,sf.sub.entity_out.form_name+".ipynb")
    sf.sub.entity_out.submission_json = join(SUBMISSION_REPO,sf.sub.entity_out.form_name+".json")  
+
+   save_form(sf, "Submitted: final submission ..")
+   email_form_info(sf)
    
    return sf
 
@@ -468,6 +475,7 @@ def package_submission(sf,comment_on):
      sf.sub.id = str(uuid.uuid1())
      form_json = form_to_json(sf) 
      vprint(sf.sub.entity_in.form_path)
+     vprint(sf.sub.entity_in.form_json)
      vprint(sf.sub.entity_out.form_repo_path)
      try:
          shutil.copyfile(sf.sub.entity_in.form_path,sf.sub.entity_out.form_repo_path)

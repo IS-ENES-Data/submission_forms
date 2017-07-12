@@ -231,6 +231,15 @@ def email_form_info(sf):
      m_part5 = "    https://data-forms.dkrz.de:8080/notebooks/Start/Retrieve_Form.ipnb \n"
      m_part6 = "    Remember your password: "+sf.sub.entity_out.pwd
      m_part7 = '''\n \nto officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n in case of problems please contact data@dkrz.de'''
+
+     if sf.sub.activity.status=="submitted":
+        m_part1 = "You have submitted a form for project :"+sf.project+"\n"
+        m_part2 = "you should receive an automatic email with the notice of receipt \n"
+        m_part3 = "In case you do not receive this email please contact data@dkrz.de \n"
+        m_part4 = "in this email please mention the following form identifier: "+sf.project+"/"+sf.sub.entity_out.form_name 
+        m_part5 = ""
+        m_part6 = ""
+        m_part7 = ""
      my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 + m_part6 + m_part7
      msg = MIMEText(my_message)
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
