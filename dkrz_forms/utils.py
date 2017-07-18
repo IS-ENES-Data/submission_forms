@@ -15,14 +15,18 @@ import socket
 import smtplib
 import shelve
 import shutil
+import dkrz_forms.config.settings as settings
+import dkrz_forms.config.project_config as project_config
+import distutils.dir_util
 from os.path import expanduser
+from os.path import join as join
 from email.mime.text import MIMEText
 from prov.model import ProvDocument
 #from dkrz_forms import form_handler
 
 dep = {}
 try:
-    from git import Repo,GitCommandError
+    from git import Repo,GitCommandError, InvalidGitRepositoryError
     dep['git'] = True    
 except ImportError:
     print("Warning: to use git based form versioning please install git module with 'pip install gitpython'")
@@ -50,6 +54,33 @@ def vprint(*txt):
         print(*txt)
     return
 
+
+def init_config_dirs():
+ 
+    dirs = [settings.NOTEBOOK_DIRECTORY,settings.SUBMISSION_REPO,settings.FORM_DIRECTORY]
+    proj_dirs = project_config.PROJECTS
+
+    for dir in dirs:
+       for proj_dir in proj_dirs:
+           distutils.dir_util.mkpath(join(dir,proj_dir))
+           # python3: pathlib.Path(mypath).mkdir(parents=True, exist_ok=True)
+ 
+    if dep['git']:
+       try: 
+          repo=Repo(settings.SUBMISSION_REPO)
+       except InvalidGitRepositoryError:
+         repo=Repo.init(settings.SUBMISSION_REPO, bare=True)
+         vprint("initialize: ", settings.SUBMISSION_REPO)
+            
+       for proj_dir in proj_dirs:
+        
+            repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
+            try:
+                repo=Repo(repo_dir)
+            except InvalidGitRepositoryError:
+               repo=Repo.init(repo_dir, bare=True)
+               vprint("initialize: ", repo_dir)
+
 def get_formurlpath():
 
     FORM_URL_PATH = 'http://localhost:8888'  # default
@@ -60,7 +91,7 @@ def get_formurlpath():
         FORM_URL_PATH = 'https://data-forms.dkrz.de:8080/notebooks'
     elif len(servers) > 0:
         server = servers[0]
-        nb_dir = os.path.relpath(NOTEBOOK_DIRECTORY, server['notebook_dir'])
+        nb_dir = os.path.relpath(settings.NOTEBOOK_DIRECTORY, server['notebook_dir'])
 
         FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
     else:
@@ -256,9 +287,8 @@ def email_form_info(sf):
      print("Here is a summary of the generated and stored information:")
      print("-- form for project: ",sf.project)
      print("-- form name: ",sf.sub.entity_out.form_name)
-     print("-- submission form path: ", sf.sub.entity_out.subform_path)
-     print("-- package path: ", sf.sub.entity_out.package_path)
-     print("-- package name: ", sf.sub.entity_out.package_name)
+     print("-- submission form path: ", sf.sub.entity_out.form_repo_path)
+     print("-- json form path: ", sf.sub.entity_out.form_json)
 
 
 
