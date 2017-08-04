@@ -247,6 +247,7 @@ def generate_submission_form(init_form):
          
           save_form(sf, "Form Handler: form - initial generation - quiet" )
           vprint(" ......  initial version saved ...")
+          sf.sub.activity.status = "0-form_generated"
               
           if dep['git']: 
               repo = Repo(sf.sub.entity_out.form_repo)

@@ -66,7 +66,7 @@ def get_formurlpath():
     else:
         vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH)
 
-    vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
+    #vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
     return FORM_URL_PATH
 
 
