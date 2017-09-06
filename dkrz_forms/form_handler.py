@@ -138,6 +138,7 @@ def init_sf(init_form):
           
           sf.sub.activity.keyword=init_form['key']
           sf.sub.activity.pwd=init_form['pwd']
+          sf.sub.activity.status="initialized"
           
           sf.sub.entity_out.pwd = init_form['pwd']
          
