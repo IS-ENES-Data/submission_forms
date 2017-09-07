@@ -353,7 +353,18 @@ def form_submission(sf):
    vprint("form_name: ", form_name)
    shutil.copy(form_source,target_dir)
    shutil.copy(json_source,target_dir)
+
+
+   # also add selection files for replication
+   if sf.project=="ESGF_replication":
+     for sel_file in sf.sub.entity_out.report.selection_files:
+         vprint("copy selection file - source:",join(sf.sub.entity_in.form_path,"selection",sel_file),"target: ", join(sf.sub.entity_out.form_repo,"selection"))
+         shutil.copy(join(sf.sub.form_dir,"selection",sel_file),join(sf.sub.entity_out.form_repo,"selection"))
+         vprint(" - and - copy selection file - source: ",join(sf.sub.entity_out.form_repo,"selection",sel_file), "target: ", join(target_dir,"selection"))
+         shutil.copy(join(sf.sub.entity_out.form_repo,"selection",sel_file),join(target_dir,"selection"))
    
+         
+
    if dep['git']:
        repo = Repo(SUBMISSION_REPO)
        #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
@@ -371,6 +382,11 @@ def form_submission(sf):
        
        repo.git.add(join(sf.project,form_name)+".ipynb")
        repo.git.add(join(sf.project,form_name)+".json")
+
+       if sf.project=="ESGF_replication":
+           for sel_file in sf.sub.entity_out.report.selection_files:
+               vprint("commit selection file: ",join("selection",sel_file))
+               repo.git.add(join(sf.project,"selection",sel_file))
        
        vprint(repo.git.status())
        #repo.git.add(join(sf.project,package_name)
@@ -479,6 +495,7 @@ def package_submission(sf,comment_on):
      vprint(sf.sub.entity_in.form_path)
      vprint(sf.sub.entity_in.form_json)
      vprint(sf.sub.entity_out.form_repo_path)
+
      try:
          shutil.copyfile(sf.sub.entity_in.form_path,sf.sub.entity_out.form_repo_path)
      except:
