@@ -10,7 +10,7 @@ import utils
 from os.path import join as join
 from os.path import expanduser
 
-from ipywidgets import widgets, Layout
+from ipywidgets import widgets, Layout, Box
 from IPython.display import display, Javascript, Image
 
 from dkrz_forms import form_handler
@@ -61,12 +61,15 @@ align_kw = dict(
 )
 
 # old ,**align_kw  has no effect anymore .. !?
-LAST_NAME = widgets.Text(value="",description="Last name: ")
-FIRST_NAME = widgets.Text(value="",description="First name: ")
-EMAIL = widgets.Text(value="", description="Email:")
-PROJECT = widgets.Dropdown(description = "Project: ", options=["CORDEX","CMIP6","DKRZ_CDP","ESGF_replication","test","Generic"],**align_kw)
-KEY = widgets.Text(value="", placeholder=" A short key to remember your form, confirm input with \"ENTER\" ", description="A key: ", disabled=False, layout=Layout(width='50%', height='100%'))
-init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY]
+my_layout = Layout(margin='2px 0px 2px 00px')
+LAST_NAME = widgets.Text(value="",description="Last name: ",layout=my_layout)
+FIRST_NAME = widgets.Text(value="",description="First name: ",layout=my_layout)
+EMAIL = widgets.Text(value="", description="Email:",layout=my_layout)
+#PROJECT = widgets.Dropdown(description = "Project: ", options=["CORDEX","CMIP6","DKRZ_CDP","ESGF_replication","test","Generic"],**align_kw)
+PROJECT = widgets.Dropdown(description = "Project: ", options=["CORDEX","CMIP6","DKRZ_CDP","ESGF_replication","test","Generic"],layout=my_layout)
+KEY = widgets.Text(value="", placeholder=" A short key to remember your form, confirm input with \"ENTER\" ", description="A key: ",layout=my_layout)
+ENTER = widgets.Text(value="", placeholder=" Press \"ENTER\" in key field above to initialize your personal form" , description="... " )
+init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
 
 submission_type = widgets.Dropdown(description = "Type of submission: ", options=["initial_version","new_version","retract"])
 ## maybe move to config part ..
@@ -142,10 +145,11 @@ def create_form():
     
      #   print FIRST_NAME.valueS
     KEY.on_submit(generate)
-  #  FIRST_NAME.on_submit(handle_submit)
+     #  FIRST_NAME.on_submit(handle_submit)
 
 def generate(val):
     init_form = {} 
+    print("Value:  ", val)
     init_form['first_name'] = FIRST_NAME.value
     init_form['last_name'] = LAST_NAME.value
     init_form['project'] = PROJECT.value
