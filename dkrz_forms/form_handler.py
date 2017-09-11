@@ -340,7 +340,7 @@ def save_form(sf,comment):
 def form_submission(sf):
    """
      - submit to rt system in case RT module is present (True for DKRZ hosted service, probably false for home installations)
-     - submit to "DATA_SUBMISSION@dkrz" in case RT is not present but email is configured on installation
+     - submit to "data-pool@dkrz" in case RT is not present but email is configured on installation
      - print instructions for manual submission in case all above is not working
    """
    ## to do: validity check first
@@ -450,13 +450,13 @@ def form_submission(sf):
       my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
       msg = MIMEText(my_message)
       msg['Subject'] = 'Test email from DKRZ data submission form management software - please ignore'
-      msg['From'] = "DATA_SUBMISSION@dkrz.de"
+      msg['From'] = "snkinder@freenet.de"   # to be changed to data-pool@dkrz.de
       msg['To'] = sf.sub.agent.email
       msg['CC'] = "kindermann@dkrz.de"
       # Send the message via the data-forms VM SMTP server, but don't include the\n"
       # envelope header.\n",
       s = smtplib.SMTP('localhost')
-      s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de"], msg.as_string())
+      s.sendmail("snkinder@freenet.de", ["kindermann@dkrz.de"], msg.as_string())
       s.quit()
 
       print("DKRZ forms request submitted")

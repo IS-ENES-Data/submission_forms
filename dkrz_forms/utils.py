@@ -259,7 +259,7 @@ def email_form_info(sf):
      m_part2 = "This form is temporarily accessible at: \n"
      m_part3 = "    https://data-forms.dkrz.de:8080/notebooks/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
      m_part4 = "To retrieve and activate this form at a later time, please go to\n"
-     m_part5 = "    https://data-forms.dkrz.de:8080/notebooks/Start/Retrieve_Form.ipnb \n"
+     m_part5 = "    https://data-forms.dkrz.de:8080/notebooks/START/Retrieve_Form.ipynb \n"
      m_part6 = "    Remember your password: "+sf.sub.entity_out.pwd
      m_part7 = '''\n \nto officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n in case of problems please contact data@dkrz.de'''
 
@@ -274,12 +274,12 @@ def email_form_info(sf):
      my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 + m_part6 + m_part7
      msg = MIMEText(my_message)
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
-     msg['From'] = "DATA_SUBMISSION@dkrz.de"
+     msg['From'] = "data-pool@dkrz.de"
      msg['To'] = sf.sub.agent.email
      # Send the message via the data-forms VM SMTP server, but don't include the\n"
      # envelope header.\n",
      s = smtplib.SMTP('localhost')
-     s.sendmail("DATA_SUBMISSION@dkrz.de", ["kindermann@dkrz.de",sf.sub.agent.email], msg.as_string())
+     s.sendmail("data-pool@dkrz.de", ["kindermann@dkrz.de",sf.sub.agent.email], msg.as_string())
      s.quit()
      print("Form submitted to your email address "+sf.sub.agent.email)
   else:
