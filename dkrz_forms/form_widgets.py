@@ -67,8 +67,9 @@ FIRST_NAME = widgets.Text(value="",description="First name: ",layout=my_layout)
 EMAIL = widgets.Text(value="", description="Email:",layout=my_layout)
 #PROJECT = widgets.Dropdown(description = "Project: ", options=["CORDEX","CMIP6","DKRZ_CDP","ESGF_replication","test","Generic"],**align_kw)
 PROJECT = widgets.Dropdown(description = "Project: ", options=["CORDEX","CMIP6","DKRZ_CDP","ESGF_replication","test","Generic"],layout=my_layout)
-KEY = widgets.Text(value="", placeholder=" A short key to remember your form, confirm input with \"ENTER\" ", description="A key: ",layout=my_layout)
-ENTER = widgets.Text(value="", placeholder=" Press \"ENTER\" in this field to initialize your personal form" , description="... " )
+KEY = widgets.Text(value="", placeholder=" A key to identify your form", description="An identifier: ",layout=my_layout)
+# ENTER = widgets.Text(value="", placeholder=" Press \"ENTER\" in this field to initialize your personal form" , description="... " )
+ENTER = widgets.Button(value=False, description='Generate form', disabled=False, button_style='', tooltip='click to generate a personal form template', icon='check')
 init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
 
 submission_type = widgets.Dropdown(description = "Type of submission: ", options=["initial_version","new_version","retract"])
@@ -144,12 +145,11 @@ def create_form():
     #def handle_submit(sender):
     
      #   print FIRST_NAME.valueS
-    ENTER.on_submit(generate)
+    ENTER.on_click(generate)
      #  FIRST_NAME.on_submit(handle_submit)
 
 def generate(val):
     init_form = {} 
-    print("Value:  ", val)
     init_form['first_name'] = FIRST_NAME.value
     init_form['last_name'] = LAST_NAME.value
     init_form['project'] = PROJECT.value

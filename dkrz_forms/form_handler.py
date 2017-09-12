@@ -232,16 +232,15 @@ def generate_submission_form(init_form):
               #print "Form Handler: Attention !  non standard source for submission form"
           ## to do: version of template
           # sf.sub.entity_in.version = ...
-          print("--- copy from:", sf.sub.entity_in.source_path)
-          print("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
-          print("--- and to: ",   sf.sub.entity_in.form_path)
+          vprint("--- copy from:", sf.sub.entity_in.source_path)
+          vprint("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
+          vprint("--- and to: ",   sf.sub.entity_in.form_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_in.form_path)
           print("--------------------------------------------------------------------")
-          print("   A submission form was created for you, please visit the following link:")
-          # print sf
+          print("--- A submission form was created for you, \n--- please visit the following link:")
           print(FORM_URL_PATH+'/'+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb')
-          ## to do email link to user ....
+          print("--- Please remember your form password:",init_form['pwd'])
           print("--------------------------------------------------------------------")
           
           
@@ -258,17 +257,17 @@ def generate_submission_form(init_form):
               sf.sub.activity.commit_hash = commit_hash
                
               save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
-              print("  !!  current version saved in repository") 
+              vprint("  !!  current version saved in repository") 
               print("  !!  the above link is only valid for the next 5 hours")
               print("  !!  to retrieve the form after this use the following link: ")
               print(FORM_URL_PATH+'/START/Retrieve_Form.ipynb' )
-              print("       with the password:", init_form['pwd'] )
+              print("  !!  with your the password:", init_form['pwd'] )
               
               if is_hosted_service():
                    email_form_info(sf)
           else:
-              print("Warning: no version information stored")
-              print("Install git and gitpython to enable this")
+              vprint("Warning: no version information stored")
+              vprint("Install git and gitpython to enable this")
               
           return sf    
                 
@@ -472,7 +471,7 @@ def form_submission(sf):
 
    if not(dep['rt']) and not(is_hosted_service()): 
       print("Please send form: "+sf.sub.form_dir+"/"+form_name+".ipynb" +"\n")
-      print("to data@dkrz.de with subject", "\"DKRZ data submission form for project\"", sf.project)
+      print("to data-pool@dkrz.de with subject", "\"DKRZ data submission form for project\"", sf.project)
       
       
       
