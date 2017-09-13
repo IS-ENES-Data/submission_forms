@@ -42,15 +42,15 @@ if os.getenv('INSTALL_DIRECTORY'):
     vprint("unsing env setting for INSTALL_DIRECTORY:",INSTALL_DIRECTORY)
     
 if os.getenv('SUBMISSION_REPO'):
-    INSTALL_DIRECTORY = os.getenv('SUBMISSION_REOP')
+    SUBMISSION_REPO = os.getenv('SUBMISSION_REPO')
     vprint("unsing env setting for SUBMISSION_REPO:",SUBMISSION_REPO)
 
 if os.getenv('NOTEBOOK_DIRECTORY'):
-    INSTALL_DIRECTORY = os.getenv('NOTEBOOK_DIRECTORY')
+    NOTEBOOK_DIRECTORY = os.getenv('NOTEBOOK_DIRECTORY')
     vprint("unsing env setting for NOTEBOOK_DIRECTORY:",NOTEBOOK_DIRECTORY)
 
 if os.getenv('FORM_REPO'):
-    INSTALL_DIRECTORY = os.getenv('FORM_REPO')
+    RORM_REPO = os.getenv('FORM_REPO')
     vprint("unsing env setting for FORM_REPO:",FORM_REPO)    
 
 
@@ -71,6 +71,11 @@ KEY = widgets.Text(value="", placeholder=" A key to identify your form", descrip
 # ENTER = widgets.Text(value="", placeholder=" Press \"ENTER\" in this field to initialize your personal form" , description="... " )
 ENTER = widgets.Button(value=False, description='Generate form', disabled=False, button_style='', tooltip='click to generate a personal form template', icon='check')
 init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
+#---- for selection files
+SELECTION = widgets.Button(value=False, description="Save files", disabled=False, button_style='', tooltip='click to save above files')
+la = widgets.Layout(height='250px',  width='500px')
+TEXT_WIDGETS_DICT = {}
+init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
 
 submission_type = widgets.Dropdown(description = "Type of submission: ", options=["initial_version","new_version","retract"])
 ## maybe move to config part ..
@@ -78,6 +83,7 @@ submission_type = widgets.Dropdown(description = "Type of submission: ", options
 #cordex_sel={}
 #cordex_sel['terms_of_use'] = ["unrestricted","non-commercial only"]
 #cordex_sel['qc_status'] = ["QC1","QC2","other","unchecked"]
+
 
 def show_status(status):
     if status == 'form-generation':
@@ -156,4 +162,55 @@ def generate(val):
     init_form['email'] = EMAIL.value
     init_form['key'] = KEY.value
     form_handler.generate_submission_form(init_form)
+ 
     
+def save_sel(val):
+    selection_dir = join(NOTEBOOK_DIRECTORY,"ESGF_replication","selection")
+    for (my_file,val) in TEXT_WIDGETS_DICT.items():
+        sel_file_path = join(selection_dir,my_file)
+        with open(sel_file_path, 'w') as file_obj:
+             print("Selection file: ",my_file," stored")
+             file_obj.write(val.value.encode('utf-8'))    
+    
+    
+def get_selection_file_contents(file_list):
+    selection_dir = join(NOTEBOOK_DIRECTORY,"ESGF_replication","selection")
+    print("Retrieving existing selection file information if existing ... ")
+    content_list = []
+    for my_file in file_list:
+        sel_file_path = join(selection_dir,my_file)
+        if os.path.isfile(sel_file_path):
+            print("Warning: selection file: ",my_file," already exists")
+            print("         only modify if it belongs to you !!")
+            print("         use other name if it does not belong to you !!!!!")
+            with open(sel_file_path, 'r') as file_obj:
+                 file_content = file_obj.read()
+            content_list.append(file_content)
+        else:
+            file_content = "# no selection information specified, please fill"
+            content_list.append(file_content)        
+    return content_list
+
+def get_selection_files(file_list):
+    global TEXT_WIDGETS_DICT
+    la = widgets.Layout(height='250px',  width='500px')
+    content_list = get_selection_file_contents(file_list)
+    merge_list = zip(file_list,content_list)
+    TEXT_WIDGETS_DICT = {}
+    for (my_file,my_content) in merge_list:
+        header = "# selection file: "+my_file+"\n \n"
+        TEXT_WIDGETS_DICT[my_file] = widgets.Textarea(
+                value = header + my_content ,
+                place_holder='??',
+                disabled = False,
+                description = "selection file:",
+                layout = la
+                )
+    return TEXT_WIDGETS_DICT  
+
+def gen_text_widgets(text_w):
+    for (key,val) in text_w.items():
+        display(val)
+    display(SELECTION)
+    SELECTION.on_click(save_sel)    
+                
