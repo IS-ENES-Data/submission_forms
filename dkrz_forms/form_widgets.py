@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Apr 13 18:27:28 2017
 
@@ -6,7 +5,7 @@ Created on Thu Apr 13 18:27:28 2017
 """
 from __future__ import print_function
 import os,sys,shutil
-import utils
+from . import utils
 from os.path import join as join
 from os.path import expanduser
 
@@ -170,7 +169,8 @@ def save_sel(val):
         sel_file_path = join(selection_dir,my_file)
         with open(sel_file_path, 'w') as file_obj:
              print("Selection file: ",my_file," stored")
-             file_obj.write(val.value.encode('utf-8'))    
+             sel_text = str(val.value)
+             file_obj.write(sel_text)    
     
     
 def get_selection_file_contents(file_list):

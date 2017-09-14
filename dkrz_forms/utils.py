@@ -8,6 +8,7 @@ modified from https://github.com/epigen/pypiper/blob/master/pypiper/AttributeDic
 """
 from __future__ import print_function
 import os,sys
+import subprocess
 import json
 import abc
 import string, random
@@ -43,7 +44,7 @@ else:
 try:
    import rt
    dep['rt'] = True 
-except ImportError, e:
+except ImportError as e:
    dep['rt'] = False   
 
 
@@ -110,7 +111,7 @@ def prefix_dict(mydict,prefix):
       to do: makes no senso fo sf objects - work on dicts instead ... 
     '''
     pr_dict = {}
-    for key,val in mydict.iteritems():
+    for key,val in mydict.items():
         if (key != "__doc__") and not isinstance(val,dict):
             pr_dict[prefix + ':' + key] = mydict[key]
     return pr_dict
@@ -200,7 +201,7 @@ class Form(object):
 
 def form_to_dict(sf):
     result = {}
-    for key, val in sf.__dict__.iteritems():
+    for key, val in sf.__dict__.items():
         
         if isinstance(val,Form):
            new_val = form_to_dict(val)
@@ -400,16 +401,16 @@ class TForm(object):
            
     
     def __getattr__(self, name):
-            if name in self.__dict__.keys():
-    		      return self.name
+            if name in list(self.__dict__):
+                return self.name
             else:
                 if self.return_defaults:
-			    # If this object has default mode on, then we should
-			    # simply return the name of the requested attribute as
-			    # a default, if no attribute with that name exists.
-			    return name
+		    # If this object has default mode on, then we should
+		    # simply return the name of the requested attribute as
+		    # a default, if no attribute with that name exists.
+                    return name
                 else:
-                     raise AttributeError("No attribute " + name)
+                    raise AttributeError("No attribute " + name)
 
 
 def myprop(x, doc):
@@ -445,4 +446,13 @@ def Form_fixed_Generator(slot_list):
     
     
     
-    
+def get_file_list(file_list):
+     # call synda to retrieve the dataset lists associated to synda selection files   
+     print("This command should print a list of datasets in case you provided correct synda selection files")
+     print("return to step 3 to chech your files in case of error messages")
+     dataset_dict = {}
+     for s_file in file_list: 
+         dataset_dict[s_file]= subprocess.check_output(['synda', 'search', '-s', './selection/'+s_file])
+     return dataset_dict
+     result = []
+     return(result)

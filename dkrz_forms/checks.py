@@ -169,13 +169,13 @@ def check_file_structure(sf,file_name):
   """
   cordex_template=["VariableName","Domain","GCMModelName","CMIP5ExperimentName","CMIP5EnsembleMember","RCMModelName","RCMVersionID","Frequency","TimeRange"]
   cordex_example = "tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19710101-19751231.nc"
-  print "Structure: -------"  
-  print "DRS key: DRS value"
-  print "------------------"  
+  print( "Structure: -------" ) 
+  print( "DRS key: DRS value")
+  print( "------------------"  )
   try:
      file_parts = file_name.split("_") 
      for i,part in enumerate(file_parts):
-         print cordex_template[i],":",part
+         print(cordex_template[i],":",part)
      status = True
   except:
      status = False

@@ -47,11 +47,11 @@ import shelve
 import copy
 import base64
 
-from utils import Form, id_generator, form_to_json
-from utils import is_hosted_service, email_form_info
-from utils import persist_info, get_persisted_info
-from utils import vprint, get_formurlpath
-from utils import dep, is_hosted_service
+from .utils import Form, id_generator, form_to_json
+from .utils import is_hosted_service, email_form_info
+from .utils import persist_info, get_persisted_info
+from .utils import vprint, get_formurlpath
+from .utils import dep, is_hosted_service
 
 try:
     from git import Repo,GitCommandError
@@ -67,7 +67,7 @@ called_with_env_variables = False
 from dkrz_forms.config.project_config import PROJECT_DICT  
   
 from dkrz_forms.config import workflow_steps
-from checks import *
+from .checks import *
 
 
 if dep['config_file']:  
