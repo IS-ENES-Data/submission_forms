@@ -320,7 +320,7 @@ def save_form(sf,comment):
            commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
            commit = repo.git.commit(message=commit_message)
            if comment_on:
-               print(" --- commit message:"+ commit)              
+               vprint(" --- commit message:"+ commit)              
            
            #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
            #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
@@ -506,7 +506,7 @@ def package_submission(sf,comment_on):
      form_file.write(form_json+"\r\n")
      form_file.close()
      if comment_on:
-           print(" --- form stored in transfer format in: "+sf.sub.entity_out.form_json)
+           vprint(" --- form stored in transfer format in: "+sf.sub.entity_out.form_json)
      return True
     #else:
     #   print("Error: ")

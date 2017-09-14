@@ -8,6 +8,7 @@ modified from https://github.com/epigen/pypiper/blob/master/pypiper/AttributeDic
 """
 from __future__ import print_function
 import os,sys
+import subprocess
 import json
 import abc
 import string, random
@@ -445,4 +446,14 @@ def Form_fixed_Generator(slot_list):
     
     
     
-    
+def get_file_list(file_list):
+     # call synda to retrieve the dataset lists associated to synda selection files 
+     print("This command should print a list of datasets in case you provided correct synda selection files")
+     print("return to step 3 to chech your files in case of error messages")
+     dataset_dict = {}
+     for s_file in file_list: 
+         dataset_dict[s_file]= subprocess.check_output(['synda', 'search', '-s', './selection/'+s_file])
+     return dataset_dict
+     result = []
+     return(result)
+
