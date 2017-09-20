@@ -129,9 +129,9 @@ def check_and_retrieve(last_name):
     
     info = check_pwd(last_name)
     if info:
-        print(info)
-        print("--- copy from:", info['form_path'])
-        print("--- to: ",join(NOTEBOOK_DIRECTORY,info['project']))
+        vprint(info)
+        vprint("--- copy from:", info['form_path'])
+        vprint("--- to: ",join(NOTEBOOK_DIRECTORY,info['project']))
         shutil.copyfile(info['form_path'],join(NOTEBOOK_DIRECTORY,info['project'],info['form_name']+'.ipynb'))
         print("--------------------------------------------------------------------")
         print("   Your submission form was retrieved and is accessible via the following link:")
@@ -139,7 +139,8 @@ def check_and_retrieve(last_name):
         print(utils.get_formurlpath()+'/'+info['project']+'/'+info['form_name']+'.ipynb')
           ## to do email link to user ....
         print("--------------------------------------------------------------------")
-
+    else:
+        print("Error: no corresponding form found")
 
         
 

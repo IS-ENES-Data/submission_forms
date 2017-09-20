@@ -33,6 +33,7 @@ Configuration:
 
 from __future__ import print_function
 #import abc
+import dkrz_forms.config.project_config as project_config
 import os,sys,shutil,uuid
 from os.path import join as join
 from os.path import expanduser
@@ -46,12 +47,12 @@ import shelve
 
 import copy
 import base64
-
+from . import utils
 from .utils import Form, id_generator, form_to_json
 from .utils import is_hosted_service, email_form_info
 from .utils import persist_info, get_persisted_info
 from .utils import vprint, get_formurlpath
-from .utils import dep, is_hosted_service
+from .utils import dep, is_hosted_service, check_form
 
 try:
     from git import Repo,GitCommandError
@@ -67,7 +68,8 @@ called_with_env_variables = False
 from dkrz_forms.config.project_config import PROJECT_DICT  
   
 from dkrz_forms.config import workflow_steps
-from .checks import *
+from . import checks
+
 
 
 if dep['config_file']:  
@@ -125,8 +127,8 @@ def init_sf(init_form):
           sf.sub.entity_out.report = form    
           
           sf.sub.entity_out.form_repo = join(FORM_REPO, init_form['project'])
-          sf.sub.submission_repo = join(SUBMISSION_REPO, init_form['project'])
-          sf.sub.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
+          
+          sf.sub.entity_in.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
           
           print("Form Handler: ")
           print ("    -- initializing form for project:", init_form['project'])
@@ -135,10 +137,12 @@ def init_sf(init_form):
           sf.sub.agent.last_name = init_form['last_name']
           sf.sub.agent.first_name= init_form['first_name']
           sf.sub.agent.email= init_form['email']
+          sf.sub.agent.responsible_person= init_form['first_name']+' '+init_form['last_name']
           
           sf.sub.activity.keyword=init_form['key']
           sf.sub.activity.pwd=init_form['pwd']
-          sf.sub.activity.status="initialized"
+          if sf.sub.agent.last_name != "template":
+              sf.sub.activity.status="0:initialized"
           
           sf.sub.entity_out.pwd = init_form['pwd']
          
@@ -149,9 +153,8 @@ def init_sf(init_form):
           vprint(sf.sub.entity_out.form_name+'.ipynb')
           sf.sub.entity_out.form_repo_path=join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           
-          vprint("entity_in.form_path", sf.sub.form_dir)
-          sf.sub.entity_in.form_path=join(sf.sub.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
-          sf.sub.entity_in.form_json=join(sf.sub.form_dir,sf.sub.entity_out.form_name+'.json') 
+          vprint("entity_in.form_path", sf.sub.entity_in.form_dir)
+          sf.sub.entity_in.form_path=join(sf.sub.entity_in.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
           
           #sf = set_doc(sf)
           
@@ -166,7 +169,7 @@ def init_form(init_form):
         to do: move it to a class function !?
     '''
     
-    if init_form['project'] in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
+    if init_form['project'] in project_config.PROJECTS:
          
          sf = init_sf(init_form)
          vprint("entity_out.form_repo:",sf.sub.entity_out.form_repo)
@@ -174,11 +177,10 @@ def init_form(init_form):
                  
          is_packaged = package_submission(sf,comment_on=False)
          
-         "to do: check availability of cordex_directoy and whether it is git versioned"
+        
          if is_packaged: 
              print("    -- submission form intitialized")
-             print("    -- (For the curious: the resulting sf object is used in the following")
-             print("        to store and manage all your submission related information)")
+             sf.sub.activity.start_time = str(datetime.now())
         
          else:
              print("Please correct above errors, before proceeding")
@@ -233,7 +235,7 @@ def generate_submission_form(init_form):
           ## to do: version of template
           # sf.sub.entity_in.version = ...
           vprint("--- copy from:", sf.sub.entity_in.source_path)
-          vprint("--- to: ", sf.sub.entity_out.form_path, sf.sub.entity_out.form_repo_path)
+          vprint("--- to: ", sf.sub.entity_out.form_repo_path)
           vprint("--- and to: ",   sf.sub.entity_in.form_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_in.form_path)
@@ -247,7 +249,7 @@ def generate_submission_form(init_form):
          
           save_form(sf, "Form Handler: form - initial generation - quiet" )
           vprint(" ......  initial version saved ...")
-          sf.sub.activity.status = "0-form_generated"
+          sf.sub.activity.status = "1:form_generated"
               
           if dep['git']: 
               repo = Repo(sf.sub.entity_out.form_repo)
@@ -299,7 +301,7 @@ def save_form(sf,comment):
     #if check_form_name(sf):
     if is_packaged and dep['git']:
         repo = Repo(sf.sub.entity_out.form_repo)
-        sf.sub.timestamp = str(datetime.now())
+        sf.sub.activity.timestamp = str(datetime.now())
 
         try:
            ## to do: change this to: git add last_name__pre_name* 
@@ -330,11 +332,26 @@ def save_form(sf,comment):
            
     else:
          vprint("saving without committing to a git repo")
-        
     
     return sf 
 
-
+def form_check(sf):
+    is_correct=False,
+    comment_dict={}
+    if is_correct:
+        sf.sub.activity.status = '2:checked'
+    else:
+        sf.sub.activity.status = '2:incomplete'
+    print("Form checking: ...")
+    print("--- Result:")
+    
+    (is_correct,comment_dict) = utils.check_form(sf,sf.project)
+    for (key,val) in comment_dict.items():
+        if key=='False':
+            print("Error: ")
+        else:
+            print("Warning: ")
+        print(key,val)
 
 def form_submission(sf):
    """
@@ -343,6 +360,7 @@ def form_submission(sf):
      - print instructions for manual submission in case all above is not working
    """
    ## to do: validity check first
+   form_check(sf)
    target_dir = join(SUBMISSION_REPO,sf.project)
    vprint("Target dir: ", target_dir)
    form_source = sf.sub.entity_out.form_repo_path
@@ -358,7 +376,7 @@ def form_submission(sf):
    if sf.project=="ESGF_replication":
      for sel_file in sf.sub.entity_out.report.selection_files:
          vprint("copy selection file - source:",join(sf.sub.entity_in.form_path,"selection",sel_file),"target: ", join(sf.sub.entity_out.form_repo,"selection"))
-         shutil.copy(join(sf.sub.form_dir,"selection",sel_file),join(sf.sub.entity_out.form_repo,"selection"))
+         shutil.copy(join(sf.sub.entity_in.form_dir,"selection",sel_file),join(sf.sub.entity_out.form_repo,"selection"))
          vprint(" - and - copy selection file - source: ",join(sf.sub.entity_out.form_repo,"selection",sel_file), "target: ", join(target_dir,"selection"))
          shutil.copy(join(sf.sub.entity_out.form_repo,"selection",sel_file),join(target_dir,"selection"))
    
@@ -394,6 +412,7 @@ def form_submission(sf):
        try: 
            commit = repo.git.commit(message=commit_message)
            vprint(commit)
+           sf.sub.activity.end_time = str(datetime.now())
        except GitCommandError:
            print("Commit in submissin repo failed")
            pass
@@ -425,7 +444,7 @@ def form_submission(sf):
                   Priority= 10,Owner="kindermann@dkrz.de")
       sf.sub.activity.ticket_id = ticket_id
       sf.sub.activity.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
-      sf.sub.activity.status = "submitted"
+      sf.sub.activity.status = "3:submitted"
       is_packaged = package_submission(sf,comment_on=True)
       vprint("open file: ", join(target_dir,json_file_name))
       comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.agent.last_name,files=[(json_file_name,open(sf.sub.entity_out.form_json,'rb'))])
@@ -470,7 +489,7 @@ def form_submission(sf):
      
 
    if not(dep['rt']) and not(is_hosted_service()): 
-      print("Please send form: "+sf.sub.form_dir+"/"+form_name+".ipynb" +"\n")
+      print("Please send form: "+sf.sub.entity_in.form_dir+"/"+form_name+".ipynb" +"\n")
       print("to data-pool@dkrz.de with subject", "\"DKRZ data submission form for project\"", sf.project)
       
       
@@ -492,7 +511,6 @@ def package_submission(sf,comment_on):
      sf.sub.id = str(uuid.uuid1())
      form_json = form_to_json(sf) 
      vprint(sf.sub.entity_in.form_path)
-     vprint(sf.sub.entity_in.form_json)
      vprint(sf.sub.entity_out.form_repo_path)
 
      try:

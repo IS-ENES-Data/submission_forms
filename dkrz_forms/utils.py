@@ -17,7 +17,8 @@ import smtplib
 import shelve
 import shutil
 import dkrz_forms.config.settings as settings
-import dkrz_forms.config.project_config as project_config
+import dkrz_forms.config.project_config as project_config  
+from dkrz_forms.config import workflow_steps
 import distutils.dir_util
 from os.path import expanduser
 from os.path import join as join
@@ -56,6 +57,25 @@ def vprint(*txt):
     return
 
 
+
+
+def check_form(sf,project):
+    default_message = {}
+    default_message['--- Implementation message: ']='not implemented'
+    if project=='ESGF_replication':
+        return(True,default_message)
+    
+    if project=='CMIP6':
+        return(True,default_message)
+    
+    if project=='CORDEX':
+        return(True,default_message)
+    
+    if project=='DKRZ-CDP':
+        return(True,default_message)
+    else:
+        return(False,default_message)
+    
 def init_config_dirs():
  
     dirs = [settings.NOTEBOOK_DIRECTORY,settings.SUBMISSION_REPO,settings.FORM_DIRECTORY]
@@ -243,8 +263,20 @@ def jsonfile_to_dict(jsonfilename):
 def json_to_form(mystring):
     return FForm(json_to_dict(mystring))
     
-    
-    
+
+def show_options(mystring):
+    ''' convert a comma separated string to a list
+    '''
+    result = mystring.replace(" ","").split(',')
+    return result
+
+
+def generate_project_form(project):
+    if project in project_config.PROJECTS:
+        sf = Form(project_config.PROJECT_DICT[project])
+        for (short_name,wflow_step) in sf.workflow:
+                  setattr(sf,short_name ,Form(workflow_steps.WORKFLOW_DICT[wflow_step]))
+        return sf   
 #------------------------------------------------------------------------------------    
 
 def is_hosted_service():

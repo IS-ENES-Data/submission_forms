@@ -47,6 +47,7 @@ def test_init_form():
     utils.init_git_repo(form_repo)
     sf = form_handler.init_form(init_form)
     
+    assert sf.sub.activity.status == "0:initialized"
     assert os.path.exists(form_repo) == 1
     #assert sf.sub.entity_out.form_repo == FORM_REPO+'/'+init_form['project']
     assert sf.sub.agent.last_name == "testsuite"
@@ -58,8 +59,9 @@ def test_generate_submission_form():
     global sf
     global init_form               
     sf = form_handler.generate_submission_form(init_form)
-    
-    assert os.path.exists(form_repo) == 1
+    # .. to do .. make some changes to sf ..
+    sf = form_handler.save_form(sf,"test_generate_submission")
+    assert sf.sub.activity.status =="1:form_generated"
     #assert sf.form_dir == form_repo
     assert sf.sub.agent.last_name == "testsuite"
     # assert sf.sub.activity. ..  --> to do 
@@ -76,30 +78,19 @@ def test_form_completion():
     workflow_form = utils.load_workflow_form(FORM_JSON)
     submission = workflow_form.sub
     submission.entity_out.status = "checked"
-    submission.entity_out.check_status = "consistency_checked"
-    submission.activity.status = "completed"
+    submission.activity.status = "3:completed" 
    
     sf = form_handler.save_form(workflow_form, "test: formcompletion()") 
-    #test_dict['sub']['status'] = "checked"
-    #test_dict['sub']['check_status'] = "consistency_checked"
-    #test_form = form_handler.dict_to_form(test_dict)
-    
-    #form_handler.form_save(test_form)
-   
-    #test_dict2 = form_handler.jsonfile_to_dict(form_info_json_file)
     
     assert sf.sub.entity_out.status == 'checked'
-    assert sf.sub.entity_out.check_status =="consistency_checked"
-    assert sf.sub.activity.status == 'completed'
+    assert sf.sub.activity.status == '3:completed'
     
-    #test_hform = form_handler.dict_to_hform(test_dict)
-    #print test_hform.sub
 
 def test_form_submission():    
     
     workflow_form = utils.load_workflow_form(FORM_JSON)
     submission = workflow_form.sub
-    submission.entity_out.status = "submitted"
+    submission.entity_out.status = "3:submitted"
     submission.activity.handover = "dkrz_staff"
     submission.activity.ticket_id = 22949
     submission.activity.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="

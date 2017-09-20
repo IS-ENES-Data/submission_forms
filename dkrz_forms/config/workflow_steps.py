@@ -62,8 +62,10 @@ SUBMISSION_ACTIVITY = {
            'i_name':'submission_activity',              
            'submission_comment':'',
            'submission_method':'',
+           'status':'0:initialized, 1:generated,2:checked, 2:incomplete,3:submitted,4:re-opened,5:re-submitted',
            'pwd':' password to access form '
             } 
+
        
             
 SUBMISSION_FORMTEMPLATE_ENTITY = {
@@ -102,7 +104,7 @@ SUBMISSION_FORM_ENTITY = {
             'form_path': '',
             'form_repo_path' : '',
             'form_dir': '',
-            'status': '',
+            'status': '0:open,1:accepted',
             'checks_done' : '',
             'tag': '',
             'repo': ''
@@ -156,7 +158,7 @@ REVIEW_ACTIVITY =  {
             'comment': '',
             'ticket_url':'https://dm-rt.dkrz.de/Ticket/Display.html?',
             'ticket_id' : '0',
-            'status':'',
+            'status':'0:open,1:in-review,2:adaption-needed,3:accepted',
             "start_time": '',
             "end_time": '',
             'report': { }
@@ -224,7 +226,7 @@ INGEST_ACTIVITY = {
         - report: dictionary with ingest related information (tbd.)
         """,
      "i_name":'ingest_activity',   
-     "status": "", 
+     "status": '0:open,1:in-progress,2:ready,2:delayed',
      "start_time":"",
      "end_time":"",
      "comment":"", 
@@ -295,7 +297,7 @@ QUA_ACTIVITY= {
         - quality_report: dictionary with quality related information (tbd.)
         """,
       'i_name':'qua_activity',  
-      "status": "",
+      "status": '0-open,1:in-progress,2:ok,2:with-comments,3:error,4:corrected',
       "start_time":"",
       "end_time":"",
       "comment":"",      
@@ -369,7 +371,7 @@ PUBLICATION_ACTIVITY =  {
         - report: dictionary for publication report info
         """,
       'i_name':'publication_activity',  
-      "status": "",
+      "status": '0:open,1:in-progress,2:published,2:delayed,3:republished',
       'start_time':"",
       'end_time':"",
       "comment": "",
@@ -426,7 +428,7 @@ PRESERVATION_AGENT = {
            }
 
 PRESERVATION_ACTIVITY =  {
-           "status": "",
+           "status": '0:open,1:in-progress,2:delayed,3:archived',
            "comment": "",
            "timestamp": "",
            "ticket_id": "", 
