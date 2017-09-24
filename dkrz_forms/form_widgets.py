@@ -54,10 +54,10 @@ if os.getenv('FORM_REPO'):
 
 
 
-align_kw = dict(
-    _css = (('.widget-label', 'min-width', '10ex'),),
-    margin = '0px 0px 50px 12px'
-)
+#align_kw = dict(
+#    _css = (('.widget-label', 'min-width', '10ex'),),
+#    margin = '0px 0px 50px 12px'
+#)
 
 # old ,**align_kw  has no effect anymore .. !?
 my_layout = Layout(margin='2px 0px 2px 00px')

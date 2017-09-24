@@ -52,7 +52,7 @@ from .utils import Form, id_generator, form_to_json
 from .utils import is_hosted_service, email_form_info
 from .utils import persist_info, get_persisted_info
 from .utils import vprint, get_formurlpath
-from .utils import dep, is_hosted_service, check_form
+from .utils import dep, is_hosted_service
 
 try:
     from git import Repo,GitCommandError
@@ -155,7 +155,7 @@ def init_sf(init_form):
           
           vprint("entity_in.form_path", sf.sub.entity_in.form_dir)
           sf.sub.entity_in.form_path=join(sf.sub.entity_in.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
-          
+          sf.sub.entity_out.check_status ="0:open"
           #sf = set_doc(sf)
           
           return(sf)
@@ -298,7 +298,7 @@ def save_form(sf,comment):
        print("\n\nForm Handler - save form status message:")
     is_packaged = package_submission(sf,comment_on)
    
-    #if check_form_name(sf):
+    #if form_name(sf):
     if is_packaged and dep['git']:
         repo = Repo(sf.sub.entity_out.form_repo)
         sf.sub.activity.timestamp = str(datetime.now())
@@ -370,7 +370,7 @@ def form_submission(sf):
    vprint("form_name: ", form_name)
    shutil.copy(form_source,target_dir)
    shutil.copy(json_source,target_dir)
-
+   sf.sub.entity_out.submission_repo = target_dir
 
    # also add selection files for replication
    if sf.project=="ESGF_replication":
@@ -413,6 +413,7 @@ def form_submission(sf):
            commit = repo.git.commit(message=commit_message)
            vprint(commit)
            sf.sub.activity.end_time = str(datetime.now())
+           sf.sub.activity.commit_message = commit
        except GitCommandError:
            print("Commit in submissin repo failed")
            pass

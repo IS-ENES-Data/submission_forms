@@ -33,7 +33,8 @@ NAME_SPACES={'sub':'http://enes.org/entities/ingest-workflow#',
              'node':'http://enes.org/entities/ingest-workflow#',        
             }
 
-            
+# prov entities which are connected in a prov workflow document
+WORKFLOW_ENTITIES = ['agent','entity_in','entity_out','activity']            
 
 # -------------------------------------------------------------------------------------------------------------------------
 # workflow step: data submission
@@ -45,25 +46,38 @@ SUBMISSION_AGENT = {
                                    - email: Valid user email address: all follow up activities will use this email to contact end user
                                    - key_word : user provided key word to remember and separate submission
                              """,
-              'i_name': 'submission_agent',               
-              'last_name' : '',
-              'first_name' : '',
-              'key_word': '',
-              'email': ''}
+              'i_name': 'submission_agent', 
+              'last_name' : 'mandatory',
+              'first_name' : 'mandatory',
+              'key_word': 'mandatory',
+              'email': 'mandatory',
+              'responsible_person':'mandatory'}
              
 
 SUBMISSION_ACTIVITY = {
           '__doc__': """
                          Attributes characterizing the form submission activity:
                          
-                         - submission_comment : free text comment
-                         - submission_method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based       
+                         - comment : free text comment
+                         - method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based 
+                         - status : status information
+                         - error_status : additional information on error status
+                         - ticket_id : related rt ticket number
+                         - start_time, end_time: start and end time of activity
+                         - timestamp: intermediate time stamp information (update activities)
+                         - pwd: password to access the form
                          """,
            'i_name':'submission_activity',              
-           'submission_comment':'',
-           'submission_method':'',
+           'comment':'optional',
+           'method':'mandatory',
            'status':'0:initialized, 1:generated,2:checked, 2:incomplete,3:submitted,4:re-opened,5:re-submitted',
-           'pwd':' password to access form '
+           'error_status':'open',
+           'ticket_id':'optional',
+           'ticket_url':'https://dm-rt.dkrz.de/Ticket/Display.html?id=',
+           'start_time':'mandatory',
+           'end_time':'optional',
+           'timestamp':'optional', 
+           'pwd':'mandatory'
             } 
 
        
@@ -72,15 +86,20 @@ SUBMISSION_FORMTEMPLATE_ENTITY = {
             '__doc__' : """
                            Attributes defining the form template used:
                                
-                               - source_path: path to the form template used (jupyter notebook)         
-                               - form_template_version:  version string for the form template used
+                               - source_path: path to the form template used (jupyter notebook)   
+                               - form_dir: directory where form is servied
+                               - form_path: full path to form (.ipynb) in form_dir
+                               - version:  version string for the form template used
                                - tag: git tag of repo containing templates (=source code repo in most cases)
                 """,
              'i_name': 'submission_form_template_entity',   
-             'source_path' : '', # filled with path of original template form      
-             'form_template_version': '', # version of form template / form tool
-             'tag': '' # git tag
+             'source_path' : 'mandatory', # filled with path of original template form 
+             'form_dir' : 'mandatory',
+             'version': 'optional', # version of form template / form tool
+             'tag': 'optional' # git tag
             }
+   
+    
 
 SUBMISSION_FORM_ENTITY = {
             '__doc__': """
@@ -89,6 +108,8 @@ SUBMISSION_FORM_ENTITY = {
                      - form_name: consistent prefix for the form name (postfix=.ipynb and .json)
                      - form_repo: git repo where forms are stored (before submission)
                      - form_json, form_repo_path: full paths to json and ipynb representations
+                     - submission_form: 
+                     - submission_json: 
                      - form_dir: directory where form are served to the notebook interface
                      - status: status information
                      - checks_done: form consistency checks done
@@ -98,18 +119,20 @@ SUBMISSION_FORM_ENTITY = {
                    """,
             'i_name': 'submission_form_entity',       
             'report': {},       
-            'form_name': '',
-            'form_repo' :'',          
-            'form_json': '',
-            'form_path': '',
-            'form_repo_path' : '',
-            'form_dir': '',
-            'status': '0:open,1:accepted',
-            'checks_done' : '',
-            'tag': '',
-            'repo': ''
+            'form_name': 'mandatory',
+            'form_json':'mandatory',
+            'form_repo' :'mandatory',          
+            'form_repo_path' : 'mandatory',
+            'submission_form':'mandatory',
+            'submission_json':'mandatory',
+            'submission_repo':'mandatory',
+            'commit_message' : 'optional',
+            'status': '0:open,1:submitted,2:accepted',
+            'check_status' : "0:open,1:warning,2:error,3:ok",
+            'checks_done' : 'mandatory',
             }
-                                 
+    
+                                
 
 DATA_SUBMISSION = {
      '__doc__': """ 

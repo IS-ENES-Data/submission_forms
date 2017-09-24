@@ -57,24 +57,6 @@ def vprint(*txt):
     return
 
 
-
-
-def check_form(sf,project):
-    default_message = {}
-    default_message['--- Implementation message: ']='not implemented'
-    if project=='ESGF_replication':
-        return(True,default_message)
-    
-    if project=='CMIP6':
-        return(True,default_message)
-    
-    if project=='CORDEX':
-        return(True,default_message)
-    
-    if project=='DKRZ-CDP':
-        return(True,default_message)
-    else:
-        return(False,default_message)
     
 def init_config_dirs():
  
@@ -264,11 +246,7 @@ def json_to_form(mystring):
     return FForm(json_to_dict(mystring))
     
 
-def show_options(mystring):
-    ''' convert a comma separated string to a list
-    '''
-    result = mystring.replace(" ","").split(',')
-    return result
+
 
 
 def generate_project_form(project):
@@ -276,7 +254,12 @@ def generate_project_form(project):
         sf = Form(project_config.PROJECT_DICT[project])
         for (short_name,wflow_step) in sf.workflow:
                   setattr(sf,short_name ,Form(workflow_steps.WORKFLOW_DICT[wflow_step]))
-        return sf   
+        form = Form(project_config.PROJECT_DICT[project+'_FORM'])   
+        sf.sub.entity_out.report = form
+        return sf 
+    else:
+        print("Error: form generation failed")
+        return Form({})
 #------------------------------------------------------------------------------------    
 
 def is_hosted_service():

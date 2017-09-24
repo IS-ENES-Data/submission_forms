@@ -45,6 +45,13 @@ rt_pwd = base64.b64decode("Y2Y3RHI2dlM=")
 # Second section: definition of project dictionaries
 # 
 
+# Generic selection strings: 
+SUBMISSION_TYPE = "initial_submission, update_submission, submission_retraction, other" 
+STORAGE_TIMEFRAME = "6_months,12_months, 2_years, 3_years"
+LTA = "long_term_archival, long_term_archival_and_and_data citation, no_long_term_archival"
+
+YES_OR_NO = "yes,no"
+
 PROJECT_DICT = {}
 
 PROJECTS = ['CORDEX','CMIP6','test','ESGF_replication','DKRZ_CDP']
@@ -90,7 +97,7 @@ for project in PROJECTS:
                        ("pub","data_publication"),
                       # ("da", "data_archival")
            ],
-          "status":  "sub_start"           
+          "status":  "0:open,1:data_submission,2:data_submission_review,3:data_ingest,4:data_quality_assurance,5:data_publication,6:data_archival"           
             }  
 
 PROJECT_DICT['CORDEX_FORM'] = {
@@ -100,14 +107,11 @@ PROJECT_DICT['CORDEX_FORM'] = {
                          .. details on entries .. to be completed
                         """,
              "project":"CORDEX",
-             "first_name": "",
-             "last_name" : "",
-             "email" : "",
-             "submission_type" : "",
-             "institution" : "",
-             "institute_id" : "",
-             "model_id" : "",
-             "experiment_id" : "",
+             "submission_type" : SUBMISSION_TYPE,
+             "institution" : "CV_CORDEX,institution",
+             "institute_id" : "CV_CORDEX,institute_id",
+             "model_id" : "CV_CORDEX,model_id",
+             "experiment_id" : "CV_CORDEX, experiment_id",
              "time_period" : "",
              "example_file_name" : "",
              "grid_mapping_name" : "",
@@ -123,7 +127,7 @@ PROJECT_DICT['CORDEX_FORM'] = {
              "variable_list_mon" : "",
              "variable_list_sem" : "",
              "variable_list_fx" : "",
-             "uniqueness_of_tracking_id" : ""}                         
+             "uniqueness_of_tracking_id" : YES_OR_NO}                         
 
 
 PROJECT_DICT['DKRZ_CDP_FORM'] = {
@@ -131,15 +135,24 @@ PROJECT_DICT['DKRZ_CDP_FORM'] = {
                  DKRZ CMIP Data pool ingest request related informtion .. to be completed 
              """,
              "project":"DKRZ_CDP",
-             "comment": ""
-             }
+             "comment": "",
+             "submission_type" : SUBMISSION_TYPE,
+             "storage_timeframe": STORAGE_TIMEFRAME,
+             "lta": LTA             }
 
 PROJECT_DICT['CMIP6_FORM'] = {
             "__doc__":"""
                  DKRZ CMIP6 data ingest and publication request information  .. to be completed 
              """,
              "project":"CMIP6",
-             "comment": ""
+             "comment": "",
+             "institute_id" : "CV_CMIP6,institute_id",
+             "model_id" : "CV_CMIP6,model_id",
+             "experiment_id" : "CV_CMIP6, experiment_id",
+             "data_qa_status" : "PREPARE_checked, DKRZ_QA_checked,other",
+             "data_qa_comment" : "",
+             "terms_of_use" : YES_OR_NO,
+             
             }
 
 PROJECT_DICT['test_FORM'] = {
@@ -147,15 +160,21 @@ PROJECT_DICT['test_FORM'] = {
                  test request related informtion .. to be completed 
              """,
              "project":"test",
-             "comment": ""
+             "comment": "",
+             "submission_type" : SUBMISSION_TYPE
 }
 
 PROJECT_DICT['ESGF_replication_FORM'] = { 
             "__doc__":"""
                  ESGF replication request related informtion .. to be completed 
              """,
-             "project":"ESGF_replication",
-             "comment": ""
+             "project":"ESGF_replication", 
+             "comment": "optional",
+             "submission_type" : SUBMISSION_TYPE,
+             "scientific_context": "mandatory",
+             "update_notification":YES_OR_NO,
+             "collection_pid":YES_OR_NO
+             
             }
 
 
