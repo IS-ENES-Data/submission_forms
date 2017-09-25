@@ -139,10 +139,11 @@ def init_sf(init_form):
           sf.sub.agent.email= init_form['email']
           sf.sub.agent.responsible_person= init_form['first_name']+' '+init_form['last_name']
           
+          sf.sub.agent.keyword=init_form['key']
           sf.sub.activity.keyword=init_form['key']
           sf.sub.activity.pwd=init_form['pwd']
           if sf.sub.agent.last_name != "template":
-              sf.sub.activity.status="0:initialized"
+              sf.sub.activity.status="0:open"
           
           sf.sub.entity_out.pwd = init_form['pwd']
          
@@ -156,6 +157,7 @@ def init_sf(init_form):
           vprint("entity_in.form_path", sf.sub.entity_in.form_dir)
           sf.sub.entity_in.form_path=join(sf.sub.entity_in.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
           sf.sub.entity_out.check_status ="0:open"
+          sf.sub.entity_out.status="0:open"
           #sf = set_doc(sf)
           
           return(sf)
@@ -249,7 +251,7 @@ def generate_submission_form(init_form):
          
           save_form(sf, "Form Handler: form - initial generation - quiet" )
           vprint(" ......  initial version saved ...")
-          sf.sub.activity.status = "1:form_generated"
+          sf.sub.activity.status = "1:in-progress"
               
           if dep['git']: 
               repo = Repo(sf.sub.entity_out.form_repo)
@@ -260,16 +262,20 @@ def generate_submission_form(init_form):
                
               save_form(sf, "Form Handler: form - initial generation - commit hash added - quiet")
               vprint("  !!  current version saved in repository") 
-              print("  !!  the above link is only valid for the next 5 hours")
-              print("  !!  to retrieve the form after this use the following link: ")
-              print(FORM_URL_PATH+'/START/Retrieve_Form.ipynb' )
-              print("  !!  with your the password:", init_form['pwd'] )
               
               if is_hosted_service():
                    email_form_info(sf)
+                   
+              sf.sub.entity_out.status = "1:stored"
+              sf.sub.activity.error_status ="0:open"
           else:
               vprint("Warning: no version information stored")
               vprint("Install git and gitpython to enable this")
+              
+          print("  !!  the above link is only valid for the next 5 hours")
+          print("  !!  to retrieve the form after this use the following link: ")
+          print(FORM_URL_PATH+'/START/Retrieve_Form.ipynb' )
+          print("  !!  with your the password:", init_form['pwd'] )    
               
           return sf    
                 
@@ -321,8 +327,9 @@ def save_form(sf,comment):
            
            commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
            commit = repo.git.commit(message=commit_message)
+           sf.sub.entity_out.commit_message = commit
            if comment_on:
-               print(" --- commit message:"+ commit)              
+               vprint(" --- commit message:"+ commit)              
            
            #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
            #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
@@ -335,23 +342,7 @@ def save_form(sf,comment):
     
     return sf 
 
-def form_check(sf):
-    is_correct=False,
-    comment_dict={}
-    if is_correct:
-        sf.sub.activity.status = '2:checked'
-    else:
-        sf.sub.activity.status = '2:incomplete'
-    print("Form checking: ...")
-    print("--- Result:")
-    
-    (is_correct,comment_dict) = utils.check_form(sf,sf.project)
-    for (key,val) in comment_dict.items():
-        if key=='False':
-            print("Error: ")
-        else:
-            print("Warning: ")
-        print(key,val)
+
 
 def form_submission(sf):
    """
@@ -371,6 +362,7 @@ def form_submission(sf):
    shutil.copy(form_source,target_dir)
    shutil.copy(json_source,target_dir)
    sf.sub.entity_out.submission_repo = target_dir
+   sf.sub.activity.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
 
    # also add selection files for replication
    if sf.project=="ESGF_replication":
@@ -444,8 +436,8 @@ def form_submission(sf):
       ticket_id = tracker.create_ticket(Queue="TestQueue", Subject="DKRZ data form submission: project="+sf.project+"  json-file="+json_file_name,
                   Priority= 10,Owner="kindermann@dkrz.de")
       sf.sub.activity.ticket_id = ticket_id
-      sf.sub.activity.ticket_url = "https://dm-rt.dkrz.de/Ticket/Display.html?id="
-      sf.sub.activity.status = "3:submitted"
+      
+      sf.sub.activity.status = "1:in-progresss"
       is_packaged = package_submission(sf,comment_on=True)
       vprint("open file: ", join(target_dir,json_file_name))
       comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.agent.last_name,files=[(json_file_name,open(sf.sub.entity_out.form_json,'rb'))])
@@ -454,7 +446,7 @@ def form_submission(sf):
          print("RT Ticket generated")
       else:
          print("RT Ticket generation failed")
-         sf.sub.activity.error_status = "rt-submission error"
+         sf.sub.activity.error_status = "2:error"
 
 
    # generate updated json file and store in repo

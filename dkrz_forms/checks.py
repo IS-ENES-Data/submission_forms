@@ -32,25 +32,34 @@ def check_cv(my_string,template_string):
 def check_valid_string(key, my_string,template_string):
     if isinstance(my_string, string_types) and isinstance(template_string, string_types): 
         
+        
         if template_string.startswith("CV"):
             return check_cv(my_string,template_string)
         
         if template_string.startswith("mandatory"):
+            if my_string == template_string:
+                return(0, "Error: mandatory string not set")
             if len(my_string) > 0: 
                 return(1, "mandatory string not empty")
             if len(my_string) == 0:
-                return(0, "Error: mandatory string not set")
+                return(0, "Error: mandatory string empty")
+                
+        if template_string.startswith("optional"):
+            if my_string == template_string:
+                return (1, "Warning: optional parameter not")
+            else:
+                return(1, "ok: parameter is optional")  
+                
         options = get_options(template_string)
         if len(options) > 1:
             if my_string == template_string:
-                return(0, "Warning: option parameter not set")
+                return(0, "Error: option parameter not set")
             if my_string in options:
-                return(1, "Valid option setting")
+                return(1, "ok: Valid option setting")
             else:
                 return(0, "Error: Invalid option setting")
         else: 
-            if template_string.startswith("optional"):
-                return(1, "ok: parameter is optional")
+           
             if not my_string:
                return (0,"Warning: string not set")
             if len(my_string) < 4:
@@ -75,7 +84,7 @@ def get_workflow_options(project):
     return sf_t
 
 
-EXCLUDE_KEYS=['__doc__','i_name','project']        
+EXCLUDE_KEYS=['__doc__','i_name','project','report']        
 def check_step(sf,sf_t,step):
     ''' Check all components of a workflow step: 
          entity_in, entity_out, agent and activity 
