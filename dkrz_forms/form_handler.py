@@ -252,6 +252,10 @@ def generate_submission_form(init_form):
           save_form(sf, "Form Handler: form - initial generation - quiet" )
           vprint(" ......  initial version saved ...")
           sf.sub.activity.status = "1:in-progress"
+          sf.sub.activity.start_time = str(datetime.now)
+          sf.sub.activity.method ="web:data-forms.dkrz.de"
+          sf.sub.activity.error_status="0:open"
+          sf.sub.status="1:data_submission"
               
           if dep['git']: 
               repo = Repo(sf.sub.entity_out.form_repo)

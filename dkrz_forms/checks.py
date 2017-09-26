@@ -46,7 +46,7 @@ def check_valid_string(key, my_string,template_string):
                 
         if template_string.startswith("optional"):
             if my_string == template_string:
-                return (1, "Warning: optional parameter not")
+                return (1, "Warning: optional parameter not set")
             else:
                 return(1, "ok: parameter is optional")  
                 
