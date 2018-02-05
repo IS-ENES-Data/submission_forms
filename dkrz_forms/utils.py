@@ -50,7 +50,7 @@ except ImportError as e:
 
 
 
-VERBOSE=False
+VERBOSE=True
 def vprint(*txt):
     if VERBOSE:
         print(*txt)
@@ -311,16 +311,18 @@ def email_form_info(sf):
 
 #----------------------------------------------------------------------------------------------------------------------------
 
-def persist_info(key,form_object,location):
+def persist_info(tag,form_object,location):
     p_shelve = shelve.open(location)
-    p_shelve[key] = form_object
+    p_shelve[tag] = form_object
     p_shelve.close()
 
-def get_persisted_info(key,location):
+def get_persisted_info(tag,location):
     p_shelve = shelve.open(location)
-    form_object = p_shelve[key]
+    result = {}
+    for key in p_shelve.tag:
+        result[key] = p_shelve[key] 
     p_shelve.close()
-    return form_object
+    return result
 
 # load workflow steps 
 def load_workflow_form(workflow_json_file): 

@@ -42,7 +42,7 @@ INSTALL_DIRECTORY = "/home/stephan/Repos/"
 # --------------------------------------------------------------------------
 # Directory where web accessible forms are served
 # - a jupyter notebook server accessible directory whre forms are served
-NOTEBOOK_DIRECTORY = '/home/stephan/Repos/submission_forms/test/forms'
+NOTEBOOK_DIRECTORY = '/opt/jupyter/notebooks/forms'
 #---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ NOTEBOOK_DIRECTORY = '/home/stephan/Repos/submission_forms/test/forms'
 #   these directories should be git versioned
 # - access keys for the forms are stored in a keystore file 
 
-FORM_DIRECTORY = "/home/stephan/tmp/Repos/"
+FORM_DIRECTORY = "/opt/jupyter/notebooks/form_directory"
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ FORM_DIRECTORY = "/home/stephan/tmp/Repos/"
 #   submitted to the data center
 # - for data manager side installation the contained repos are synchronized 
 #   with the gitlab hosted master ... 
-SUBMISSION_REPO = "/home/stephan/tmp/Repos/submission_repo"
+SUBMISSION_REPO = "/opt/jupyter/notebooks/submission_repo"
 # ---------------------------------------------------------------------------
 
 

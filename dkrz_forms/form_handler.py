@@ -45,6 +45,7 @@ import smtplib
 from email.mime.text import MIMEText
 import shelve
 
+import getpass
 import copy
 import base64
 from . import utils
@@ -109,13 +110,17 @@ FORM_REPO = FORM_DIRECTORY
 
 ### detecting url of notebook server
 
-FORM_URL_PATH = get_formurlpath()
-   
+FORM_URL_PATH = join("http://localhost:8000/user/",getpass.getuser(),"notebooks")
+
+HOME_DIR = os.environ['HOME']
+
     
 #------------------------------------------------------------------------------------------
 
 def init_sf(init_form):
             
+         
+          #print("-------------!!!!!!!!!!! homedir:", HOME_DIR)
           # generate the generic project form
           sf = Form(PROJECT_DICT[init_form['project']])
           # generate the submission infor sub_form
@@ -128,7 +133,8 @@ def init_sf(init_form):
           
           sf.sub.entity_out.form_repo = join(FORM_REPO, init_form['project'])
           
-          sf.sub.entity_in.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
+          #sf.sub.entity_in.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
+          sf.sub.entity_in.form_dir = join(HOME_DIR, init_form['project'])
           
           print("Form Handler: ")
           print ("    -- initializing form for project:", init_form['project'])
@@ -141,7 +147,7 @@ def init_sf(init_form):
           
           sf.sub.agent.keyword=init_form['key']
           sf.sub.activity.keyword=init_form['key']
-          sf.sub.activity.pwd=init_form['pwd']
+          # sf.sub.activity.pwd=init_form['pwd']
           if sf.sub.agent.last_name != "template":
               sf.sub.activity.status="0:open"
           
@@ -207,12 +213,12 @@ def generate_submission_form(init_form):
     if init_form['project'] in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
         
         
-          init_form['pwd'] = id_generator()
+         
           sf = init_sf(init_form)          
-          keystore_path =  join(FORM_REPO,'keystore') 
+          keystore_path =  join(HOME_DIR,'keystore') 
          
           if os.path.isfile(keystore_path+'.dat'):
-              keystore = get_persisted_info('forms_pwd',keystore_path)
+              keystore = get_persisted_info(keystore_path)
           else:
               keystore = {}
               vprint("Warning: no keystore - new keystore generated")
@@ -244,7 +250,7 @@ def generate_submission_form(init_form):
           print("--------------------------------------------------------------------")
           print("--- A submission form was created for you, \n--- please visit the following link:")
           print(FORM_URL_PATH+'/'+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb')
-          print("--- Please remember your form password:",init_form['pwd'])
+         # print("--- Please remember your form password:",init_form['pwd'])
           print("--------------------------------------------------------------------")
           
           
@@ -279,7 +285,7 @@ def generate_submission_form(init_form):
           print("  !!  the above link is only valid for the next 5 hours")
           print("  !!  to retrieve the form after this use the following link: ")
           print(FORM_URL_PATH+'/START/Retrieve_Form.ipynb' )
-          print("  !!  with your the password:", init_form['pwd'] )    
+       #   print("  !!  with your the password:", init_form['pwd'] )    
               
           return sf    
                 
@@ -310,36 +316,40 @@ def save_form(sf,comment):
    
     #if form_name(sf):
     if is_packaged and dep['git']:
-        repo = Repo(sf.sub.entity_out.form_repo)
-        sf.sub.activity.timestamp = str(datetime.now())
+       repo = Repo(sf.sub.entity_out.form_repo)
+       config = repo.config_writer()
+       config.set_value("user","email",sf.sub.agent.email)
+       config.set_value("user","name",sf.sub.agent.last_name)
+       config.release()
+       sf.sub.activity.timestamp = str(datetime.now())
 
-        try:
-           ## to do: change this to: git add last_name__pre_name* 
-           ## ..... - reuse form for mulltiple transmissions ?
-           ## to do: first commit notebook - remember commit sha1 - add sha1 to json
-           ## and commit json ... 
-           ## sha = repo.head.object.hexsha
-           ## later: may be helper function to retrieve notebook according to sha1 value of
-           ## corresponding submitted json ...
+   # try:
+       ## to do: change this to: git add last_name__pre_name* 
+       ## ..... - reuse form for mulltiple transmissions ?
+       ## to do: first commit notebook - remember commit sha1 - add sha1 to json
+       ## and commit json ... 
+       ## sha = repo.head.object.hexsha
+       ## later: may be helper function to retrieve notebook according to sha1 value of
+       ## corresponding submitted json ...
+   
+       result1 = repo.git.add(sf.sub.entity_out.form_repo_path)
+       result2 = repo.git.add(sf.sub.entity_out.form_json)
        
-           result1 = repo.git.add(sf.sub.entity_out.form_repo_path)
-           result2 = repo.git.add(sf.sub.entity_out.form_json)
-           
-           #result = repo.git.add(sf.sub.form_name+'*')
-           vprint(result1,result2)
-           # !! to do: check result 1 - if ipynb was changed or not !!!
-           
-           commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
-           commit = repo.git.commit(message=commit_message)
-           sf.sub.entity_out.commit_message = commit
-           if comment_on:
-               vprint(" --- commit message:"+ commit)              
-           
-           #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
-           #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
-          
-        except GitCommandError:
-           print("Error ! Please correct the form name (best copy and paste name from top of this page and add .ipynb extension)")
+       #result = repo.git.add(sf.sub.form_name+'*')
+       vprint(result1,result2)
+       # !! to do: check result 1 - if ipynb was changed or not !!!
+       
+       commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+sf.sub.entity_out.form_name + " ## " + comment
+       commit = repo.git.commit(message=commit_message)
+       sf.sub.entity_out.commit_message = commit
+       if comment_on:
+           vprint(" --- commit message:"+ commit)              
+       
+       #print "-- your submission form "+sf.sub.form_name+ " was stored in repository "
+       #print "your associated data package "+sf.sub['package_name']+"\n was stored in repository "
+      
+    #except GitCommandError:
+     #  print("Error ! Please correct the form name (best copy and paste name from top of this page and add .ipynb extension)")
            
     else:
          vprint("saving without committing to a git repo")
@@ -507,6 +517,7 @@ def package_submission(sf,comment_on):
      '''
      sf.sub.id = str(uuid.uuid1())
      form_json = form_to_json(sf) 
+     vprint("entity_in.form_path and entity_out.form_repo_path")
      vprint(sf.sub.entity_in.form_path)
      vprint(sf.sub.entity_out.form_repo_path)
 

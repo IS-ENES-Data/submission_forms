@@ -33,6 +33,7 @@ def vprint(*txt):
         print(*txt)
     return  
 
+HOME_DIR = os.environ['HOME']
 FORM_REPO = FORM_DIRECTORY
 ### detecting url of notebook server
 
@@ -101,29 +102,12 @@ def show_status(status):
         print("Unknown status")
         
 def check_pwd(last_name):
-    form_info = form_handler.get_persisted_info('forms_pwd',join(FORM_REPO,'keystore'))
+    form_info = form_handler.get_persisted_info(join(HOME_DIR,'keystore'))
     
-    import getpass
-    #my_last_name = getpass.getpass("Enter your last name: ")
-    my_pwd = getpass.getpass("Enter your form password: ")
-    form_info[my_pwd]['pwd'] = my_pwd
-    
-    if my_pwd in form_info.keys():
-      
-        if form_info[my_pwd]['last_name'] == last_name:
-            ## 
-            
-            print("---- Your Name: ", form_info[my_pwd]['first_name'] + " " + form_info[my_pwd]['last_name'])
-            print("---- Your email: ", form_info[my_pwd]['last_name'])
-            print("---- Name of this submission form: ", form_info[my_pwd]['form_name'])
-    
-            return form_info[my_pwd]
-        else:
-            print("Error: incorrect key or incorrcect last name (case sensitive !)" )
-            return {}
-    else:
-         print("Error: incorrect key")
-         return False
+    for key in form_info: 
+        print(form_info[key]) 
+        
+
 
 def check_and_retrieve(last_name):
     
@@ -142,7 +126,14 @@ def check_and_retrieve(last_name):
     else:
         print("Error: no corresponding form found")
 
-        
+def fill_form():
+    display([LAST_NAME,FIRST_NAME])
+    ENTER.on_click(fill)
+
+
+def fill(val):
+    pass
+     
 
 def create_form():     
     display(*init_widgets)
@@ -161,6 +152,7 @@ def generate(val):
     init_form['project'] = PROJECT.value
     init_form['email'] = EMAIL.value
     init_form['key'] = KEY.value
+    init_form['pwd'] = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
     form_handler.generate_submission_form(init_form)
  
     
