@@ -102,7 +102,7 @@ def show_status(status):
         print("Unknown status")
         
 def check_pwd(last_name):
-    form_info = form_handler.get_persisted_info(join(HOME_DIR,'keystore'))
+    form_info = form_handler.get_persisted_info('forms_pwd',join(HOME_DIR,'keystore'))
     
     for key in form_info: 
         print(form_info[key]) 
