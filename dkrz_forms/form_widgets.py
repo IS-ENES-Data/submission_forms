@@ -75,7 +75,8 @@ init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
 SELECTION = widgets.Button(value=False, description="Save files", disabled=False, button_style='', tooltip='click to save above files')
 la = widgets.Layout(height='250px',  width='500px')
 
-FORMS = widgets.Dropdown(description='Form Name: ',)
+#FORMS = widgets.Dropdown(description='Form Name: ',)
+FORMS = widgets.Select(description='Form Name: ',)
 FORMS_ENTER = widgets.Button(value=False, description='Take selected form', disabled=False, button_style='', tooltip='click to take the selected value above')
 
 
