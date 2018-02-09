@@ -311,15 +311,15 @@ def email_form_info(sf):
 
 #----------------------------------------------------------------------------------------------------------------------------
 
-def persist_info(tag,form_object,location):
+def persist_info(form_object,location):
     p_shelve = shelve.open(location)
-    p_shelve[tag] = form_object
+    p_shelve[form_object['pwd']] = form_object
     p_shelve.close()
 
-def get_persisted_info(tag,location):
+def get_persisted_info(location):
     p_shelve = shelve.open(location)
     result = {}
-    for key in p_shelve.tag:
+    for key in p_shelve:
         result[key] = p_shelve[key] 
     p_shelve.close()
     return result

@@ -187,7 +187,10 @@ def init_form(init_form):
          
         
          if is_packaged: 
-             print("    -- submission form intitialized")
+             print("Personal form instance for ",init_form['first_name'], " ", init_form['last_name'], " initialized ")
+             print("The email connected to this form is: ", init_form['email'])
+             print("In case you want to use another email address please generate a new form instance")
+           
              sf.sub.activity.start_time = str(datetime.now())
         
          else:
@@ -215,7 +218,8 @@ def generate_submission_form(init_form):
         
          
           sf = init_sf(init_form)          
-          keystore_path =  join(HOME_DIR,'keystore') 
+          keystore_path =  join(join(HOME_DIR,"fig"),'keystore') 
+          vprint("keystore_path: ",keystore_path)
          
           if os.path.isfile(keystore_path+'.dat'):
               keystore = get_persisted_info(keystore_path)
@@ -228,9 +232,9 @@ def generate_submission_form(init_form):
           key_info['form_json']= join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.json')
           key_info['form_path']= join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
           
-          keystore[init_form['pwd']] = key_info
-          vprint("TTT:  store key in keystore",init_form['pwd'],keystore_path)
-          persist_info('forms_pwd',keystore,keystore_path)
+          keystore  = key_info
+          vprint("TTT:  store key in keystore",keystore_path)
+          persist_info(keystore,keystore_path)
         
            
           template_name = init_form['project']+"_submission_form.ipynb"

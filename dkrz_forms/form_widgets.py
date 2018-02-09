@@ -74,8 +74,15 @@ init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
 #---- for selection files
 SELECTION = widgets.Button(value=False, description="Save files", disabled=False, button_style='', tooltip='click to save above files')
 la = widgets.Layout(height='250px',  width='500px')
+
+FORMS = widgets.Dropdown(description='Form Name: ',)
+FORMS_ENTER = widgets.Button(value=False, description='Take selected form', disabled=False, button_style='', tooltip='click to take the selected value above')
+
+
 TEXT_WIDGETS_DICT = {}
 init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
+
+FORM_NAME = "UNDEFINED"
 
 submission_type = widgets.Dropdown(description = "Type of submission: ", options=["initial_version","new_version","retract"])
 ## maybe move to config part ..
@@ -100,15 +107,24 @@ def show_status(status):
         display(image)
     else:
         print("Unknown status")
+
+   
+
+def get_selection(val):
+    print("Your selection: ", FORMS.value)
+    #FORM_NAME = FORMS.value
+         
         
-def check_pwd(last_name):
-    form_info = form_handler.get_persisted_info('forms_pwd',join(HOME_DIR,'keystore'))
+def show_selection(): 
+    form_info =  form_handler.get_persisted_info(join(HOME_DIR,'fig','keystore'))
+    my_options = list(form_info.keys())       
+    FORMS.options = my_options
+    display(FORMS,FORMS_ENTER)
+    FORMS_ENTER.on_click(get_selection)
+    return form_info
+
     
-    for key in form_info: 
-        print(form_info[key]) 
-        
-
-
+    
 def check_and_retrieve(last_name):
     
     info = check_pwd(last_name)
