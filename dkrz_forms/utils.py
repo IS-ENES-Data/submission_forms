@@ -50,7 +50,7 @@ except ImportError as e:
 
 
 
-VERBOSE=True
+VERBOSE=False
 def vprint(*txt):
     if VERBOSE:
         print(*txt)

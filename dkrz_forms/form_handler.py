@@ -56,7 +56,7 @@ from .utils import vprint, get_formurlpath
 from .utils import dep, is_hosted_service
 
 try:
-    from git import Repo,GitCommandError
+    from git import Repo,GitCommandError,Git
 except ImportError:
     print("Warning: to use git based form versioning please install git module with 'pip install gitpython'")
     print("otherwise all helper functions for interacting with git will not work")
@@ -286,10 +286,10 @@ def generate_submission_form(init_form):
               vprint("Warning: no version information stored")
               vprint("Install git and gitpython to enable this")
               
-          print("  !!  the above link is only valid for the next 5 hours")
-          print("  !!  to retrieve the form after this use the following link: ")
-          print(FORM_URL_PATH+'/START/Retrieve_Form.ipynb' )
-       #   print("  !!  with your the password:", init_form['pwd'] )    
+         # print("  !!  the above link is only valid for the next 5 hours")
+         # print("  !!  to retrieve the form after this use the following link: ")
+         # print(FORM_URL_PATH+'/START/Retrieve_Form.ipynb' )
+         # print("  !!  with your the password:", init_form['pwd'] )    
               
           return sf    
                 
@@ -369,7 +369,7 @@ def form_submission(sf):
      - print instructions for manual submission in case all above is not working
    """
    ## to do: validity check first
-   form_check(sf)
+   #form_check(sf)
    target_dir = join(SUBMISSION_REPO,sf.project)
    vprint("Target dir: ", target_dir)
    form_source = sf.sub.entity_out.form_repo_path
@@ -393,56 +393,66 @@ def form_submission(sf):
          
 
    if dep['git']:
+       
+       
+       
+       git_ssh_identity_file = '/opt/jupyter/notebooks/.ssh/id_rsa'
+       git_ssh_cmd = 'ssh -i %s' % git_ssh_identity_file        
        repo = Repo(SUBMISSION_REPO)
+       repo.git.update_environment(GIT_SSH_COMMAND=git_ssh_cmd)
+       config = repo.config_writer()
+       config.set_value("user","email",sf.sub.agent.email)
+       config.set_value("user","name",sf.sub.agent.last_name)
+       config.release()
        #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
        try: 
-          o = repo.remotes.origin
-          o.pull()
+           o = repo.remotes.origin
+           o.pull()
        except GitCommandError:
           print("Synchronization with global submission form repository failed !")
           pass
           
        except AttributeError:
-          print("No global submission repo !!!")
-          pass
-          # to do: error handling
-       
-       repo.git.add(join(sf.project,form_name)+".ipynb")
-       repo.git.add(join(sf.project,form_name)+".json")
-
-       if sf.project=="ESGF_replication":
-           for sel_file in sf.sub.entity_out.report.selection_files:
-               vprint("commit selection file: ",join("selection",sel_file))
-               repo.git.add(join(sf.project,"selection",sel_file))
-       
-       vprint(repo.git.status())
-       #repo.git.add(join(sf.project,package_name)
-       #repo.git.add(join(sf.project,form_name)
-       commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ form_name+ " ## " 
-       try: 
-           commit = repo.git.commit(message=commit_message)
-           vprint(commit)
-           sf.sub.activity.end_time = str(datetime.now())
-           sf.sub.activity.commit_message = commit
-       except GitCommandError:
-           print("Commit in submissin repo failed")
+           print("No global submission repo !!!")
            pass
+              # to do: error handling
+           
+           repo.git.add(join(sf.project,form_name)+".ipynb")
+           repo.git.add(join(sf.project,form_name)+".json")
+    
+           if sf.project=="ESGF_replication":
+               for sel_file in sf.sub.entity_out.report.selection_files:
+                   vprint("commit selection file: ",join("selection",sel_file))
+                   repo.git.add(join(sf.project,"selection",sel_file))
+           
+           vprint(repo.git.status())
+           #repo.git.add(join(sf.project,package_name)
+           #repo.git.add(join(sf.project,form_name)
+           commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ form_name+ " ## " 
+           try: 
+               commit = repo.git.commit(message=commit_message)
+               vprint(commit)
+               sf.sub.activity.end_time = str(datetime.now())
+               sf.sub.activity.commit_message = commit
+           except GitCommandError:
+               print("Commit in submissin repo failed")
+               pass
+              
           
-      
-       try: 
-           result = repo.git.push()
-           vprint(result)
-          
-       except GitCommandError:
-           print("Push to global submission repo failed !")
-           pass       
-       
-       except AttributeError:
-          print("No global submission repo !!!") 
-          pass
-        
-   else:
-       print("Warning: submission was not stored and versioned in git repo")
+           try: 
+               result = repo.git.push()
+               vprint(result)
+                  
+           except GitCommandError:
+               print("Push to global submission repo failed !")
+               pass       
+           
+           except AttributeError:
+               print("No global submission repo !!!") 
+               pass
+                
+       else:
+               print("Warning: submission was not stored and versioned in git repo")
       
    
    

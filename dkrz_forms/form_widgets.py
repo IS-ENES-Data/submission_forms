@@ -113,6 +113,7 @@ def show_status(status):
 
 def get_selection(val):
     print("Your selection: ", FORMS.value)
+    print("This name should be identical to the form name shown top-left in this browser window !!!")
     #FORM_NAME = FORMS.value
          
         
