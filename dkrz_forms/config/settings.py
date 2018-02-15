@@ -24,7 +24,7 @@ NOTEBOOK_DIRECTORY:
     a directory where the notebook serves all the form notebooks
     
 FORM_DIRECTORY:
-    a directory where all form notebooks are stored (normally in git repos)
+    a directory where all form notebooks are locally stored (in repos)
     
 SUBMISSION_REPO:
     a directory (under git control) where all finalized data form notebooks 
@@ -46,13 +46,16 @@ NOTEBOOK_DIRECTORY = '/opt/jupyter/notebooks/forms'
 #---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# directory containing the git repositories where forms are locally stored
+# directory containing the git repositories where forms are locally stored 
+# for testing and local deployment scenarios 
+# for jupyterhub based scenario just used for testing ..
 # - all the forms currently not finalized and submitted are stored here
 # - normally git versioned 
 # - should contain directories corresponding to every project type supported
 #   e.g. CMIP6, DKRZ_CDP, test
 #   these directories should be git versioned
 # - access keys for the forms are stored in a keystore file 
+
 
 FORM_DIRECTORY = "/opt/jupyter/notebooks/form_directory"
 # ---------------------------------------------------------------------------

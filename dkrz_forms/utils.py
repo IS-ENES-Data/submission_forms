@@ -20,7 +20,7 @@ import dkrz_forms.config.settings as settings
 import dkrz_forms.config.project_config as project_config  
 from dkrz_forms.config import workflow_steps
 import distutils.dir_util
-from os.path import expanduser
+from os.path import expanduser, isfile, exists
 from os.path import join as join
 from email.mime.text import MIMEText
 from prov.model import ProvDocument
@@ -55,8 +55,7 @@ def vprint(*txt):
     if VERBOSE:
         print(*txt)
     return
-
-
+  
     
 def init_config_dirs():
  
@@ -76,13 +75,19 @@ def init_config_dirs():
          vprint("initialize: ", settings.SUBMISSION_REPO)
             
        for proj_dir in proj_dirs:
-        
+           
             repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
             try:
                 repo=Repo(repo_dir)
             except InvalidGitRepositoryError:
                repo=Repo.init(repo_dir, bare=True)
                vprint("initialize: ", repo_dir)
+        
+            try:
+               repo=Repo(proj_dir)
+            except InvalidGitRepositoryError:
+              repo=Repo.init(repo_dir, bare=True)
+              vprint("initialize: ", repo_dir)
 
 def get_formurlpath():
 

@@ -36,7 +36,7 @@ from __future__ import print_function
 import dkrz_forms.config.project_config as project_config
 import os,sys,shutil,uuid
 from os.path import join as join
-from os.path import expanduser
+from os.path import expanduser, isfile, exists
 import glob
 import pkg_resources
 
@@ -135,6 +135,11 @@ def init_sf(init_form):
           
           #sf.sub.entity_in.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
           sf.sub.entity_in.form_dir = join(HOME_DIR, init_form['project'])
+          
+          if not exists(sf.sub.entity_in.form_dir):
+              os.makedirs(sf.sub.entity_in.form_dir)
+          
+          
           
           print("Form Handler: ")
           print ("    -- initializing form for project:", init_form['project'])
@@ -239,11 +244,11 @@ def generate_submission_form(init_form):
            
           template_name = init_form['project']+"_submission_form.ipynb"
           try:
-              sf.sub.entity_in.source_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates",template_name)
-              vprint("taking pip installed template files")
-          except:
               sf.sub.entity_in.source_path = join(INSTALL_DIRECTORY,"submission_forms","dkrz_forms","Templates",template_name)
-              #print "Form Handler: Attention !  non standard source for submission form"
+          except:
+               sf.sub.entity_in.source_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates",template_name)
+               vprint("taking pip installed template files")
+              
           ## to do: version of template
           # sf.sub.entity_in.version = ...
           vprint("--- copy from:", sf.sub.entity_in.source_path)
