@@ -48,12 +48,12 @@ import shelve
 import getpass
 import copy
 import base64
-from . import utils
+#from . import utils
 from .utils import Form, id_generator, form_to_json
 from .utils import is_hosted_service, email_form_info
 from .utils import persist_info, get_persisted_info
-from .utils import vprint, get_formurlpath
-from .utils import dep, is_hosted_service
+from .utils import vprint, get_formurlpath,dep 
+
 
 try:
     from git import Repo,GitCommandError,Git
@@ -71,8 +71,6 @@ from dkrz_forms.config.project_config import PROJECT_DICT
 from dkrz_forms.config import workflow_steps
 from . import checks
 
-
-
 if dep['config_file']:  
   from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
   from settings import FORM_DIRECTORY
@@ -83,7 +81,6 @@ else:
 
 if dep['rt']:
    import rt
-
 
 # over-write variables in case Env settings are given
 if os.getenv('INSTALL_DIRECTORY'):
@@ -104,78 +101,74 @@ if os.getenv('FORM_DIRECTORY'):
 
 
 FORM_REPO = FORM_DIRECTORY 
-  
-
-
-
-### detecting url of notebook server
-
 FORM_URL_PATH = join("http://localhost:8000/user/",getpass.getuser(),"notebooks")
-
 HOME_DIR = os.environ['HOME']
-
+#if not served in jupyterhub: 
+#HOME_DIR = NOTEBOOK_DIRECTORY
     
 #------------------------------------------------------------------------------------------
 
 def init_sf(init_form):
-            
-         
-          #print("-------------!!!!!!!!!!! homedir:", HOME_DIR)
-          # generate the generic project form
-          sf = Form(PROJECT_DICT[init_form['project']])
-          # generate the submission infor sub_form
-          form = Form(PROJECT_DICT[init_form['project']+'_FORM'])
+          """
+          Initialise a personalized form object
+          -- used in generate_submission_form()
+          :param init_form: dictionay with personal info (name, email,..)
+          :type init_form: dict
+          :return: a Form object
+          :rtype: Form(Object)
+          """
           
+          # step1: generate project specific form object
+          sf = Form(PROJECT_DICT[init_form['project']])
+          
+          # step2: add the generic workflow pipline reated parts
           for (short_name,wflow_step) in sf.workflow:
               setattr(sf,short_name ,Form(workflow_steps.WORKFLOW_DICT[wflow_step]))
-                             
-          sf.sub.entity_out.report = form    
           
-          sf.sub.entity_out.form_repo = join(FORM_REPO, init_form['project'])
+          # step3: add the submission part (filled in e.g. notebooks)
+          form = Form(PROJECT_DICT[init_form['project']+'_FORM'])
+          sf.sub.entity_out.report = form 
           
-          #sf.sub.entity_in.form_dir = join(NOTEBOOK_DIRECTORY, init_form['project'])
-          sf.sub.entity_in.form_dir = join(HOME_DIR, init_form['project'])
-          
+    
           if not exists(sf.sub.entity_in.form_dir):
               os.makedirs(sf.sub.entity_in.form_dir)
           
-          
-          
-          print("Form Handler: ")
-          print ("    -- initializing form for project:", init_form['project'])
-          vprint(sf.project)
           
           sf.sub.agent.last_name = init_form['last_name']
           sf.sub.agent.first_name= init_form['first_name']
           sf.sub.agent.email= init_form['email']
           sf.sub.agent.responsible_person= init_form['first_name']+' '+init_form['last_name']
-          
           sf.sub.agent.keyword=init_form['key']
           sf.sub.activity.keyword=init_form['key']
+          
           # sf.sub.activity.pwd=init_form['pwd']
           if sf.sub.agent.last_name != "template":
               sf.sub.activity.status="0:open"
           
-          sf.sub.entity_out.pwd = init_form['pwd']
-         
+          sf.sub.entity_out.form_repo = join(FORM_REPO, init_form['project'])
+          sf.sub.entity_out.pwd = init_form['pwd']    
           sf.sub.entity_out.form_name = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
           sf.sub.entity_out.form_json = join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.json')
-          #sf.sub.form_path=sf.sub.form_repo+'/'+sf.sub.form_name+'.ipynb'
+          sf.sub.entity_out.form_repo_path=join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
+          sf.sub.entity_out.check_status ="0:open"
+          sf.sub.entity_out.status="0:open" 
+          
+          sf.sub.entity_in.form_dir = join(HOME_DIR, init_form['project'])
+          sf.sub.entity_in.form_path=join(sf.sub.entity_in.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
+           
+          print("Form Handler: ")
+          print ("    -- initializing form for project:", init_form['project'])
+          vprint(sf.project)
           vprint(sf.sub.entity_out.form_repo)
           vprint(sf.sub.entity_out.form_name+'.ipynb')
-          sf.sub.entity_out.form_repo_path=join(sf.sub.entity_out.form_repo,sf.sub.entity_out.form_name+'.ipynb')
-          
           vprint("entity_in.form_path", sf.sub.entity_in.form_dir)
-          sf.sub.entity_in.form_path=join(sf.sub.entity_in.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
-          sf.sub.entity_out.check_status ="0:open"
-          sf.sub.entity_out.status="0:open"
-          #sf = set_doc(sf)
-          
+            
           return(sf)
 
 
 def init_form(init_form):
-    ''' used in form notebooks
+    ''' used in lower level cases: e.g. used in tests 
+    
         initialize a submission form object based on a project dictionary
         and associate it with a git repo, where it is stored and maintained
 
@@ -211,17 +204,11 @@ def generate_submission_form(init_form):
     ''' used in form generation notebook
         take project notebook template, rename it and copy the result to the
         projects submission form directory as a personal copy for the end user
-    '''
-        #working_dir = os.getcwd()
-      # global variable cordex_directoy used here .. to be improved ..
-    
-   # from dkrz_forms import form_handler
-
-    
+        
+        called in form_widgets.create_form()  --> form_widgets.generate()
+    '''  
     if init_form['project'] in ["CORDEX","CMIP6","ESGF_replication","DKRZ_CDP","test"]:
-        
-        
-         
+    
           sf = init_sf(init_form)          
           keystore_path =  join(join(HOME_DIR,"fig"),'keystore') 
           vprint("keystore_path: ",keystore_path)
@@ -259,11 +246,7 @@ def generate_submission_form(init_form):
           print("--------------------------------------------------------------------")
           print("--- A submission form was created for you, \n--- please visit the following link:")
           print(FORM_URL_PATH+'/'+init_form['project']+'/'+sf.sub.entity_out.form_name+'.ipynb')
-         # print("--- Please remember your form password:",init_form['pwd'])
           print("--------------------------------------------------------------------")
-          
-          
-         
           save_form(sf, "Form Handler: form - initial generation - quiet" )
           vprint(" ......  initial version saved ...")
           sf.sub.activity.status = "1:in-progress"
