@@ -33,7 +33,7 @@ def vprint(*txt):
         print(*txt)
     return  
 
-HOME_DIR = os.environ['HOME']
+
 FORM_REPO = FORM_DIRECTORY
 ### detecting url of notebook server
 
@@ -53,8 +53,9 @@ if os.getenv('FORM_REPO'):
     RORM_REPO = os.getenv('FORM_REPO')
     vprint("unsing env setting for FORM_REPO:",FORM_REPO)    
 
-
-
+HOME_DIR = join(os.environ['HOME'],'Forms')
+#if not served in jupyterhub: 
+NOTEBOOK_DIRECTORY = HOME_DIR
 #align_kw = dict(
 #    _css = (('.widget-label', 'min-width', '10ex'),),
 #    margin = '0px 0px 50px 12px'

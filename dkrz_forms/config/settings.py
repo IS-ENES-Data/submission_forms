@@ -41,7 +41,8 @@ INSTALL_DIRECTORY = "/home/stephan/Repos/"
 
 # --------------------------------------------------------------------------
 # Directory where web accessible forms are served
-# - a jupyter notebook server accessible directory whre forms are served
+# - a jupyter notebook server accessible directory where forms are served
+# not needed for jupyterhub deployment (home directory in this case)
 NOTEBOOK_DIRECTORY = '/opt/jupyter/notebooks/forms'
 #---------------------------------------------------------------------------
 
@@ -68,5 +69,8 @@ FORM_DIRECTORY = "/opt/jupyter/notebooks/form_directory"
 #   with the gitlab hosted master ... 
 SUBMISSION_REPO = "/opt/jupyter/notebooks/submission_repo"
 # ---------------------------------------------------------------------------
+# Initialization directory -- moved to home directory of user 
+# in jupyter notebook or juypterlab environment
 
+INIT_DIR = "/opt/jupyter/Forms"
 

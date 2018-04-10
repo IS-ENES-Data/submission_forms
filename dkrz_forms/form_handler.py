@@ -52,7 +52,7 @@ import base64
 from .utils import Form, id_generator, form_to_json
 from .utils import is_hosted_service, email_form_info
 from .utils import persist_info, get_persisted_info
-from .utils import vprint, get_formurlpath,dep 
+from .utils import vprint,dep 
 
 
 try:
@@ -101,10 +101,10 @@ if os.getenv('FORM_DIRECTORY'):
 
 
 FORM_REPO = FORM_DIRECTORY 
-FORM_URL_PATH = join("http://localhost:8000/user/",getpass.getuser(),"notebooks")
-HOME_DIR = os.environ['HOME']
+FORM_URL_PATH = join("http://localhost:8000/user/",getpass.getuser(),"notebooks","Forms")
+HOME_DIR = join(os.environ['HOME'],'Forms')
 #if not served in jupyterhub: 
-#HOME_DIR = NOTEBOOK_DIRECTORY
+NOTEBOOK_DIRECTORY = HOME_DIR
     
 #------------------------------------------------------------------------------------------
 
@@ -153,7 +153,7 @@ def init_sf(init_form):
           sf.sub.entity_out.check_status ="0:open"
           sf.sub.entity_out.status="0:open" 
           
-          sf.sub.entity_in.form_dir = join(HOME_DIR, init_form['project'])
+          sf.sub.entity_in.form_dir = join(HOME_DIR,init_form['project'])
           sf.sub.entity_in.form_path=join(sf.sub.entity_in.form_dir,sf.sub.entity_out.form_name+'.ipynb') 
            
           print("Form Handler: ")

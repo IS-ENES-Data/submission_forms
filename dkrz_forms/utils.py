@@ -4,11 +4,12 @@ Created on Fri May  5 15:24:05 2017
 
 @author: stephan
 
-modified from https://github.com/epigen/pypiper/blob/master/pypiper/AttributeDict.py
+attribute dict related parts modified from https://github.com/epigen/pypiper/blob/master/pypiper/AttributeDict.py
 """
 from __future__ import print_function
 import os,sys
 import subprocess
+import getpass
 import json
 import abc
 import string, random
@@ -24,8 +25,11 @@ from os.path import expanduser, isfile, exists
 from os.path import join as join
 from email.mime.text import MIMEText
 from prov.model import ProvDocument
-#from dkrz_forms import form_handler
 
+#-------------------------------------------------------------------------------------------
+""" Get information in installed dependencies
+    information is collected in a the dictionary dep
+"""
 dep = {}
 try:
     from git import Repo,GitCommandError, InvalidGitRepositoryError
@@ -48,7 +52,7 @@ try:
 except ImportError as e:
    dep['rt'] = False   
 
-
+#----------------------------------------------------------------------------------------
 
 VERBOSE=True
 def vprint(*txt):
@@ -56,8 +60,33 @@ def vprint(*txt):
         print(*txt)
     return
   
+def init_home_env():
+    '''
+    initialize environment for jupyter notebooks:
+        - directories
+        - start notebook
+    '''
+    FORM_URL_PATH = join("http://localhost:8000/user/",getpass.getuser(),"notebooks")
+    dst = join(os.environ['HOME'],'Forms')
+    src = settings.INIT_DIR
+
+    try:
+        shutil.copytree(src,dst)
+    except OSError as why: 
+       print("you initialized your environment already ! skipping initialization !")
+    except FileExistsError as why:
+       print("you initialized your environment already ! skipping initialization !!")
+  
+    print("Environment initialized, to create submission forms please open:")
+    print(join(FORM_URL_PATH,"Forms","Create_Submission_Form.ipynb"))
+    print("__________________________________________________________________")
+    
     
 def init_config_dirs():
+    '''
+    initialize the directories for the project forms
+    - not used ...
+    '''
  
     dirs = [settings.NOTEBOOK_DIRECTORY,settings.SUBMISSION_REPO,settings.FORM_DIRECTORY]
     proj_dirs = project_config.PROJECTS
@@ -90,7 +119,11 @@ def init_config_dirs():
               vprint("initialize: ", repo_dir)
 
 def get_formurlpath():
-
+    ''' not used -- to be completed ..
+        return hosting url in different deployment scenarios:
+            - local notebook or jupyterhub
+            - server notebook or jupyterhub
+    '''
     FORM_URL_PATH = 'http://localhost:8888'  # default
 
     from notebook import notebookapp
@@ -115,7 +148,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 def prefix_dict(mydict,prefix):
     ''' Return a copy of a submission object with specified keys prefixed by a namespace
-      to do: makes no senso fo sf objects - work on dicts instead ... 
+        to do: makes no sense for sf objects - work on dicts instead ... 
     '''
     pr_dict = {}
     for key,val in mydict.items():
