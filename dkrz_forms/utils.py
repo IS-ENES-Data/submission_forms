@@ -66,7 +66,7 @@ def init_home_env():
         - directories
         - start notebook
     '''
-    FORM_URL_PATH = join("http://localhost:8000/user/",getpass.getuser(),"notebooks")
+    FORM_URL_PATH = join(settings.BASE_URL,getpass.getuser(),"notebooks")
     dst = join(os.environ['HOME'],'Forms')
     src = settings.INIT_DIR
 

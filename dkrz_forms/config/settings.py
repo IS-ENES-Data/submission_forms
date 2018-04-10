@@ -24,7 +24,7 @@ NOTEBOOK_DIRECTORY:
     a directory where the notebook serves all the form notebooks
     
 FORM_DIRECTORY:
-    a directory where all form notebooks are locally stored (in repos)
+    a directory where all form notebooks are stored (normally in git repos)
     
 SUBMISSION_REPO:
     a directory (under git control) where all finalized data form notebooks 
@@ -36,20 +36,17 @@ SUBMISSION_REPO:
 # directory where submission_forms package is installed
 # 
 # INSTALL_DIRECTORY = "pip" 
-INSTALL_DIRECTORY = "/home/stephan/Repos/"
+INSTALL_DIRECTORY = "/opt/formhandler/"
 # --------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------
 # Directory where web accessible forms are served
-# - a jupyter notebook server accessible directory where forms are served
-# not needed for jupyterhub deployment (home directory in this case)
-NOTEBOOK_DIRECTORY = '/opt/jupyter/notebooks/forms'
+# - a jupyter notebook server accessible directory whre forms are served
+NOTEBOOK_DIRECTORY = '/opt/formhandler/Repos'
 #---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# directory containing the git repositories where forms are locally stored 
-# for testing and local deployment scenarios 
-# for jupyterhub based scenario just used for testing ..
+# directory containing the git repositories where forms are locally stored
 # - all the forms currently not finalized and submitted are stored here
 # - normally git versioned 
 # - should contain directories corresponding to every project type supported
@@ -57,8 +54,7 @@ NOTEBOOK_DIRECTORY = '/opt/jupyter/notebooks/forms'
 #   these directories should be git versioned
 # - access keys for the forms are stored in a keystore file 
 
-
-FORM_DIRECTORY = "/opt/jupyter/notebooks/form_directory"
+FORM_DIRECTORY = "/opt/formhandler/Forms/local_repo"
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -67,10 +63,9 @@ FORM_DIRECTORY = "/opt/jupyter/notebooks/form_directory"
 #   submitted to the data center
 # - for data manager side installation the contained repos are synchronized 
 #   with the gitlab hosted master ... 
-SUBMISSION_REPO = "/opt/jupyter/notebooks/submission_repo"
+SUBMISSION_REPO = "/opt/formhandler/Forms/submission_repo"
 # ---------------------------------------------------------------------------
-# Initialization directory -- moved to home directory of user 
-# in jupyter notebook or juypterlab environment
 
-INIT_DIR = "/opt/jupyter/Forms"
+INIT_DIR = "/opt/formhandler/Forms/Forms"
 
+BASE_URL = "https://data-forms.dkrz.de:8080/user"

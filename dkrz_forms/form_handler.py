@@ -73,11 +73,11 @@ from . import checks
 
 if dep['config_file']:  
   from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from settings import FORM_DIRECTORY
+  from settings import FORM_DIRECTORY, BASE_URL
     
 else: 
   from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from dkrz_forms.config.settings import FORM_DIRECTORY
+  from dkrz_forms.config.settings import FORM_DIRECTORY, BASE_URL
 
 if dep['rt']:
    import rt
@@ -101,7 +101,7 @@ if os.getenv('FORM_DIRECTORY'):
 
 
 FORM_REPO = FORM_DIRECTORY 
-FORM_URL_PATH = join("http://localhost:8000/user/",getpass.getuser(),"notebooks","Forms")
+FORM_URL_PATH = join(BASE_URL,getpass.getuser(),"notebooks","Forms")
 HOME_DIR = join(os.environ['HOME'],'Forms')
 #if not served in jupyterhub: 
 NOTEBOOK_DIRECTORY = HOME_DIR
@@ -469,9 +469,9 @@ def form_submission(sf):
    
    if not(dep['rt']) and is_hosted_service():
       vprint("Proceeding with email generation")
-      m_part1 = "A "+sf.myproject+"data submission was requested by: " + sf.sub.agent.first_name + " " + sf.sub.agent.last_name + "\n"
+      m_part1 = "A "+sf.project+"data submission was requested by: " + sf.sub.agent.first_name + " " + sf.sub.agent.last_name + "\n"
       m_part2 = "Corresponding email: "+ sf.sub.agent.email +"\n"
-      m_part3 = "Submission form url: https://data-forms.dkrz.de:8080/notebooks/"+sf.projectCORDEX+"/"+sf.form_name+".ipynb \n"
+      m_part3 = "Submission form url: "+ BASE_URL+"/"+sf.project+"/"+sf.form_name+".ipynb \n"
       m_part4 = "The submission is commited to the following git repository: "+sf.form_name +"\n"
       m_part5 = "Time of submission:"+ str(datetime.now())
       my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
