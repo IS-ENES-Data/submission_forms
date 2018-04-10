@@ -405,8 +405,8 @@ def form_submission(sf):
            pass
               # to do: error handling
            
-           repo.git.add(join(sf.project,form_name)+".ipynb")
-           repo.git.add(join(sf.project,form_name)+".json")
+           repo.git.add(join(sf.project,sf.sub.entity_out.form_name)+".ipynb")
+           repo.git.add(join(sf.project,sf.sub.entity_out.form_name)+".json")
     
            if sf.project=="ESGF_replication":
                for sel_file in sf.sub.entity_out.report.selection_files:
@@ -415,8 +415,8 @@ def form_submission(sf):
            
            vprint(repo.git.status())
            #repo.git.add(join(sf.project,package_name)
-           #repo.git.add(join(sf.project,form_name)
-           commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ form_name+ " ## " 
+           #repo.git.add(join(sf.project,sf.sub.entity_out.form_name)
+           commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ sf.sub.entity_out.form_name+ " ## " 
            try: 
                commit = repo.git.commit(message=commit_message)
                vprint(commit)
@@ -471,8 +471,8 @@ def form_submission(sf):
       vprint("Proceeding with email generation")
       m_part1 = "A "+sf.project+"data submission was requested by: " + sf.sub.agent.first_name + " " + sf.sub.agent.last_name + "\n"
       m_part2 = "Corresponding email: "+ sf.sub.agent.email +"\n"
-      m_part3 = "Submission form url: "+ BASE_URL+"/"+sf.project+"/"+sf.form_name+".ipynb \n"
-      m_part4 = "The submission is commited to the following git repository: "+sf.form_name +"\n"
+      m_part3 = "Submission form url: "+ BASE_URL+"/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
+      m_part4 = "The submission is commited to the following git repository: "+sf.sub.entity_out.form_name +"\n"
       m_part5 = "Time of submission:"+ str(datetime.now())
       my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5
       msg = MIMEText(my_message)
@@ -498,7 +498,7 @@ def form_submission(sf):
      
 
    if not(dep['rt']) and not(is_hosted_service()): 
-      print("Please send form: "+sf.sub.entity_in.form_dir+"/"+form_name+".ipynb" +"\n")
+      print("Please send form: "+sf.sub.entity_in.form_dir+"/"+sf.sub.entity_out.form_name+".ipynb" +"\n")
       print("to data-pool@dkrz.de with subject", "\"DKRZ data submission form for project\"", sf.project)
       
       
