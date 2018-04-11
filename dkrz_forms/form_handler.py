@@ -381,28 +381,25 @@ def form_submission(sf):
          
 
    if dep['git']:
-       
-       
-       
-       git_ssh_identity_file = '/opt/jupyter/notebooks/.ssh/id_rsa'
-       git_ssh_cmd = 'ssh -i %s' % git_ssh_identity_file        
-       repo = Repo(SUBMISSION_REPO)
-       repo.git.update_environment(GIT_SSH_COMMAND=git_ssh_cmd)
-       config = repo.config_writer()
-       config.set_value("user","email",sf.sub.agent.email)
-       config.set_value("user","name",sf.sub.agent.last_name)
-       config.release()
+           git_ssh_identity_file = '/opt/jupyter/notebooks/.ssh/id_rsa'
+           git_ssh_cmd = 'ssh -i %s' % git_ssh_identity_file        
+           repo = Repo(SUBMISSION_REPO)
+           repo.git.update_environment(GIT_SSH_COMMAND=git_ssh_cmd)
+           config = repo.config_writer()
+           config.set_value("user","email",sf.sub.agent.email)
+           config.set_value("user","name",sf.sub.agent.last_name)
+           config.release()
        #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
-       try: 
+       #try: 
            o = repo.remotes.origin
            o.pull()
-       except GitCommandError:
-          print("Synchronization with global submission form repository failed !")
-          pass
+       #except GitCommandError:
+       #   print("Synchronization with global submission form repository failed !")
+       #   pass
           
-       except AttributeError:
-           print("No global submission repo !!!")
-           pass
+       #except AttributeError:
+       #    print("No global submission repo !!!")
+       #    pass
               # to do: error handling
            
            repo.git.add(join(sf.project,sf.sub.entity_out.form_name)+".ipynb")
@@ -439,7 +436,7 @@ def form_submission(sf):
                print("No global submission repo !!!") 
                pass
                 
-       else:
+   else:
                print("Warning: submission was not stored and versioned in git repo")
       
    
@@ -471,7 +468,7 @@ def form_submission(sf):
       vprint("Proceeding with email generation")
       m_part1 = "A "+sf.project+"data submission was requested by: " + sf.sub.agent.first_name + " " + sf.sub.agent.last_name + "\n"
       m_part2 = "Corresponding email: "+ sf.sub.agent.email +"\n"
-      m_part3 = "Submission form url: "+ BASE_URL+"/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
+      m_part3 = "Submission form url: "+ FORM_URL_PATH+"/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
       m_part4 = "The submission is commited to the following git repository: "+sf.sub.entity_out.form_name +"\n"
       m_part5 = "Time of submission:"+ str(datetime.now())
       my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5

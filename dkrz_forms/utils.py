@@ -26,6 +26,9 @@ from os.path import join as join
 from email.mime.text import MIMEText
 from prov.model import ProvDocument
 
+
+FORM_URL_PATH = join(settings.BASE_URL,getpass.getuser(),"notebooks","Forms")
+
 #-------------------------------------------------------------------------------------------
 """ Get information in installed dependencies
     information is collected in a the dictionary dep
@@ -66,7 +69,6 @@ def init_home_env():
         - directories
         - start notebook
     '''
-    FORM_URL_PATH = join(settings.BASE_URL,getpass.getuser(),"notebooks")
     dst = join(os.environ['HOME'],'Forms')
     src = settings.INIT_DIR
 
@@ -310,12 +312,10 @@ def is_hosted_service():
 def email_form_info(sf):
   if is_hosted_service():
      m_part1 = "You edited and saved a form for project: "+sf.project+"\n"
-     m_part2 = "This form is temporarily accessible at: \n"
-     m_part3 = "    https://data-forms.dkrz.de:8080/notebooks/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
-     m_part4 = "To retrieve and activate this form at a later time, please go to\n"
-     m_part5 = "    https://data-forms.dkrz.de:8080/notebooks/START/Retrieve_Form.ipynb \n"
-     m_part6 = "    Remember your password: "+sf.sub.entity_out.pwd
-     m_part7 = '''\n \nto officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n in case of problems please contact data-pool@dkrz.de'''
+     m_part2 = "This form is acessible at: \n"
+     m_part3 = FORM_URL_PATH+"/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
+     m_part4 = ""
+     m_part5 = '''\n \nto officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n in case of problems please contact data-pool@dkrz.de'''
 
      if sf.sub.activity.status=="submitted":
         m_part1 = "You have submitted a form for project :"+sf.project+"\n"
@@ -323,9 +323,7 @@ def email_form_info(sf):
         m_part3 = "In case you do not receive this email please contact data-pool@dkrz.de \n"
         m_part4 = "in this email please mention the following form identifier: "+sf.project+"/"+sf.sub.entity_out.form_name 
         m_part5 = ""
-        m_part6 = ""
-        m_part7 = ""
-     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 + m_part6 + m_part7
+     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 
      msg = MIMEText(my_message)
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
      msg['From'] = "data-pool@dkrz.de"
@@ -335,7 +333,7 @@ def email_form_info(sf):
      s = smtplib.SMTP('localhost')
      s.sendmail("data-pool@dkrz.de", ["kindermann@dkrz.de",sf.sub.agent.email], msg.as_string())
      s.quit()
-     print("The link to your form and the associated passware was sent to:"+sf.sub.agent.email)
+     print("The link to your form was sent to:"+sf.sub.agent.email)
   else:
      print("This form is not hosted at DKRZ! Thus form information is stored locally on your computer \n")
      print("Here is a summary of the generated and stored information:")
