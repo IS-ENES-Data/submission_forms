@@ -314,11 +314,11 @@ def email_form_info(sf):
      m_part1 = "You edited and saved a form for project: "+sf.project+"\n"
      m_part2 = "This form is acessible at: \n"
      m_part3 = FORM_URL_PATH+"/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
-     m_part4 = ""
+     m_part4 = "status info: "+sf.sub.activity.status
      m_part5 = '''\n \nto officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n in case of problems please contact data-pool@dkrz.de'''
 
-     if sf.sub.activity.status=="submitted":
-        m_part1 = "You have submitted a form for project :"+sf.project+"\n"
+     if sf.sub.activity.status=="3:completed":
+        m_part1 = "You have submitted a form for project: "+sf.project+"\n"
         m_part2 = "you should receive an automatic email with the notice of receipt \n"
         m_part3 = "In case you do not receive this email please contact data-pool@dkrz.de \n"
         m_part4 = "in this email please mention the following form identifier: "+sf.project+"/"+sf.sub.entity_out.form_name 

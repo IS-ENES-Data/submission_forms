@@ -381,68 +381,60 @@ def form_submission(sf):
          
 
    if dep['git']:
-           git_ssh_identity_file = '/opt/jupyter/notebooks/.ssh/id_rsa'
-           git_ssh_cmd = 'ssh -i %s' % git_ssh_identity_file        
-           repo = Repo(SUBMISSION_REPO)
-           repo.git.update_environment(GIT_SSH_COMMAND=git_ssh_cmd)
-           config = repo.config_writer()
-           config.set_value("user","email",sf.sub.agent.email)
-           config.set_value("user","name",sf.sub.agent.last_name)
-           config.release()
-       #repo.git.add(sf.project+"_"+sf.sub.last_name+"*")
-       #try: 
+       git_ssh_identity_file = join(HOME_DIR,"Forms","fig",".ssh","id_rsa")
+       git_ssh_cmd = 'ssh -i %s' % git_ssh_identity_file        
+       repo = Repo(SUBMISSION_REPO)
+       repo.git.update_environment(GIT_SSH_COMMAND=git_ssh_cmd)
+       config = repo.config_writer()
+       config.set_value("user","email",sf.sub.agent.email)
+       config.set_value("user","name",sf.sub.agent.last_name)
+       config.release()
+       try: 
            o = repo.remotes.origin
            o.pull()
-       #except GitCommandError:
-       #   print("Synchronization with global submission form repository failed !")
-       #   pass
+       except GitCommandError as err:
+           print(err)
           
-       #except AttributeError:
-       #    print("No global submission repo !!!")
-       #    pass
+       except AttributeError:
+           print("No global submission repo !!!")
               # to do: error handling
            
-           repo.git.add(join(sf.project,sf.sub.entity_out.form_name)+".ipynb")
-           repo.git.add(join(sf.project,sf.sub.entity_out.form_name)+".json")
+       repo.git.add(join(sf.project,sf.sub.entity_out.form_name)+".ipynb")
+       repo.git.add(join(sf.project,sf.sub.entity_out.form_name)+".json")
     
-           if sf.project=="ESGF_replication":
-               for sel_file in sf.sub.entity_out.report.selection_files:
-                   vprint("commit selection file: ",join("selection",sel_file))
-                   repo.git.add(join(sf.project,"selection",sel_file))
+       if sf.project=="ESGF_replication":
+           for sel_file in sf.sub.entity_out.report.selection_files:
+               vprint("commit selection file: ",join("selection",sel_file))
+               repo.git.add(join(sf.project,"selection",sel_file))
            
-           vprint(repo.git.status())
-           #repo.git.add(join(sf.project,package_name)
-           #repo.git.add(join(sf.project,sf.sub.entity_out.form_name)
-           commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ sf.sub.entity_out.form_name+ " ## " 
-           try: 
-               commit = repo.git.commit(message=commit_message)
-               vprint(commit)
-               sf.sub.activity.end_time = str(datetime.now())
-               sf.sub.activity.commit_message = commit
-           except GitCommandError:
-               print("Commit in submissin repo failed")
-               pass
-              
-          
-           try: 
-               result = repo.git.push()
-               vprint(result)
-                  
-           except GitCommandError:
-               print("Push to global submission repo failed !")
-               pass       
+       vprint(repo.git.status())
+       commit_message =  "Form Handler: submission form for user "+sf.sub.agent.last_name+" saved using prefix "+ sf.sub.entity_out.form_name+ " ## " 
+       try: 
+          commit = repo.git.commit(message=commit_message)
+          vprint(commit)
+          sf.sub.activity.end_time = str(datetime.now())
+          sf.sub.activity.commit_message = commit
+       except GitCommandError as err:
+          print(err)
+
+       try: 
+           result = repo.git.push()
+           vprint(result)
+           sf.sub.activity.status="3:completed"
+           print("Submission succeeded .. changes comited")
+       except GitCommandError as err:
+           print(err)
            
-           except AttributeError:
-               print("No global submission repo !!!") 
-               pass
-                
+       except AttributeError:
+           print("No global submission repo !!!") 
+               
    else:
                print("Warning: submission was not stored and versioned in git repo")
       
    
    
    if dep['rt'] and is_hosted_service(): 
-      vprint("Proceeding with ticket generation")
+      vprint("Proceeding with ticket generation ...")
       json_file_name = sf.sub.entity_out.form_name+".json"
       tracker = rt.Rt('https://dm-rt.dkrz.de/REST/1.0/','kindermann',base64.b64decode("Y2Y3RHI2dlM="))
       tracker.login()
@@ -450,7 +442,6 @@ def form_submission(sf):
                   Priority= 10,Owner="kindermann@dkrz.de")
       sf.sub.activity.ticket_id = ticket_id
       
-      sf.sub.activity.status = "1:in-progresss"
       is_packaged = package_submission(sf,comment_on=True)
       vprint("open file: ", join(target_dir,json_file_name))
       comment_submitted = tracker.comment(ticket_id, text=sf.project+"--"+sf.sub.agent.last_name,files=[(json_file_name,open(sf.sub.entity_out.form_json,'rb'))])
@@ -464,7 +455,7 @@ def form_submission(sf):
 
    # generate updated json file and store in repo
    
-   if not(dep['rt']) and is_hosted_service():
+   if is_hosted_service():
       vprint("Proceeding with email generation")
       m_part1 = "A "+sf.project+"data submission was requested by: " + sf.sub.agent.first_name + " " + sf.sub.agent.last_name + "\n"
       m_part2 = "Corresponding email: "+ sf.sub.agent.email +"\n"
@@ -484,15 +475,6 @@ def form_submission(sf):
       s.quit()
 
       print("DKRZ forms request submitted")
-      #  origin = repo.remotes.origin
-      #  origin.push()
-      #  print "Data submission form sent"
-      #  print "A confirmation message will be sent to you"
-      
-      # set notebook and json file read only
-      #os.chmod(sf.sub.subformpath,0o444)
-      #os.chmod(sf.sub.packagepath,0o444) 
-     
 
    if not(dep['rt']) and not(is_hosted_service()): 
       print("Please send form: "+sf.sub.entity_in.form_dir+"/"+sf.sub.entity_out.form_name+".ipynb" +"\n")
