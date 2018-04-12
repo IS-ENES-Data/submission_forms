@@ -28,7 +28,8 @@ from prov.model import ProvDocument
 
 
 FORM_URL_PATH = join(settings.BASE_URL,getpass.getuser(),"notebooks","Forms")
-
+if settings.SERVER == "notebook":
+    FORM_URL_PATH = join(settings.BASE_URL,"notebooks","Forms")
 #-------------------------------------------------------------------------------------------
 """ Get information in installed dependencies
     information is collected in a the dictionary dep
@@ -80,7 +81,7 @@ def init_home_env():
        print("you initialized your environment already ! skipping initialization !!")
   
     print("Environment initialized, to create submission forms please open:")
-    print(join(FORM_URL_PATH,"Forms","Create_Submission_Form.ipynb"))
+    print(join(FORM_URL_PATH,"Create_Submission_Form.ipynb"))
     print("__________________________________________________________________")
     
     

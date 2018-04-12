@@ -73,11 +73,11 @@ from . import checks
 
 if dep['config_file']:  
   from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from settings import FORM_DIRECTORY, BASE_URL
+  from settings import FORM_DIRECTORY, BASE_URL, SERVER
     
 else: 
   from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
-  from dkrz_forms.config.settings import FORM_DIRECTORY, BASE_URL
+  from dkrz_forms.config.settings import FORM_DIRECTORY, BASE_URL, SERVER
 
 if dep['rt']:
    import rt
@@ -102,6 +102,8 @@ if os.getenv('FORM_DIRECTORY'):
 
 FORM_REPO = FORM_DIRECTORY 
 FORM_URL_PATH = join(BASE_URL,getpass.getuser(),"notebooks","Forms")
+if SERVER == "notebook":
+    FORM_URL_PATH = join(BASE_URL,"notebooks","Forms")
 HOME_DIR = join(os.environ['HOME'],'Forms')
 #if not served in jupyterhub: 
 NOTEBOOK_DIRECTORY = HOME_DIR
@@ -382,6 +384,8 @@ def form_submission(sf):
 
    if dep['git']:
        git_ssh_identity_file = join(HOME_DIR,"Forms","fig",".ssh","id_rsa")
+       if SERVER=="notebook":
+           git_ssh_identity_file = join(HOME_DIR,"fig",".ssh","id_rsa")
        git_ssh_cmd = 'ssh -i %s' % git_ssh_identity_file        
        repo = Repo(SUBMISSION_REPO)
        repo.git.update_environment(GIT_SSH_COMMAND=git_ssh_cmd)
