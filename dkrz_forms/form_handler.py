@@ -53,6 +53,7 @@ from .utils import Form, id_generator, form_to_json
 from .utils import is_hosted_service, email_form_info
 from .utils import persist_info, get_persisted_info
 from .utils import vprint,dep 
+import dkrz_forms.config.settings as settings
 
 
 try:
@@ -72,11 +73,11 @@ from dkrz_forms.config import workflow_steps
 from . import checks
 
 if dep['config_file']:  
-  from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+  from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO
   from settings import FORM_DIRECTORY, BASE_URL, SERVER
     
 else: 
-  from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO, NOTEBOOK_DIRECTORY
+  from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO
   from dkrz_forms.config.settings import FORM_DIRECTORY, BASE_URL, SERVER
 
 if dep['rt']:
@@ -91,9 +92,6 @@ if os.getenv('SUBMISSION_REPO'):
     INSTALL_DIRECTORY = os.getenv('SUBMISSION_REPO')
     vprint("using env setting for SUBMISSION_REPO:",SUBMISSION_REPO)
 
-if os.getenv('NOTEBOOK_DIRECTORY'):
-    INSTALL_DIRECTORY = os.getenv('NOTEBOOK_DIRECTORY')
-    vprint("using env setting for NOTEBOOK_DIRECTORY:",NOTEBOOK_DIRECTORY)
 
 if os.getenv('FORM_DIRECTORY'):
     INSTALL_DIRECTORY = os.getenv('FORM_DIRECTORY')
@@ -106,7 +104,7 @@ if SERVER == "notebook":
     FORM_URL_PATH = join(BASE_URL,"notebooks","Forms")
 HOME_DIR = join(os.environ['HOME'],'Forms')
 #if not served in jupyterhub: 
-NOTEBOOK_DIRECTORY = HOME_DIR
+NOTEBOOK_DIRECTORY = settings.NOTEBOOK_DIRECTORY 
     
 #------------------------------------------------------------------------------------------
 

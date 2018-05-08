@@ -121,29 +121,6 @@ def init_config_dirs():
               repo=Repo.init(repo_dir, bare=True)
               vprint("initialize: ", repo_dir)
 
-def get_formurlpath():
-    ''' not used -- to be completed ..
-        return hosting url in different deployment scenarios:
-            - local notebook or jupyterhub
-            - server notebook or jupyterhub
-    '''
-    FORM_URL_PATH = 'http://localhost:8888'  # default
-
-    from notebook import notebookapp
-    servers = list(notebookapp.list_running_servers())
-    if is_hosted_service():
-        FORM_URL_PATH = 'https://data-forms.dkrz.de:8080/notebooks'
-    elif len(servers) > 0:
-        server = servers[0]
-        nb_dir = os.path.relpath(settings.NOTEBOOK_DIRECTORY, server['notebook_dir'])
-
-        FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
-    else:
-        vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH)
-
-    #vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
-    return FORM_URL_PATH
-
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -342,6 +319,7 @@ def email_form_info(sf):
      print("-- form name: ",sf.sub.entity_out.form_name)
      print("-- submission form path: ", sf.sub.entity_out.form_repo_path)
      print("-- json form path: ", sf.sub.entity_out.form_json)
+     print("To officically submit this form please send these to files to data-pool@dkrz.de")
 
 
 

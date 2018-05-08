@@ -14,6 +14,7 @@ from IPython.display import display, Javascript, Image
 
 from dkrz_forms import form_handler
 from notebook import notebookapp
+import dkrz_forms.config.settings as settings
 
 config_file = os.path.join(expanduser("~"),".dkrz_forms")
 if os.path.isfile(config_file):
@@ -55,7 +56,7 @@ if os.getenv('FORM_REPO'):
 
 HOME_DIR = join(os.environ['HOME'],'Forms')
 #if not served in jupyterhub: 
-NOTEBOOK_DIRECTORY = HOME_DIR
+NOTEBOOK_DIRECTORY = settings.NOTEBOOK_DIRECTORY
 #align_kw = dict(
 #    _css = (('.widget-label', 'min-width', '10ex'),),
 #    margin = '0px 0px 50px 12px'
@@ -125,25 +126,6 @@ def show_selection():
     display(FORMS,FORMS_ENTER)
     FORMS_ENTER.on_click(get_selection)
     return form_info
-
-    
-    
-def check_and_retrieve(last_name):
-    
-    info = check_pwd(last_name)
-    if info:
-        vprint(info)
-        vprint("--- copy from:", info['form_path'])
-        vprint("--- to: ",join(NOTEBOOK_DIRECTORY,info['project']))
-        shutil.copyfile(info['form_path'],join(NOTEBOOK_DIRECTORY,info['project'],info['form_name']+'.ipynb'))
-        print("--------------------------------------------------------------------")
-        print("   Your submission form was retrieved and is accessible via the following link:")
-       
-        print(utils.get_formurlpath()+'/'+info['project']+'/'+info['form_name']+'.ipynb')
-          ## to do email link to user ....
-        print("--------------------------------------------------------------------")
-    else:
-        print("Error: no corresponding form found")
 
 def fill_form():
     display([LAST_NAME,FIRST_NAME])
