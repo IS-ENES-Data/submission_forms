@@ -341,6 +341,7 @@ def get_persisted_info(location):
 
 # load workflow steps 
 def load_workflow_form(workflow_json_file): 
+    ''' Load a json file and convert file to Form object '''
 
     workflow_dict = jsonfile_to_dict(workflow_json_file)
     
