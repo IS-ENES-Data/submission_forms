@@ -25,7 +25,7 @@ def rename_action(action,form):
         if action in list(wflow_dict.keys()):
          action = wflow_dict[action]
         else:
-            print("Error: wrong action name, should be one of: ",list(wflow_dict.values()))
+            print("Error: wrong action name, should be one of: ",list(wflow_dict.values()))        
     return action        
         
 
@@ -60,7 +60,7 @@ def update_action(action,form, my_name):
     return saved_form
 
 
-def finish_action(action,form, my_name,review_report):
+def finish_action(action,form, my_name,report):
     action = rename_action(action,form)
     wflow_step = getattr(form,action)
     
@@ -69,10 +69,11 @@ def finish_action(action,form, my_name,review_report):
     wflow_step.activity.error_status="1:ok"
     wflow_step.entity_out.status="1:stored"
     wflow_step.entity_out.check_status="3:ok"
-    
+    wflow_step.entity_out.report=report
      
     wflow_step.activity.end_time = str(datetime.now())
     wflow_step.activity.timestamp = str(datetime.now())
+    
     
     saved_form = form_handler.save_form(form,my_name+": " + action + " finished")
     return saved_form 
