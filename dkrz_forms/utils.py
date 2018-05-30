@@ -21,6 +21,7 @@ import dkrz_forms.config.settings as settings
 import dkrz_forms.config.project_config as project_config  
 from dkrz_forms.config import workflow_steps
 import distutils.dir_util
+import pkg_resources
 from os.path import expanduser, isfile, exists
 from os.path import join as join
 from email.mime.text import MIMEText
@@ -70,11 +71,15 @@ def init_home_env():
         - directories
         - start notebook
     '''
+    proj_dirs = project_config.PROJECTS
+    dirs = [settings.NOTEBOOK_DIRECTORY,settings.SUBMISSION_REPO,settings.FORM_DIRECTORY]
     dst = join(os.environ['HOME'],'Forms')
-    src = settings.INIT_DIR
-
-    try:
+    src = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms","Templates","Forms")
+    print('init yyyyyyyyyy')
+    try: 
         shutil.copytree(src,dst)
+        
+        
     except OSError as why: 
        print("you initialized your environment already ! skipping initialization !")
     except FileExistsError as why:
@@ -83,6 +88,33 @@ def init_home_env():
     print("Environment initialized, to create submission forms please open:")
     print(join(FORM_URL_PATH,"Create_Submission_Form.ipynb"))
     print("__________________________________________________________________")
+    
+    for dir in dirs:
+       for proj_dir in proj_dirs:
+           distutils.dir_util.mkpath(join(dir,proj_dir))
+ 
+        
+    if dep['git']:
+       try: 
+          repo=Repo(settings.SUBMISSION_REPO)
+       except InvalidGitRepositoryError:
+          repo=Repo.init(settings.SUBMISSION_REPO)
+          vprint("initialize: ", settings.SUBMISSION_REPO)
+            
+       for proj_dir in proj_dirs:
+           
+            repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
+            try:
+                repo=Repo(repo_dir)
+            except InvalidGitRepositoryError:
+               repo=Repo.init(repo_dir)
+               vprint("initialize: ", repo_dir)
+        
+       vprint("git directories initialized")       
+    else: 
+         print("Warning !!!!: please install git on your system")
+        
+    
     
     
 def init_config_dirs():
@@ -103,7 +135,7 @@ def init_config_dirs():
        try: 
           repo=Repo(settings.SUBMISSION_REPO)
        except InvalidGitRepositoryError:
-         repo=Repo.init(settings.SUBMISSION_REPO, bare=True)
+         repo=Repo.init(settings.SUBMISSION_REPO)
          vprint("initialize: ", settings.SUBMISSION_REPO)
             
        for proj_dir in proj_dirs:
@@ -112,14 +144,14 @@ def init_config_dirs():
             try:
                 repo=Repo(repo_dir)
             except InvalidGitRepositoryError:
-               repo=Repo.init(repo_dir, bare=True)
+               repo=Repo.init(repo_dir)
                vprint("initialize: ", repo_dir)
         
             try:
                repo=Repo(proj_dir)
             except InvalidGitRepositoryError:
-              repo=Repo.init(repo_dir, bare=True)
-              vprint("initialize: ", repo_dir)
+               repo=Repo.init(repo_dir)
+               vprint("initialize: ", repo_dir)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):

@@ -230,11 +230,12 @@ def generate_submission_form(init_form):
         
            
           template_name = init_form['project']+"_submission_form.ipynb"
-          try:
+          if INSTALL_DIRECTORY == 'pip':
+              sf.sub.entity_in.source_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates",template_name)
+              vprint("taking pip installed template files")
+          else:    
               sf.sub.entity_in.source_path = join(INSTALL_DIRECTORY,"submission_forms","dkrz_forms","Templates",template_name)
-          except:
-               sf.sub.entity_in.source_path = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms/Templates",template_name)
-               vprint("taking pip installed template files")
+              vprint("taking source template files")    
               
           ## to do: version of template
           # sf.sub.entity_in.version = ...

@@ -8,8 +8,10 @@
 Generic settings
 =================================================
 
-*Adapt to your environment*:
-
+Warning: leave the default settings 
+   - just adapt in case of server based deployments
+   - (e.g. for jupyterhub deployments)
+   
 Settings for the installation home and the three storage locations you need:
 
     either change settings in this file, or put a copy of this file in your working directory nder "settings.py"
@@ -35,8 +37,8 @@ import os
 # --------------------------------------------------------------------------
 # directory where submission_forms package is installed
 # 
-# INSTALL_DIRECTORY = "pip" 
-INSTALL_DIRECTORY = "/home/stephan/Repos/"
+INSTALL_DIRECTORY = "pip" 
+#INSTALL_DIRECTORY = "/home/stephan/Repos/"
 # --------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------
@@ -58,7 +60,7 @@ NOTEBOOK_DIRECTORY = os.path.join(os.environ['HOME'],'Forms')
 # - access keys for the forms are stored in a keystore file 
 
 
-FORM_DIRECTORY = "/opt/jupyter/notebooks/form_directory"
+FORM_DIRECTORY = os.path.join(NOTEBOOK_DIRECTORY,"form_directory")
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -67,12 +69,12 @@ FORM_DIRECTORY = "/opt/jupyter/notebooks/form_directory"
 #   submitted to the data center
 # - for data manager side installation the contained repos are synchronized 
 #   with the gitlab hosted master ... 
-SUBMISSION_REPO = "/opt/jupyter/notebooks/submission_repo"
+SUBMISSION_REPO = os.path.join(NOTEBOOK_DIRECTORY,"submission_repo")
 # ---------------------------------------------------------------------------
 # Initialization directory -- moved to home directory of user 
 # in jupyter notebook or juypterlab environment
 
-INIT_DIR = "/opt/jupyter/Forms"
+#INIT_DIR = "/opt/jupyter/Forms"
 
 BASE_URL = "http://localhost:8888"
 
