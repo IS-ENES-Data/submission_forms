@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 30 10:58:18 2018
+
+@author: stephan
+"""
+
+from dkrz_forms import utils
+
+utils.init_home_env()
+
+print("---- Home Environment ready")
+
+

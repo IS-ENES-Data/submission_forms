@@ -33,8 +33,12 @@ NAME_SPACES={'sub':'http://enes.org/entities/ingest-workflow#',
              'node':'http://enes.org/entities/ingest-workflow#',        
             }
 
-            
-
+# prov entities which are connected in a prov workflow document
+WORKFLOW_ENTITIES = ['agent','entity_in','entity_out','activity'] 
+ACTIVITY_STATUS = "0:open, 1:in-progress ,2:action-required, 3:paused,4:closed"          
+ERROR_STATUS = "0:open,1:ok,2:error"
+ENTITY_STATUS = "0:open,1:stored,2:submitted,3:re-opened,4:cloded"
+CHECK_STATUS = "0:open,1:warning, 2:error,3:ok"
 # -------------------------------------------------------------------------------------------------------------------------
 # workflow step: data submission
 SUBMISSION_AGENT = { 
@@ -43,42 +47,65 @@ SUBMISSION_AGENT = {
                                    - last_name: Last name of the person responsible for the submission form content
                                    - first_name: Corresponding first name
                                    - email: Valid user email address: all follow up activities will use this email to contact end user
-                                   - key_word : user provided key word to remember and separate submission
+                                   - keyword : user provided key word to remember and separate submission
                              """,
-              'i_name': 'submission_agent',               
-              'last_name' : '',
-              'first_name' : '',
-              'key_word': '',
-              'email': ''}
+              'i_name': 'submission_agent', 
+              'last_name' : 'mandatory',
+              'first_name' : 'mandatory',
+              'keyword': 'mandatory',
+              'email': 'mandatory',
+              'responsible_person':'mandatory'}
              
 
 SUBMISSION_ACTIVITY = {
           '__doc__': """
                          Attributes characterizing the form submission activity:
                          
-                         - submission_comment : free text comment
-                         - submission_method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based       
+                         - comment : free text comment
+                         - method  : How the submission was generated and submitted to DKRZ: email or DKRZ form server based 
+                         - status : status information
+                         - error_status : additional information on error status
+                         - ticket_id : related rt ticket number
+                         - start_time, end_time: start and end time of activity
+                         - timestamp: intermediate time stamp information (update activities)
+                         - pwd: password to access the form
                          """,
            'i_name':'submission_activity',              
-           'submission_comment':'',
-           'submission_method':'',
-           'pwd':' password to access form '
+           'comment':'optional',
+           'method':'mandatory',
+           'status':ACTIVITY_STATUS,
+           'keyword':'mandatory',
+           'error_status':ERROR_STATUS,
+           'ticket_id':'optional',
+           'ticket_url':'mandatory',
+           'start_time':'mandatory',
+           'end_time':'optional',
+           'timestamp':'optional', 
+           'commit_hash': 'optional', 
+           'pwd':'mandatory'
             } 
+
        
             
 SUBMISSION_FORMTEMPLATE_ENTITY = {
             '__doc__' : """
                            Attributes defining the form template used:
                                
-                               - source_path: path to the form template used (jupyter notebook)         
-                               - form_template_version:  version string for the form template used
+                               - source_path: path to the form template used (jupyter notebook)   
+                               - form_dir: directory where form is servied
+                               - form_path: full path to form (.ipynb) in form_dir
+                               - version:  version string for the form template used
                                - tag: git tag of repo containing templates (=source code repo in most cases)
                 """,
              'i_name': 'submission_form_template_entity',   
-             'source_path' : '', # filled with path of original template form      
-             'form_template_version': '', # version of form template / form tool
-             'tag': '' # git tag
+             'source_path' : 'mandatory', # filled with path of original template form 
+             'form_dir' : 'mandatory',
+             'form_path': 'mandatory',
+             'version': 'optional', # version of form template / form tool
+             'tag': 'optional' # git tag
             }
+   
+    
 
 SUBMISSION_FORM_ENTITY = {
             '__doc__': """
@@ -87,6 +114,8 @@ SUBMISSION_FORM_ENTITY = {
                      - form_name: consistent prefix for the form name (postfix=.ipynb and .json)
                      - form_repo: git repo where forms are stored (before submission)
                      - form_json, form_repo_path: full paths to json and ipynb representations
+                     - submission_form: 
+                     - submission_json: 
                      - form_dir: directory where form are served to the notebook interface
                      - status: status information
                      - checks_done: form consistency checks done
@@ -96,18 +125,21 @@ SUBMISSION_FORM_ENTITY = {
                    """,
             'i_name': 'submission_form_entity',       
             'report': {},       
-            'form_name': '',
-            'form_repo' :'',          
-            'form_json': '',
-            'form_path': '',
-            'form_repo_path' : '',
-            'form_dir': '',
-            'status': '',
-            'checks_done' : '',
-            'tag': '',
-            'repo': ''
+            'form_name': 'mandatory',
+            'form_json':'mandatory',
+            'form_repo' :'mandatory',          
+            'form_repo_path' : 'mandatory',
+            'submission_form': 'mandatory',
+            'submission_repo': 'mandatory',
+            'submission_json': 'mandatory',
+            'commit_message' : 'optional',
+            'pwd':'mandatory',
+            'status': ENTITY_STATUS,
+            'check_status' : CHECK_STATUS,
+            'checks_done' : 'mandatory',
             }
-                                 
+    
+                                
 
 DATA_SUBMISSION = {
      '__doc__': """ 
@@ -137,7 +169,7 @@ REVIEW_AGENT =  {
                     - responsible_person:  
                     """,
             'i_name':'review_agent',         
-            'responsible_person': ""
+            'responsible_person': "mandatory"
             }
                                    
             
@@ -153,13 +185,14 @@ REVIEW_ACTIVITY =  {
             - end_time: activity end
         """,
             'i_name':'review_activity',
-            'comment': '',
-            'ticket_url':'https://dm-rt.dkrz.de/Ticket/Display.html?',
-            'ticket_id' : '0',
-            'status':'',
-            "start_time": '',
-            "end_time": '',
-            'report': { }
+            'comment': 'optional',
+            'ticket_url':'mandatory',
+            'ticket_id' : 'mandatory',
+            'status':ACTIVITY_STATUS,
+            'error_status':ERROR_STATUS,
+            "start_time": 'mandatory',
+            "end_time": 'optional',
+            "timestamp": 'optional'
            }
 
 
@@ -174,11 +207,11 @@ REVIEW_REPORT = {
          - report: report dictionary
      """,
      'i_name':'review_report',
-     'date': '',
-     'tag' : '',
-     'repo': '',
-     'comment' : '',
-     'status' : '',
+     'date': 'mandatory',
+     'tag' : 'optional',
+     'comment' : 'optional',
+     'status': ENTITY_STATUS,
+     'check_status' : CHECK_STATUS,
      'report': { }
 } 
  
@@ -210,7 +243,7 @@ INGEST_AGENT = {
                     - responsible_person:  
                     """,
                 'i_name':'ingest_agent',    
-                "responsible_person": "",
+                "responsible_person": "mandatory",
                 }
               
 
@@ -224,14 +257,13 @@ INGEST_ACTIVITY = {
         - report: dictionary with ingest related information (tbd.)
         """,
      "i_name":'ingest_activity',   
-     "status": "", 
-     "start_time":"",
-     "end_time":"",
-     "comment":"", 
-     "ticket_id": 0,
-     "report": {'__doc__' : 'ingest activity report',
-                       'comment' : '' 
-                       }         
+     'status':ACTIVITY_STATUS,
+     'error_status':ERROR_STATUS,
+     "start_time":"mandatory",
+     "end_time":"optional",
+     "timestamp":'optional',
+     "comment":"optional", 
+     "ticket_id": 'mandatory'
 }   
             
 
@@ -245,10 +277,11 @@ INGEST_REPORT = {
        - report: 'report details in dictionary,
      """,
      'i_name':'ingest_report',
-     'date': '',
-     'tag' : '',
-     'comment' : '',
-     'status' : '',
+     'date': 'mandatory',
+     'tag' : 'optional',
+     'comment' : 'optional',
+     'status': ENTITY_STATUS,
+     'check_status' : CHECK_STATUS,
      'report': {}
 }
 
@@ -281,7 +314,7 @@ QUA_AGENT = {
                     - responsible_person:  
                     """,
              'i_name':'qua_agent',       
-             "responsible_person": ""
+             "responsible_person": "mandatory"
              }              
 
 QUA_ACTIVITY= {
@@ -295,13 +328,14 @@ QUA_ACTIVITY= {
         - quality_report: dictionary with quality related information (tbd.)
         """,
       'i_name':'qua_activity',  
-      "status": "",
-      "start_time":"",
-      "end_time":"",
-      "comment":"",      
-      "ticket_id": "",
-      "follow_up_ticket": '', # qa feedback to users, follow up actions
-      "report": {'__doc__': 'data quality report'}       
+     'status':ACTIVITY_STATUS,
+     'error_status':ERROR_STATUS,
+     'qua_tool_version':"mandatory",
+      "start_time":"mandatory",
+      "end_time":"optional",
+      "comment":"optional",      
+      "ticket_id": "mandatory",
+      "follow_up_ticket": 'optional', # qa feedback to users, follow up actions     
       }
      
               
@@ -317,11 +351,11 @@ QUA_REPORT = {
        - report: 'report details in dictionary   
      """,
      'i_name':'qua_report',
-     'date': '',
-     'tag' : '',
-     'repo': '',
-     'comment' : '',
-     'status' : '',
+     'date': 'mandatory',
+     'tag' : 'optional',
+     'comment' : 'optional',
+     'status' : ENTITY_STATUS,
+     'check_status' : CHECK_STATUS,
      'report': {}     
     }
 
@@ -354,8 +388,8 @@ PUBLICATION_AGENT = {
          - publication_tool: string characterizing the publication tool
      """,
     'i_name':'publication_agent', 
-    "responsible_person": "",
-    'publication_tool':""
+    "responsible_person": "mandatory",
+    'trigger':"person,replication_tool,other"
  }
 
 
@@ -369,12 +403,14 @@ PUBLICATION_ACTIVITY =  {
         - report: dictionary for publication report info
         """,
       'i_name':'publication_activity',  
-      "status": "",
-      'start_time':"",
-      'end_time':"",
-      "comment": "",
-      "ticket_id": "", 
-      'follow_up_ticket':"",
+      'status':ACTIVITY_STATUS,
+      'error_status':ERROR_STATUS,
+      'start_time':"mandatory",
+      'end_time':"optional",
+      'timestamp':"optional",
+      "comment": "optional",
+      "ticket_id": "mandatory", 
+      'follow_up_ticket':"optional",
       'report': {}
            }
              
@@ -386,16 +422,16 @@ PUBLICATION_REPORT = {
                - repo: (gitlab) repo containing report information,
                - comment : free text comment for this review,
                - status : data ingest status information: ok, undef, uncomplete, error,
-               - report: 'report details in dictionary
+               - report: details in dictionary
              """,
             'i_name':'publication_report', 
-            'date': '',
-            'tag' : '',
-            'repo': '',
-            'comment' : '',
-            'status' : '',
-            'report': {},
-            'facet_string': "# e.g. project=A&model=B& ...."
+            'date': 'mandatory',
+            'tag' : 'optional',
+            'comment' : 'optional',
+            'status': ENTITY_STATUS,
+            'check_status' : CHECK_STATUS,
+            'search_string' : 'optional',
+            'report': {}
              }            
 
 
@@ -426,17 +462,22 @@ PRESERVATION_AGENT = {
            }
 
 PRESERVATION_ACTIVITY =  {
-           "status": "",
-           "comment": "",
-           "timestamp": "",
-           "ticket_id": "", 
+           "comment": "optional",
+           "start_time": "mandatory",
+           "end_time":"optional", 
+           "timestamp": "optional",
+           "ticket_id": "mandatory", 
+           'status':ACTIVITY_STATUS,
+           'error_status':ERROR_STATUS,
            }
 
 PRESERVATION_REPORT = {
-             "pid_collections" : "",
-             "publish_date": "",
-             "search_string" : "", # cog url including facet search string
-             "facet_string": "", # e.g. project=A&model=B& ....
+             "pid_collections" : "optional",
+             "date": "optional",
+             "search_string" : "optonal", # cog url including facet search string
+             "facet_string": "optional", # e.g. project=A&model=B& ....
+             'status': ENTITY_STATUS,
+             'check_status' : CHECK_STATUS,
              }
 
 

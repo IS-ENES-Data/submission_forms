@@ -4,11 +4,12 @@ Created on Fri May  5 15:24:05 2017
 
 @author: stephan
 
-modified from https://github.com/epigen/pypiper/blob/master/pypiper/AttributeDict.py
+attribute dict related parts modified from https://github.com/epigen/pypiper/blob/master/pypiper/AttributeDict.py
 """
 from __future__ import print_function
 import os,sys
 import subprocess
+import getpass
 import json
 import abc
 import string, random
@@ -17,14 +18,23 @@ import smtplib
 import shelve
 import shutil
 import dkrz_forms.config.settings as settings
-import dkrz_forms.config.project_config as project_config
+import dkrz_forms.config.project_config as project_config  
+from dkrz_forms.config import workflow_steps
 import distutils.dir_util
-from os.path import expanduser
+import pkg_resources
+from os.path import expanduser, isfile, exists
 from os.path import join as join
 from email.mime.text import MIMEText
 from prov.model import ProvDocument
-#from dkrz_forms import form_handler
 
+
+FORM_URL_PATH = join(settings.BASE_URL,getpass.getuser(),"notebooks","Forms")
+if settings.SERVER == "notebook":
+    FORM_URL_PATH = join(settings.BASE_URL,"notebooks","Forms")
+#-------------------------------------------------------------------------------------------
+""" Get information in installed dependencies
+    information is collected in a the dictionary dep
+"""
 dep = {}
 try:
     from git import Repo,GitCommandError, InvalidGitRepositoryError
@@ -44,19 +54,74 @@ else:
 try:
    import rt
    dep['rt'] = True 
-except ImportError, e:
+except ImportError as e:
    dep['rt'] = False   
 
+#----------------------------------------------------------------------------------------
 
-
-VERBOSE=False
+VERBOSE=True
 def vprint(*txt):
     if VERBOSE:
         print(*txt)
     return
-
-
+  
+def init_home_env():
+    '''
+    initialize environment for jupyter notebooks:
+        - directories
+        - start notebook
+    '''
+    proj_dirs = project_config.PROJECTS
+    dirs = [settings.NOTEBOOK_DIRECTORY,settings.SUBMISSION_REPO,settings.FORM_DIRECTORY]
+    dst = join(os.environ['HOME'],'Forms')
+    src = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms","Templates","Forms")
+    print('init yyyyyyyyyy')
+    try: 
+        shutil.copytree(src,dst)
+        
+        
+    except OSError as why: 
+       print("you initialized your environment already ! skipping initialization !")
+    except FileExistsError as why:
+       print("you initialized your environment already ! skipping initialization !!")
+  
+    print("Environment initialized, to create submission forms please open:")
+    print(join(FORM_URL_PATH,"Create_Submission_Form.ipynb"))
+    print("__________________________________________________________________")
+    
+    for dir in dirs:
+       for proj_dir in proj_dirs:
+           distutils.dir_util.mkpath(join(dir,proj_dir))
+ 
+        
+    if dep['git']:
+       try: 
+          repo=Repo(settings.SUBMISSION_REPO)
+       except InvalidGitRepositoryError:
+          repo=Repo.init(settings.SUBMISSION_REPO)
+          vprint("initialize: ", settings.SUBMISSION_REPO)
+            
+       for proj_dir in proj_dirs:
+           
+            repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
+            try:
+                repo=Repo(repo_dir)
+            except InvalidGitRepositoryError:
+               repo=Repo.init(repo_dir)
+               vprint("initialize: ", repo_dir)
+        
+       vprint("git directories initialized")       
+    else: 
+         print("Warning !!!!: please install git on your system")
+        
+    
+    
+    
 def init_config_dirs():
+    '''
+    initialize the directories for the project forms
+    - not used ...
+    '''
  
     dirs = [settings.NOTEBOOK_DIRECTORY,settings.SUBMISSION_REPO,settings.FORM_DIRECTORY]
     proj_dirs = project_config.PROJECTS
@@ -70,36 +135,23 @@ def init_config_dirs():
        try: 
           repo=Repo(settings.SUBMISSION_REPO)
        except InvalidGitRepositoryError:
-         repo=Repo.init(settings.SUBMISSION_REPO, bare=True)
+         repo=Repo.init(settings.SUBMISSION_REPO)
          vprint("initialize: ", settings.SUBMISSION_REPO)
             
        for proj_dir in proj_dirs:
-        
+           
             repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
             try:
                 repo=Repo(repo_dir)
             except InvalidGitRepositoryError:
-               repo=Repo.init(repo_dir, bare=True)
+               repo=Repo.init(repo_dir)
                vprint("initialize: ", repo_dir)
-
-def get_formurlpath():
-
-    FORM_URL_PATH = 'http://localhost:8888'  # default
-
-    from notebook import notebookapp
-    servers = list(notebookapp.list_running_servers())
-    if is_hosted_service():
-        FORM_URL_PATH = 'https://data-forms.dkrz.de:8080/notebooks'
-    elif len(servers) > 0:
-        server = servers[0]
-        nb_dir = os.path.relpath(settings.NOTEBOOK_DIRECTORY, server['notebook_dir'])
-
-        FORM_URL_PATH=join(server['url'],'notebooks',nb_dir)
-    else:
-        vprint("Warning: no running notebook servers, taking default prefix ",FORM_URL_PATH)
-
-    #vprint("Detected FORM_URL_PATH: ",FORM_URL_PATH)
-    return FORM_URL_PATH
+        
+            try:
+               repo=Repo(proj_dir)
+            except InvalidGitRepositoryError:
+               repo=Repo.init(repo_dir)
+               vprint("initialize: ", repo_dir)
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -108,10 +160,10 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 def prefix_dict(mydict,prefix):
     ''' Return a copy of a submission object with specified keys prefixed by a namespace
-      to do: makes no senso fo sf objects - work on dicts instead ... 
+        to do: makes no sense for sf objects - work on dicts instead ... 
     '''
     pr_dict = {}
-    for key,val in mydict.iteritems():
+    for key,val in mydict.items():
         if (key != "__doc__") and not isinstance(val,dict):
             pr_dict[prefix + ':' + key] = mydict[key]
     return pr_dict
@@ -201,7 +253,7 @@ class Form(object):
 
 def form_to_dict(sf):
     result = {}
-    for key, val in sf.__dict__.iteritems():
+    for key, val in sf.__dict__.items():
         
         if isinstance(val,Form):
            new_val = form_to_dict(val)
@@ -243,8 +295,21 @@ def jsonfile_to_dict(jsonfilename):
 def json_to_form(mystring):
     return FForm(json_to_dict(mystring))
     
-    
-    
+
+
+
+
+def generate_project_form(project):
+    if project in project_config.PROJECTS:
+        sf = Form(project_config.PROJECT_DICT[project])
+        for (short_name,wflow_step) in sf.workflow:
+                  setattr(sf,short_name ,Form(workflow_steps.WORKFLOW_DICT[wflow_step]))
+        form = Form(project_config.PROJECT_DICT[project+'_FORM'])   
+        sf.sub.entity_out.report = form
+        return sf 
+    else:
+        print("Error: form generation failed")
+        return Form({})
 #------------------------------------------------------------------------------------    
 
 def is_hosted_service():
@@ -257,22 +322,18 @@ def is_hosted_service():
 def email_form_info(sf):
   if is_hosted_service():
      m_part1 = "You edited and saved a form for project: "+sf.project+"\n"
-     m_part2 = "This form is temporarily accessible at: \n"
-     m_part3 = "    https://data-forms.dkrz.de:8080/notebooks/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
-     m_part4 = "To retrieve and activate this form at a later time, please go to\n"
-     m_part5 = "    https://data-forms.dkrz.de:8080/notebooks/START/Retrieve_Form.ipynb \n"
-     m_part6 = "    Remember your password: "+sf.sub.entity_out.pwd
-     m_part7 = '''\n \nto officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n in case of problems please contact data-pool@dkrz.de'''
+     m_part2 = "This form is acessible at: \n"
+     m_part3 = FORM_URL_PATH+"/"+sf.project+"/"+sf.sub.entity_out.form_name+".ipynb \n"
+     m_part4 = "status info: "+sf.sub.activity.status
+     m_part5 = '''\n \nto officially submit this form to be processed by DKRZ please follow the instructions in the submission part of the form \n in case of problems please contact data-pool@dkrz.de'''
 
-     if sf.sub.activity.status=="submitted":
-        m_part1 = "You have submitted a form for project :"+sf.project+"\n"
+     if sf.sub.activity.status=="3:completed":
+        m_part1 = "You have submitted a form for project: "+sf.project+"\n"
         m_part2 = "you should receive an automatic email with the notice of receipt \n"
         m_part3 = "In case you do not receive this email please contact data-pool@dkrz.de \n"
         m_part4 = "in this email please mention the following form identifier: "+sf.project+"/"+sf.sub.entity_out.form_name 
         m_part5 = ""
-        m_part6 = ""
-        m_part7 = ""
-     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 + m_part6 + m_part7
+     my_message = m_part1 + m_part2 + m_part3 + m_part4 + m_part5 
      msg = MIMEText(my_message)
      msg['Subject'] = 'Your DKRZ data form for project: '+sf.project
      msg['From'] = "data-pool@dkrz.de"
@@ -282,7 +343,7 @@ def email_form_info(sf):
      s = smtplib.SMTP('localhost')
      s.sendmail("data-pool@dkrz.de", ["kindermann@dkrz.de",sf.sub.agent.email], msg.as_string())
      s.quit()
-     print("The link to your form and the associated passware was sent to:"+sf.sub.agent.email)
+     print("The link to your form was sent to:"+sf.sub.agent.email)
   else:
      print("This form is not hosted at DKRZ! Thus form information is stored locally on your computer \n")
      print("Here is a summary of the generated and stored information:")
@@ -290,25 +351,29 @@ def email_form_info(sf):
      print("-- form name: ",sf.sub.entity_out.form_name)
      print("-- submission form path: ", sf.sub.entity_out.form_repo_path)
      print("-- json form path: ", sf.sub.entity_out.form_json)
+     print("To officically submit this form please send these to files to data-pool@dkrz.de")
 
 
 
 
 #----------------------------------------------------------------------------------------------------------------------------
 
-def persist_info(key,form_object,location):
+def persist_info(form_object,location):
     p_shelve = shelve.open(location)
-    p_shelve[key] = form_object
+    p_shelve[form_object['pwd']] = form_object
     p_shelve.close()
 
-def get_persisted_info(key,location):
+def get_persisted_info(location):
     p_shelve = shelve.open(location)
-    form_object = p_shelve[key]
+    result = {}
+    for key in p_shelve:
+        result[key] = p_shelve[key] 
     p_shelve.close()
-    return form_object
+    return result
 
 # load workflow steps 
 def load_workflow_form(workflow_json_file): 
+    ''' Load a json file and convert file to Form object '''
 
     workflow_dict = jsonfile_to_dict(workflow_json_file)
     
@@ -401,16 +466,16 @@ class TForm(object):
            
     
     def __getattr__(self, name):
-            if name in self.__dict__.keys():
-    		      return self.name
+            if name in list(self.__dict__):
+                return self.name
             else:
                 if self.return_defaults:
-			    # If this object has default mode on, then we should
-			    # simply return the name of the requested attribute as
-			    # a default, if no attribute with that name exists.
-			    return name
+		    # If this object has default mode on, then we should
+		    # simply return the name of the requested attribute as
+		    # a default, if no attribute with that name exists.
+                    return name
                 else:
-                     raise AttributeError("No attribute " + name)
+                    raise AttributeError("No attribute " + name)
 
 
 def myprop(x, doc):
@@ -447,7 +512,7 @@ def Form_fixed_Generator(slot_list):
     
     
 def get_file_list(file_list):
-     # call synda to retrieve the dataset lists associated to synda selection files 
+     # call synda to retrieve the dataset lists associated to synda selection files   
      print("This command should print a list of datasets in case you provided correct synda selection files")
      print("return to step 3 to chech your files in case of error messages")
      dataset_dict = {}
@@ -456,4 +521,3 @@ def get_file_list(file_list):
      return dataset_dict
      result = []
      return(result)
-

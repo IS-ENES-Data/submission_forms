@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Apr 13 18:27:28 2017
 
@@ -6,7 +5,7 @@ Created on Thu Apr 13 18:27:28 2017
 """
 from __future__ import print_function
 import os,sys,shutil
-import utils
+from . import utils
 from os.path import join as join
 from os.path import expanduser
 
@@ -15,6 +14,7 @@ from IPython.display import display, Javascript, Image
 
 from dkrz_forms import form_handler
 from notebook import notebookapp
+import dkrz_forms.config.settings as settings
 
 config_file = os.path.join(expanduser("~"),".dkrz_forms")
 if os.path.isfile(config_file):
@@ -33,6 +33,7 @@ def vprint(*txt):
     if VERBOSE:
         print(*txt)
     return  
+
 
 FORM_REPO = FORM_DIRECTORY
 ### detecting url of notebook server
@@ -53,12 +54,13 @@ if os.getenv('FORM_REPO'):
     RORM_REPO = os.getenv('FORM_REPO')
     vprint("unsing env setting for FORM_REPO:",FORM_REPO)    
 
-
-
-align_kw = dict(
-    _css = (('.widget-label', 'min-width', '10ex'),),
-    margin = '0px 0px 50px 12px'
-)
+HOME_DIR = join(os.environ['HOME'],'Forms')
+#if not served in jupyterhub: 
+NOTEBOOK_DIRECTORY = settings.NOTEBOOK_DIRECTORY
+#align_kw = dict(
+#    _css = (('.widget-label', 'min-width', '10ex'),),
+#    margin = '0px 0px 50px 12px'
+#)
 
 # old ,**align_kw  has no effect anymore .. !?
 my_layout = Layout(margin='2px 0px 2px 00px')
@@ -74,8 +76,16 @@ init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
 #---- for selection files
 SELECTION = widgets.Button(value=False, description="Save files", disabled=False, button_style='', tooltip='click to save above files')
 la = widgets.Layout(height='250px',  width='500px')
+
+#FORMS = widgets.Dropdown(description='Form Name: ',)
+FORMS = widgets.Select(description='Form Name: ',)
+FORMS_ENTER = widgets.Button(value=False, description='Take selected form', disabled=False, button_style='', tooltip='click to take the selected value above')
+
+
 TEXT_WIDGETS_DICT = {}
 init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
+
+FORM_NAME = "UNDEFINED"
 
 submission_type = widgets.Dropdown(description = "Type of submission: ", options=["initial_version","new_version","retract"])
 ## maybe move to config part ..
@@ -100,49 +110,31 @@ def show_status(status):
         display(image)
     else:
         print("Unknown status")
+
+   
+
+def get_selection(val):
+    print("Your selection: ", FORMS.value)
+    print("This name should be identical to the form name shown top-left in this browser window !!!")
+    #FORM_NAME = FORMS.value
+         
         
-def check_pwd(last_name):
-    form_info = form_handler.get_persisted_info('forms_pwd',join(FORM_REPO,'keystore'))
-    
-    import getpass
-    #my_last_name = getpass.getpass("Enter your last name: ")
-    my_pwd = getpass.getpass("Enter your form password: ")
-    form_info[my_pwd]['pwd'] = my_pwd
-    
-    if my_pwd in form_info.keys():
-      
-        if form_info[my_pwd]['last_name'] == last_name:
-            ## 
-            
-            print("---- Your Name: ", form_info[my_pwd]['first_name'] + " " + form_info[my_pwd]['last_name'])
-            print("---- Your email: ", form_info[my_pwd]['last_name'])
-            print("---- Name of this submission form: ", form_info[my_pwd]['form_name'])
-    
-            return form_info[my_pwd]
-        else:
-            print("Error: incorrect key or incorrcect last name (case sensitive !)" )
-            return {}
-    else:
-         print("Error: incorrect key")
-         return False
+def show_selection(): 
+    form_info =  form_handler.get_persisted_info(join(HOME_DIR,'fig','keystore'))
+    my_options = list(form_info.keys())       
+    FORMS.options = my_options
+    display(FORMS,FORMS_ENTER)
+    FORMS_ENTER.on_click(get_selection)
+    return form_info
 
-def check_and_retrieve(last_name):
-    
-    info = check_pwd(last_name)
-    if info:
-        print(info)
-        print("--- copy from:", info['form_path'])
-        print("--- to: ",join(NOTEBOOK_DIRECTORY,info['project']))
-        shutil.copyfile(info['form_path'],join(NOTEBOOK_DIRECTORY,info['project'],info['form_name']+'.ipynb'))
-        print("--------------------------------------------------------------------")
-        print("   Your submission form was retrieved and is accessible via the following link:")
-       
-        print(utils.get_formurlpath()+'/'+info['project']+'/'+info['form_name']+'.ipynb')
-          ## to do email link to user ....
-        print("--------------------------------------------------------------------")
+def fill_form():
+    display([LAST_NAME,FIRST_NAME])
+    ENTER.on_click(fill)
 
 
-        
+def fill(val):
+    pass
+     
 
 def create_form():     
     display(*init_widgets)
@@ -161,6 +153,7 @@ def generate(val):
     init_form['project'] = PROJECT.value
     init_form['email'] = EMAIL.value
     init_form['key'] = KEY.value
+    init_form['pwd'] = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
     form_handler.generate_submission_form(init_form)
  
     
@@ -170,7 +163,8 @@ def save_sel(val):
         sel_file_path = join(selection_dir,my_file)
         with open(sel_file_path, 'w') as file_obj:
              print("Selection file: ",my_file," stored")
-             file_obj.write(val.value.encode('utf-8'))    
+             sel_text = str(val.value)
+             file_obj.write(sel_text)    
     
     
 def get_selection_file_contents(file_list):
