@@ -22,7 +22,6 @@ Contents:
    source_documentation
 
 
-   :members:
 
 Indices and tables
 ==================

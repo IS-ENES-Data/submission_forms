@@ -7,7 +7,7 @@ setup(
    version="0.8.0",
    author="Stephan Kindermann",
    author_email="kindermann@dkrz.de",
-   packages=find_packages(exclude=['ez_setup','test','install']),
+   packages=find_packages(exclude=['ez_setup',',dist','test','install']),
    # packages=['dkrz_forms'],
    include_package_data=True,
    zip_safe=False,  

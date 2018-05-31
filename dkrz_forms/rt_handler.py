@@ -64,7 +64,7 @@ rt_module_present = False
 try:
    import rt
    rt_module_present = True
-except ImportError, e:
+except ImportError as e:
    pass
 
 def get_tracker(rt_pwd):

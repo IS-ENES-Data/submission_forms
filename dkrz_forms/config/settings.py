@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 
-# Created on Thu May 18 10:55:26 2017
-#
-# @author: stephan
+
 """
+Created on Tue Sep 26 16:46:24 2017
+
+@author: stephan
 
 Generic settings
 =================================================
