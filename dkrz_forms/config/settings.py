@@ -37,8 +37,8 @@ import os
 # --------------------------------------------------------------------------
 # directory where submission_forms package is installed
 # 
-INSTALL_DIRECTORY = "pip" 
-#INSTALL_DIRECTORY = "/home/stephan/Repos/"
+#INSTALL_DIRECTORY = "pip" 
+INSTALL_DIRECTORY = "/home/stephan/Repos"
 # --------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------

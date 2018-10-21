@@ -7,23 +7,15 @@ Created on Fri May  5 15:24:05 2017
 attribute dict related parts modified from https://github.com/epigen/pypiper/blob/master/pypiper/AttributeDict.py
 """
 from __future__ import print_function
-import os,sys
-import subprocess
-import getpass
-import json
-import abc
-import string, random
-import socket
-import smtplib
-import shelve
-import shutil
+import os,sys,subprocess, getpass,json, abc, string,random
+import socket,smtplib,shelve,shutil
 import dkrz_forms.config.settings as settings
 import dkrz_forms.config.project_config as project_config  
 from dkrz_forms.config import workflow_steps
 import distutils.dir_util
 import pkg_resources
-from os.path import expanduser, isfile, exists
-from os.path import join as join
+from os.path import expanduser, isfile, exists, join
+#
 from email.mime.text import MIMEText
 from prov.model import ProvDocument
 
@@ -57,6 +49,15 @@ try:
 except ImportError as e:
    dep['rt'] = False   
 
+
+#-----------------------------------------------------------------
+if dep['config_file']:  
+  from settings import INSTALL_DIRECTORY,  SUBMISSION_REPO
+  from settings import FORM_DIRECTORY, BASE_URL, SERVER
+    
+else: 
+  from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO
+  from dkrz_forms.config.settings import FORM_DIRECTORY, BASE_URL, SERVER
 #----------------------------------------------------------------------------------------
 
 VERBOSE=True
@@ -73,46 +74,51 @@ def init_home_env():
     '''
     proj_dirs = project_config.PROJECTS
     dirs = [settings.NOTEBOOK_DIRECTORY,settings.SUBMISSION_REPO,settings.FORM_DIRECTORY]
+   
     dst = join(os.environ['HOME'],'Forms')
-    src = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms","Templates","Forms")
-    print('init yyyyyyyyyy')
+    if INSTALL_DIRECTORY == 'pip': 
+         src = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms","Templates","Forms")
+    else: 
+         src = join(INSTALL_DIRECTORY, "submission_forms", "dkrz_forms", "Templates", "Forms")
     try: 
         shutil.copytree(src,dst)
+        print("Environment initialized, to create submission forms please open:")
+        print(join(FORM_URL_PATH,"Create_Submission_Form.ipynb"))
+        print("__________________________________________________________________")
         
-        
+        for dir in dirs:
+           for proj_dir in proj_dirs:
+               distutils.dir_util.mkpath(join(dir,proj_dir))
+     
+            
+        if dep['git']:
+           try: 
+              repo=Repo(settings.SUBMISSION_REPO)
+           except InvalidGitRepositoryError:
+              repo=Repo.init(settings.SUBMISSION_REPO)
+              vprint("initialize: ", settings.SUBMISSION_REPO)
+                
+           for proj_dir in proj_dirs:
+               
+                repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
+                try:
+                    repo=Repo(repo_dir)
+                except InvalidGitRepositoryError:
+                   repo=Repo.init(repo_dir)
+                   vprint("initialize: ", repo_dir)
+            
+           vprint("git directories initialized")       
+        else: 
+         print("Warning !!!!: please install git on your system")
+             
     except OSError as why: 
        print("you initialized your environment already ! skipping initialization !")
+       print(why)
     except FileExistsError as why:
        print("you initialized your environment already ! skipping initialization !!")
+       print(why)
   
-    print("Environment initialized, to create submission forms please open:")
-    print(join(FORM_URL_PATH,"Create_Submission_Form.ipynb"))
-    print("__________________________________________________________________")
     
-    for dir in dirs:
-       for proj_dir in proj_dirs:
-           distutils.dir_util.mkpath(join(dir,proj_dir))
- 
-        
-    if dep['git']:
-       try: 
-          repo=Repo(settings.SUBMISSION_REPO)
-       except InvalidGitRepositoryError:
-          repo=Repo.init(settings.SUBMISSION_REPO)
-          vprint("initialize: ", settings.SUBMISSION_REPO)
-            
-       for proj_dir in proj_dirs:
-           
-            repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
-            try:
-                repo=Repo(repo_dir)
-            except InvalidGitRepositoryError:
-               repo=Repo.init(repo_dir)
-               vprint("initialize: ", repo_dir)
-        
-       vprint("git directories initialized")       
-    else: 
-         print("Warning !!!!: please install git on your system")
         
     
     
@@ -120,7 +126,7 @@ def init_home_env():
 def init_config_dirs():
     '''
     initialize the directories for the project forms
-    - not used ...
+    - deprecated, not used ...
     '''
  
     dirs = [settings.NOTEBOOK_DIRECTORY,settings.SUBMISSION_REPO,settings.FORM_DIRECTORY]
@@ -295,9 +301,6 @@ def jsonfile_to_dict(jsonfilename):
 def json_to_form(mystring):
     return FForm(json_to_dict(mystring))
     
-
-
-
 
 def generate_project_form(project):
     if project in project_config.PROJECTS:

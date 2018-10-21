@@ -154,6 +154,7 @@ def generate(val):
     init_form['email'] = EMAIL.value
     init_form['key'] = KEY.value
     init_form['pwd'] = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
+    print(init_form)
     form_handler.generate_submission_form(init_form)
  
     
