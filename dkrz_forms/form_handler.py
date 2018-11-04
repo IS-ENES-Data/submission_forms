@@ -79,6 +79,15 @@ if dep['config_file']:
 else: 
   from dkrz_forms.config.settings import INSTALL_DIRECTORY,  SUBMISSION_REPO
   from dkrz_forms.config.settings import FORM_DIRECTORY, BASE_URL, SERVER
+  
+# ---Directory layout: 
+# ~/Forms    root directory
+#        /"project"       temporal project notebook directories - working copies
+#                         served by jupyter notebook server
+#        /form_directory   git versioned project directories 
+#                          (saved local submission forms)
+#        /submission_repo  git repo for submitted notebooks/json
+  
 
 if dep['rt']:
    import rt
@@ -345,7 +354,7 @@ def save_form(sf,comment):
      #  print("Error ! Please correct the form name (best copy and paste name from top of this page and add .ipynb extension)")
            
     else:
-         vprint("saving without committing to a git repo")
+         vprint("Warning: saving without committing to a git repo")
     
     return sf 
 

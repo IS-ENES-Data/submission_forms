@@ -147,6 +147,9 @@ def create_form():
      #  FIRST_NAME.on_submit(handle_submit)
 
 def generate(val):
+    '''
+    form generation based on input values of widgets
+    '''
     init_form = {} 
     init_form['first_name'] = FIRST_NAME.value
     init_form['last_name'] = LAST_NAME.value
