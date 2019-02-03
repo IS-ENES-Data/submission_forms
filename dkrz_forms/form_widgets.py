@@ -4,17 +4,20 @@ Created on Thu Apr 13 18:27:28 2017
 @author: stephan
 """
 from __future__ import print_function
-import os,sys,shutil
-from . import utils
+import os,sys
+from dkrz_forms import form_handler
+import dkrz_forms.config.settings as settings
+#from . import utils
+
 from os.path import join as join
 from os.path import expanduser
 
-from ipywidgets import widgets, Layout, Box
-from IPython.display import display, Javascript, Image
+from ipywidgets import widgets, Layout
+from IPython.display import display, Image
 
-from dkrz_forms import form_handler
-from notebook import notebookapp
-import dkrz_forms.config.settings as settings
+
+#from notebook import notebookapp
+
 
 config_file = os.path.join(expanduser("~"),".dkrz_forms")
 if os.path.isfile(config_file):
@@ -57,12 +60,7 @@ if os.getenv('FORM_REPO'):
 HOME_DIR = join(os.environ['HOME'],'Forms')
 #if not served in jupyterhub: 
 NOTEBOOK_DIRECTORY = settings.NOTEBOOK_DIRECTORY
-#align_kw = dict(
-#    _css = (('.widget-label', 'min-width', '10ex'),),
-#    margin = '0px 0px 50px 12px'
-#)
 
-# old ,**align_kw  has no effect anymore .. !?
 my_layout = Layout(margin='2px 0px 2px 00px')
 LAST_NAME = widgets.Text(value="",description="Last name: ",layout=my_layout)
 FIRST_NAME = widgets.Text(value="",description="First name: ",layout=my_layout)
@@ -72,7 +70,7 @@ PROJECT = widgets.Dropdown(description = "Project: ", options=["CORDEX","CMIP6",
 KEY = widgets.Text(value="", placeholder=" A key to identify your form", description="An identifier: ",layout=my_layout)
 # ENTER = widgets.Text(value="", placeholder=" Press \"ENTER\" in this field to initialize your personal form" , description="... " )
 ENTER = widgets.Button(value=False, description='Generate form', disabled=False, button_style='', tooltip='click to generate a personal form template', icon='check')
-init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
+
 #---- for selection files
 SELECTION = widgets.Button(value=False, description="Save files", disabled=False, button_style='', tooltip='click to save above files')
 la = widgets.Layout(height='250px',  width='500px')
@@ -81,12 +79,11 @@ la = widgets.Layout(height='250px',  width='500px')
 FORMS = widgets.Select(description='Form Name: ',)
 FORMS_ENTER = widgets.Button(value=False, description='Take selected form', disabled=False, button_style='', tooltip='click to take the selected value above')
 
-
 TEXT_WIDGETS_DICT = {}
-init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,ENTER]
-
 FORM_NAME = "UNDEFINED"
 
+out = widgets.Output()
+init_widgets=[LAST_NAME,FIRST_NAME,EMAIL,PROJECT,KEY,widgets.VBox([ENTER,out])]
 submission_type = widgets.Dropdown(description = "Type of submission: ", options=["initial_version","new_version","retract"])
 ## maybe move to config part ..
 
@@ -114,16 +111,17 @@ def show_status(status):
    
 
 def get_selection(val):
-    print("Your selection: ", FORMS.value)
-    print("This name should be identical to the form name shown top-left in this browser window !!!")
-    #FORM_NAME = FORMS.value
+    with(out):
+        print("Your selection: ", FORMS.value)
+        print("This name should be identical to the form name shown top-left in this browser window !!!")
+        #FORM_NAME = FORMS.value
          
         
 def show_selection(): 
     form_info =  form_handler.get_persisted_info(join(HOME_DIR,'fig','keystore'))
     my_options = list(form_info.keys())       
     FORMS.options = my_options
-    display(FORMS,FORMS_ENTER)
+    display(FORMS,widgets.VBox([FORMS_ENTER,out]))
     FORMS_ENTER.on_click(get_selection)
     return form_info
 
@@ -138,6 +136,7 @@ def fill(val):
 
 def create_form():     
     display(*init_widgets)
+    
     #print "Fill out above fields before entering key below !"
     #check_pwd(LAST_NAME.value)
     #def handle_submit(sender):
@@ -150,16 +149,18 @@ def generate(val):
     '''
     form generation based on input values of widgets
     '''
-    init_form = {} 
-    init_form['first_name'] = FIRST_NAME.value
-    init_form['last_name'] = LAST_NAME.value
-    init_form['project'] = PROJECT.value
-    init_form['email'] = EMAIL.value
-    init_form['key'] = KEY.value
-    init_form['pwd'] = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
-    print(init_form)
-    form_handler.generate_submission_form(init_form)
- 
+    ENTER.description = 'clicked :-) '
+    with(out):
+        init_form = {} 
+        init_form['first_name'] = FIRST_NAME.value
+        init_form['last_name'] = LAST_NAME.value
+        init_form['project'] = PROJECT.value
+        init_form['email'] = EMAIL.value
+        init_form['key'] = KEY.value
+        init_form['pwd'] = init_form['project']+'_'+init_form['last_name']+'_'+init_form['key']
+        print(init_form)
+        form_handler.generate_submission_form(init_form)
+     
     
 def save_sel(val):
     selection_dir = join(NOTEBOOK_DIRECTORY,"ESGF_replication","selection")
