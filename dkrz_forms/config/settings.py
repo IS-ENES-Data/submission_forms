@@ -34,11 +34,13 @@ SUBMISSION_REPO:
 
 """
 import os
+import pathlib
 # --------------------------------------------------------------------------
 # directory where submission_forms package is installed
 # 
 #INSTALL_DIRECTORY = "pip" 
-INSTALL_DIRECTORY = "/home/stephan/Repos"
+#INSTALL_DIRECTORY = pathlib.Path(r'C:\Users\snkin\Repos')
+INSTALL_DIRECTORY = pathlib.Path(r'/home/snki/Repos')
 # --------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------

@@ -77,18 +77,20 @@ def init_home_env():
    
     dst = join(os.environ['HOME'],'Forms')
     if INSTALL_DIRECTORY == 'pip': 
+         print("Environment initialized from pip package information")
          src = join(pkg_resources.get_distribution("dkrz_forms").location,"dkrz_forms","Templates","Forms")
     else: 
-         src = join(INSTALL_DIRECTORY, "submission_forms", "dkrz_forms", "Templates", "Forms")
+        src = join(INSTALL_DIRECTORY, "submission_forms", "dkrz_forms", "Templates", "Forms")
+        print("From: ...:",src)
     try: 
         shutil.copytree(src,dst)
-        print("Environment initialized, to create submission forms please open:")
+        print("Environment initialized, to create a submission forms please open:")
         print(join(FORM_URL_PATH,"Create_Submission_Form.ipynb"))
         print("__________________________________________________________________")
         
-        for dir in dirs:
-           for proj_dir in proj_dirs:
-               distutils.dir_util.mkpath(join(dir,proj_dir))
+#        for dir in dirs:
+#           for proj_dir in proj_dirs:
+#               distutils.dir_util.mkpath(join(dir,proj_dir))
      
             
         if dep['git']:
@@ -98,18 +100,18 @@ def init_home_env():
               repo=Repo.init(settings.SUBMISSION_REPO)
               vprint("initialize: ", settings.SUBMISSION_REPO)
                 
-           for proj_dir in proj_dirs:
-               
-                repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
-                try:
-                    repo=Repo(repo_dir)
-                except InvalidGitRepositoryError:
-                   repo=Repo.init(repo_dir)
-                   vprint("initialize: ", repo_dir)
+           #for proj_dir in proj_dirs:
+           #    
+           #     repo_dir = join(settings.FORM_DIRECTORY,proj_dir)
+           #     try:
+           #         repo=Repo(repo_dir)
+           #     except InvalidGitRepositoryError:
+           #        repo=Repo.init(repo_dir)
+           #        vprint("initialize: ", repo_dir)
             
-           vprint("git directories initialized")       
+           #vprint("git directories initialized")       
         else: 
-         print("Warning !!!!: please install git on your system")
+            print("Warning !!!!: please install git on your system")
              
     except OSError as why: 
        print("you initialized your environment already ! skipping initialization !")

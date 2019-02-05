@@ -251,6 +251,15 @@ def generate_submission_form(init_form):
           vprint("--- copy from:", sf.sub.entity_in.source_path)
           vprint("--- to: ", sf.sub.entity_out.form_repo_path)
           vprint("--- and to: ",   sf.sub.entity_in.form_path)
+          if not os.path.exists(sf.sub.entity_out.form_repo):
+             os.makedirs(sf.sub.entity_out.form_repo)
+             repo=Repo.init(sf.sub.entity_out.form_repo)
+             print("Warning: form repository not existing yet - creating: ", sf.sub.entity_out.form_repo)
+             
+          if not os.path.exists(sf.sub.entity_in.form_dir): 
+             os.makedirs(sf.sub.entity_in.form_dir)
+             print("Form directory initialized: ",sf.sub.entity_in.form_dir) 
+              
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_in.form_path)
           print("--------------------------------------------------------------------")
