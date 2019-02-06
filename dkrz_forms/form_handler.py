@@ -258,7 +258,11 @@ def generate_submission_form(init_form):
              
           if not os.path.exists(sf.sub.entity_in.form_dir): 
              os.makedirs(sf.sub.entity_in.form_dir)
+             if init_form['project'] == 'ESGF_replication':
+                 print(init_form['project'])
+                 os.makedirs(join(sf.sub.entity_in.form_dir,'selection'))
              print("Form directory initialized: ",sf.sub.entity_in.form_dir) 
+            
               
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_out.form_repo_path)
           shutil.copyfile(sf.sub.entity_in.source_path,sf.sub.entity_in.form_path)

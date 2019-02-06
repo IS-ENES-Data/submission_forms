@@ -87,11 +87,7 @@ def init_home_env():
         print("Environment initialized, to create a submission forms please open:")
         print(join(FORM_URL_PATH,"Create_Submission_Form.ipynb"))
         print("__________________________________________________________________")
-        
-#        for dir in dirs:
-#           for proj_dir in proj_dirs:
-#               distutils.dir_util.mkpath(join(dir,proj_dir))
-     
+
             
         if dep['git']:
            try: 
